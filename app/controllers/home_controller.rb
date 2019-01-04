@@ -6,11 +6,18 @@ class HomeController < ApplicationController
   end
 
   def show
-    group = Group.find(params[:id])
     @profiles = group.profiles
   end
 
+  def members
+    @members = group.account_members.select(:email, :id)
+  end
+
   private
+
+  def group
+    @group ||= Group.find(params[:id])
+  end
 
   def profile_groups
     Group

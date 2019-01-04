@@ -1,5 +1,4 @@
 class Group < ApplicationRecord
   has_many :profiles
-
-  # show only group you are invited
+  has_many :account_members, through: :profiles, source: :account
 end
