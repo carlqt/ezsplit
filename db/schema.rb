@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_12_30_011635) do
+ActiveRecord::Schema.define(version: 2019_01_08_051448) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,11 +48,23 @@ ActiveRecord::Schema.define(version: 2018_12_30_011635) do
     t.index ["group_id"], name: "index_profiles_on_group_id"
   end
 
+  create_table "receipt_shares", force: :cascade do |t|
+    t.bigint "item_id"
+    t.bigint "receipt_id"
+    t.bigint "profile_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_receipt_shares_on_item_id"
+    t.index ["profile_id"], name: "index_receipt_shares_on_profile_id"
+    t.index ["receipt_id"], name: "index_receipt_shares_on_receipt_id"
+  end
+
   create_table "receipts", force: :cascade do |t|
     t.bigint "profile_id"
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "price", precision: 10, scale: 2
     t.index ["profile_id"], name: "index_receipts_on_profile_id"
   end
 

@@ -10,7 +10,8 @@ class HomeController < ApplicationController
   end
 
   def members
-    @members = group.account_members.select(:email, :id)
+    # @members = group.account_members.select(:email, :id)
+    @members = group.profiles.joins(:account).select("accounts.email, profiles.id")
   end
 
   private

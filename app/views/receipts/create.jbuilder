@@ -1,3 +1,3 @@
 json.data do
-  json.token 'xxx'
+  json.receipt @receipt
 end

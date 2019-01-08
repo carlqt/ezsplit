@@ -6,7 +6,7 @@ class ApplicationController < ActionController::API
   end
 
   def account_payload
-    JSON.parse(@decoded_token.first)
+    JSON.parse(@decoded_token.first).with_indifferent_access
   end
 
   def current_account
