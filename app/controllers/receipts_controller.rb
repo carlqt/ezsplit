@@ -20,6 +20,10 @@ class ReceiptsController < ApplicationController
     @receipt.save
   end
 
+  def edit
+    @receipt = current_account.receipts.find(params[:id])
+  end
+
   private
 
   def current_group

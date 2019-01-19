@@ -1,4 +1,6 @@
 json.data do
+  json.id @account.id
+  json.email @account.email
   json.profiles(@profiles) do |profile|
     json.(
       profile,
