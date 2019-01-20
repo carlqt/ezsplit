@@ -6,6 +6,8 @@ class Profile < ApplicationRecord
 
   validates :account, uniqueness: { scope: :group_id }
 
+  delegate :email, to: :account
+
   def balance
     receipts.sum(:price)
   end

@@ -10,4 +10,11 @@ json.data do
     json.email member.email
     json.balance member.balance
   end
+
+  json.current_profile do
+    json.(
+      @profile,
+      :id
+    )
+  end
 end

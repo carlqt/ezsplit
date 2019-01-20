@@ -7,7 +7,8 @@ class HomeController < ApplicationController
   end
 
   def show
-    @members = @group.profiles.joins(:account).select("accounts.email, profiles.id")
+    @members = @group.profiles.joins(:account).select("accounts.email, profiles.account_id, profiles.id")
+    @profile = current_account.profiles.find_by(group: @group)
   end
 
   def members

@@ -5,8 +5,19 @@ class ReceiptsController < ApplicationController
     @receipts = current_group.receipts
   end
 
+  def show
+    @current_profile = Profile.find_by(account_id: account_payload[:id], group_id: params[:home_id])
+    @receipt = current_profile.receipts.find(params[:id])
+    @items = @receipt.items.includes(:receipt_share)
+  end
+
   def new
     @profiles = accounts_in_group.select(:id, :email)
+  end
+
+  def claim
+    @receipt = current_group.receipts.find(params[:id])
+    @shares = @receipt.receipt_shares.where(profile: current_profile)
   end
 
   def create
