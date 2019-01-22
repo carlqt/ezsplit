@@ -1,5 +1,4 @@
-class ReceiptShare < ApplicationRecord
-  belongs_to :receipt
+class ClaimedItem < ApplicationRecord
   belongs_to :item
   belongs_to :profile
 

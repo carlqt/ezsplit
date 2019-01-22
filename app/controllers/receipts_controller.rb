@@ -8,7 +8,7 @@ class ReceiptsController < ApplicationController
   def show
     @current_profile = Profile.find_by(account_id: account_payload[:id], group_id: params[:home_id])
     @receipt = current_profile.receipts.find(params[:id])
-    @items = @receipt.items.includes(:receipt_share)
+    @items = @receipt.items.includes(:claimed_items)
   end
 
   def new
@@ -17,7 +17,6 @@ class ReceiptsController < ApplicationController
 
   def claim
     @receipt = current_group.receipts.find(params[:id])
-    @shares = @receipt.receipt_shares.where(profile: current_profile)
   end
 
   def create

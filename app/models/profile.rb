@@ -1,6 +1,6 @@
 class Profile < ApplicationRecord
   has_many :receipts
-  has_many :receipt_shares
+  has_many :claimed_items
   belongs_to :account
   belongs_to :group
 

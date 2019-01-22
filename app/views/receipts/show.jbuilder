@@ -15,12 +15,10 @@ json.data do
       :quantity,
       :price,
     )
-    if item.receipt_share
-      json.claimed_by do
-        json.id item.receipt_share.profile_id
-        json.email item.receipt_share.profile.email
-      end
+    unless item.claimed_items.empty?
+      json.claimed_by item.claimed_items.map{ |i| i.profile.email }.to_sentence
     end
-    json.checked item.receipt_share && (item.receipt_share.profile_id == @current_profile.id)
+
+    json.checked item.claimed_items.any?{|i| i.profile == @current_profile}
   end
 end
