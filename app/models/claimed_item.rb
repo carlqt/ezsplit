@@ -2,5 +2,7 @@ class ClaimedItem < ApplicationRecord
   belongs_to :item
   belongs_to :profile
 
-  validates :receipt, presence: true
+  validates :profile, uniqueness: { scope: :item_id}
+
+  scope :on_receipt, -> (receipt) { joins(item: :receipt).where(items: { receipt: receipt })  }
 end

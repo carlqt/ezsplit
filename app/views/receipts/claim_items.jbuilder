@@ -7,7 +7,7 @@ json.data do
     :profile_id,
   )
 
-  json.items(@items) do |item|
+  json.items(@receipt.items) do |item|
     json.partial! 'item', item: item
   end
 end

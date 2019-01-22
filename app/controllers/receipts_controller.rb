@@ -7,7 +7,7 @@ class ReceiptsController < ApplicationController
 
   def show
     @current_profile = Profile.find_by(account_id: account_payload[:id], group_id: params[:home_id])
-    @receipt = current_profile.receipts.find(params[:id])
+    @receipt = current_group.receipts.find(params[:id])
     @items = @receipt.items.includes(:claimed_items)
   end
 
@@ -15,8 +15,20 @@ class ReceiptsController < ApplicationController
     @profiles = accounts_in_group.select(:id, :email)
   end
 
-  def claim
+  def claim_items
     @receipt = current_group.receipts.find(params[:id])
+    items_to_claim = @receipt.items.where(id: params[:items]).ids
+    claimed_items = current_profile.claimed_items.on_receipt(@receipt).map(&:item_id)
+
+    # Claiming
+    (items_to_claim - claimed_items).each do |id|
+      current_profile.claimed_items.create(item_id: id).item
+    end
+
+    # Unclaim
+    (claimed_items - items_to_claim).each do |id|
+      current_profile.claimed_items.find_by(item_id: id).destroy
+    end
   end
 
   def create
@@ -24,7 +36,6 @@ class ReceiptsController < ApplicationController
       r.description = receipt_params[:description]
       r.price = receipt_params[:total]
       r.items = receipt_items
-      r.receipt_shares = receipt_shares
     end
 
     @receipt.save
@@ -54,13 +65,8 @@ class ReceiptsController < ApplicationController
       .permit(
         :description,
         :total,
-        members: [:profile_id],
         items: [:name, :quantity, :price],
       )
-  end
-
-  def receipt_shares
-    receipt_params[:members].map{|m| ReceiptShare.new(m)}
   end
 
   def receipt_items
