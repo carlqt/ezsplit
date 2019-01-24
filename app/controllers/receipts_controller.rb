@@ -2,7 +2,7 @@ class ReceiptsController < ApplicationController
   before_action :authenticate_account!
 
   def index
-    @receipts = current_group.receipts
+    @receipts = current_group.receipts.order(:created_at)
   end
 
   def show

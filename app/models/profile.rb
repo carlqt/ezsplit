@@ -1,6 +1,7 @@
 class Profile < ApplicationRecord
   has_many :receipts
   has_many :claimed_items
+  has_many :items, through: :claimed_items
   belongs_to :account
   belongs_to :group
 
@@ -9,6 +10,6 @@ class Profile < ApplicationRecord
   delegate :email, to: :account
 
   def balance
-    receipts.sum(:price)
+    receipts.sum(:price) - claimed_items.includes(:item).sum(&:price)
   end
 end

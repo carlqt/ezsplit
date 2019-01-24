@@ -5,4 +5,8 @@ class ClaimedItem < ApplicationRecord
   validates :profile, uniqueness: { scope: :item_id}
 
   scope :on_receipt, -> (receipt) { joins(item: :receipt).where(items: { receipt: receipt })  }
+
+  def price
+    item.price / item.claimed_items.count
+  end
 end
