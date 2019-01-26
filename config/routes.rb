@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   resources :home, only: [:show, :index], controller: :home do
-    resources :receipts, only: [:show, :new, :create, :index, :edit] do
+    resources :receipts, only: [:show, :new, :create, :index] do
       post :claim_items, on: :member
     end
 
@@ -11,5 +11,6 @@ Rails.application.routes.draw do
     post :authenticate, on: :collection
   end
 
-  resource :account, only: :show, controller: :account
+  resources :invite, only: [:show, :create], param: :token
+  resource :account, only: [:show], controller: :account
 end
