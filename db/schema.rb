@@ -23,15 +23,6 @@ ActiveRecord::Schema.define(version: 2019_01_26_055256) do
     t.index ["email"], name: "index_accounts_on_email", unique: true
   end
 
-  create_table "claimed_items", force: :cascade do |t|
-    t.bigint "item_id"
-    t.bigint "profile_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["item_id"], name: "index_claimed_items_on_item_id"
-    t.index ["profile_id"], name: "index_claimed_items_on_profile_id"
-  end
-
   create_table "groups", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -48,6 +39,16 @@ ActiveRecord::Schema.define(version: 2019_01_26_055256) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["receipt_id"], name: "index_items_on_receipt_id"
+  end
+
+  create_table "profile_items", force: :cascade do |t|
+    t.bigint "item_id"
+    t.bigint "profile_id"
+    t.integer "status", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_profile_items_on_item_id"
+    t.index ["profile_id"], name: "index_profile_items_on_profile_id"
   end
 
   create_table "profiles", force: :cascade do |t|
