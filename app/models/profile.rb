@@ -10,6 +10,6 @@ class Profile < ApplicationRecord
   delegate :email, to: :account
 
   def balance
-    receipts.sum(:price) - claimed_items.includes(:item).sum(&:price)
+    receipts.sum(:price_cents) - claimed_items.includes(:item).sum(&:price_cents)
   end
 end

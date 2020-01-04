@@ -5,3 +5,8 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+account = Account.create(email: 'example@land.com', password: 'password')
+group = Group.create(name: "Table Manners")
+
+account.profiles.create(group: group)
