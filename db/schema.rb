@@ -43,8 +43,8 @@ ActiveRecord::Schema.define(version: 2019_01_26_055256) do
   create_table "items", force: :cascade do |t|
     t.bigint "receipt_id"
     t.string "name"
-    t.integer "quantity"
-    t.decimal "price", precision: 10, scale: 2
+    t.integer "quantity", default: 0
+    t.bigint "price_cents", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["receipt_id"], name: "index_items_on_receipt_id"
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define(version: 2019_01_26_055256) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.decimal "price", precision: 10, scale: 2
+    t.bigint "price_cents", default: 0
     t.index ["profile_id"], name: "index_receipts_on_profile_id"
   end
 

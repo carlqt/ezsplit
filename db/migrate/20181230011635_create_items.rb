@@ -3,8 +3,8 @@ class CreateItems < ActiveRecord::Migration[5.2]
     create_table :items do |t|
       t.references :receipt
       t.string :name
-      t.integer :quantity
-      t.decimal :price, precision: 10, scale: 2
+      t.integer :quantity, default: 0
+      t.bigint :price_cents, default: 0
 
       t.timestamps
     end
