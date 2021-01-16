@@ -1,0 +1,16 @@
+version: '3'
+services:
+  server:
+    build: .
+    command: "bundle exec rails server -b 0.0.0.0"
+    ports:
+      - "3000:3000"
+    volumes:
+      - '.:/myapp'
+  database:
+    restart: always
+    image: postgres:12
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5433:5432"
