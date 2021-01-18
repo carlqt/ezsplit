@@ -4,7 +4,7 @@ services:
     build: .
     command: "bundle exec rails server -b 0.0.0.0"
     ports:
-      - "3000:3000"
+      - "8000:3000"
     volumes:
       - '.:/myapp'
   database:

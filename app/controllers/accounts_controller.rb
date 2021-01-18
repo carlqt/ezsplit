@@ -19,7 +19,7 @@ class AccountsController < ApplicationController
     @account = Account.find_by(email: params[:email])
 
     if @account.nil?
-      render json: { message: "incorrect email or password" }, status: :unauthorized
+      render json: { message: "email or password incorrect" }, status: :unauthorized
     end
   end
 end
