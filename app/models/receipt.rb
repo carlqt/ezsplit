@@ -4,4 +4,7 @@ class Receipt < ApplicationRecord
   has_many :taxes
 
   belongs_to :account
+
+  def total
+  end
 end

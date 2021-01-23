@@ -4,7 +4,7 @@ class Item < ApplicationRecord
 
   validates :receipt, presence: true
 
-  scope :total_price, -> { sum("price_cents * quantity") }
+  scope :total_price, -> { sum("price_cents") }
 
   def total_price
     quantity.nil? ? 0 : (price_cents / quantity)

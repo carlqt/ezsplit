@@ -24,12 +24,15 @@ class ReceiptsController < ApplicationController
   def create
     @receipt = current_account.receipts.new do |r|
       r.description = receipt_params[:description]
-      r.price = receipt_params[:total]
       r.items = receipt_items
       r.taxes = receipt_taxes
     end
 
-    @receipt.save
+    if @receipt.save
+      render status: :created
+    else
+      render status: :unprocessable_entity
+    end
   end
 
   private
@@ -52,16 +55,23 @@ class ReceiptsController < ApplicationController
       .permit(
         :description,
         :total,
-        items: [:name, :quantity, :price],
+        items: [:name, :price],
         taxes: [:name, :rate],
       )
   end
 
   def receipt_taxes
+    # optional
+
     receipt_params[:taxes].map { |tax| Tax.new(tax) }
   end
 
   def receipt_items
-    receipt_params[:items].map{ |item| Item.new(item) }
+    receipt_params[:items].map do |item|
+      Item.new(
+        price_cents: item[:price].to_i * 100,
+        name: item[:name],
+      )
+    end
   end
 end
