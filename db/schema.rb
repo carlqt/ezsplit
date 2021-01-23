@@ -74,6 +74,8 @@ ActiveRecord::Schema.define(version: 2021_01_23_075042) do
   create_table "taxes", force: :cascade do |t|
     t.string "name"
     t.decimal "rate", precision: 5, scale: 2
+    t.bigint "receipt_id"
+    t.index ["receipt_id"], name: "index_taxes_on_receipt_id"
   end
 
   add_foreign_key "receipts", "accounts"
