@@ -26,6 +26,7 @@ class ReceiptsController < ApplicationController
       r.description = receipt_params[:description]
       r.price = receipt_params[:total]
       r.items = receipt_items
+      r.taxes = receipt_taxes
     end
 
     @receipt.save
@@ -52,7 +53,12 @@ class ReceiptsController < ApplicationController
         :description,
         :total,
         items: [:name, :quantity, :price],
+        taxes: [:name, :rate],
       )
+  end
+
+  def receipt_taxes
+    receipt_params[:taxes].map { |tax| Tax.new(tax) }
   end
 
   def receipt_items
