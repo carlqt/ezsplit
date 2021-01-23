@@ -1,7 +1,10 @@
-migrate:
+setup:
 	docker-compose exec server bundle exec rails db:create
 	docker-compose exec server bundle exec rails db:migrate
 	docker-compose exec server bundle exec rails db:seed
+
+migrate:
+	docker-compose exec server bundle exec rails db:migrate
 
 console:
 	docker-compose exec server /bin/bash -c "bundle exec rails console"
