@@ -6,11 +6,7 @@ class Item < ApplicationRecord
 
   scope :total_price, -> { sum("price_cents") }
 
-  def total_price
-    quantity.nil? ? 0 : (price_cents / quantity)
-  end
-
-  def display_price
-    price_cents.to_d / 100
+  def price
+    @price ||= Price.new(price_cents)
   end
 end
