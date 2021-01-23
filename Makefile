@@ -6,6 +6,9 @@ setup:
 migrate:
 	docker-compose exec server bundle exec rails db:migrate
 
+rspec:
+	docker-compose exec server rspec
+
 console:
 	docker-compose exec server /bin/bash -c "bundle exec rails console"
 
