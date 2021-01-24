@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  resources :invites, only: %i[show create] do
+    post :confirm
+  end
+
   resources :home, only: [:show, :index], controller: :home do
     resources :receipts, only: [:show, :new, :create, :index] do
       post :claim_items, on: :member

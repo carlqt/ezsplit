@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  profile: 
+  group: 
+  token: MyString
+  expired_at: 2021-01-24 10:59:30
+
+two:
+  profile: 
+  group: 
+  token: MyString
+  expired_at: 2021-01-24 10:59:30
