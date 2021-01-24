@@ -1,1 +1,8 @@
-json.partial! "invites/invite", invite: @invite
+json.data do
+  json.(
+    @invite,
+    :token,
+    :group_id,
+    :expired_at
+  )
+end

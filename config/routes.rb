@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   resources :invites, only: %i[show create] do
-    post :confirm
+    post :confirm, on: :member
   end
 
   resources :home, only: [:show, :index], controller: :home do

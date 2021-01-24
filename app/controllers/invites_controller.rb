@@ -1,5 +1,5 @@
 class InvitesController < ApplicationController
-  before_action :set_invite, only: [:show, :update, :destroy, :confirm]
+  before_action :set_invite, only: [:show, :confirm]
 
   # GET /invites/1
   # GET /invites/1.json
@@ -32,7 +32,7 @@ class InvitesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_invite
-    @invite = Invite.find(params[:invite_id])
+    @invite = Invite.find(params[:id])
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
