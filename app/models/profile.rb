@@ -6,6 +6,7 @@ class Profile < ApplicationRecord
   belongs_to :group
 
   validates :account, uniqueness: { scope: :group_id }, if: :account_exists?
+  validates :name, presence: true
 
   delegate :email, to: :account
 

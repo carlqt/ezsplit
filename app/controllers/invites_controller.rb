@@ -19,7 +19,7 @@ class InvitesController < ApplicationController
   end
 
   def confirm
-    @profile = Profile.new(group: @invite.group)
+    @profile = Profile.new(group: @invite.group, name: confirm_params[:name])
 
     if @profile.save
       render json: @profile, status: :created
