@@ -24,7 +24,7 @@ class InvitesController < ApplicationController
     if @profile.save
       render json: @profile, status: :created
     else
-      render json: @profile.errors, status: :unprocessable_entity
+      render 'shared/errors', locals: { errors: @profile.errors.messages }, status: :unprocessable_entity
     end
   end
 
