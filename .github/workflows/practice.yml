@@ -1,5 +1,5 @@
 name: learn-github-actions
-on: [push, pull_request]
+on: [pull_request]
 
 env:
   USERS: '["carlqt", "jawt94"]'
@@ -19,7 +19,7 @@ jobs:
         run: echo ${{ github.event.number }}
       - name: Add LABEL
         run: |
-          curl -X POST https://api.github.com/repos/carlqt/ezsplit/issues/1/labels \
+          curl -X POST https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels \
           -H 'Accept: application/vnd.github.v3+json' \
           -H 'Content-Type: application/json' \
           -H 'Authorization: Bearer ${{ github.token }}' \
