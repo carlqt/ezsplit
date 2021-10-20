@@ -13,3 +13,5 @@ jobs:
         with:
           node-version: '14'
       - run: echo $USERS
+      - run: echo "HELLO WORLD"
+        if: ${{ contains( env.USERS, 'jawt94') }}
