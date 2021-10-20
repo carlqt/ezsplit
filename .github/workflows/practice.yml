@@ -1,4 +1,4 @@
-name: learn-github-actions
+name: Add Label to PR
 on: [pull_request]
 
 env:
@@ -8,20 +8,11 @@ jobs:
   check-bats-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - run: echo $USERS
-      - run: echo "HELLO WORLD"
-        if: ${{ contains( env.USERS, github.actor ) }}
-      - name: GET PR number
-        run: echo ${{ github.event.number }}
       - name: Add LABEL
         run: |
           curl -X POST https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/labels \
           -H 'Accept: application/vnd.github.v3+json' \
           -H 'Content-Type: application/json' \
           -H 'Authorization: Bearer ${{ github.token }}' \
-          -d '{"labels": ["se"]}'
+          -d '{"labels": ["se", "invalid"]}'
 
