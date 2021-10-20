@@ -17,4 +17,6 @@ jobs:
         if: ${{ contains( env.USERS, github.actor ) }}
       - name: GET PR number
         run: echo ${{ github.event.number }}
+      - name: GET GH Token
+        run: echo ${{ github.token }}
 
