@@ -1,9 +1,8 @@
 name: learn-github-actions
 on: [push, pull_request]
+
 env:
-  USERS:
-    - carlqt
-    - jawt94
+  USERS: '["carlqt", "jawt94"]'
 
 jobs:
   check-bats-version:
@@ -13,4 +12,4 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: echo ${{ env.USERS }}
+      - run: echo $USERS
