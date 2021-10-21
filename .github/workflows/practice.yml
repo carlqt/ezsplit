@@ -1,5 +1,7 @@
 name: Add Label to PR
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened]
 
 env:
   USERS: '["carlqt", "jawt94"]'
