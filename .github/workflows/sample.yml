@@ -25,4 +25,4 @@ jobs:
       - name: Display team
         run: echo ${{ matrix.squads }}
       - name: Display team object
-        run: echo ${{needs.matrix-params.outputs.matrix}}
+        run: echo ${{needs.matrix-params.outputs.matrix.include}}
