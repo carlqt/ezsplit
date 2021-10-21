@@ -3,14 +3,26 @@ on: [push]
 
 env:
   USERS: '["carlqt", "jawt94"]'
-  TECH_TEAM: '{"name": "se-squad", "members": ["carlqt", "jawt94"], "labels": ["se"]}'
+  TECH_TEAM: '{"sales-engine": { "members": ["carlqt", "jawt94"], "labels": ["se"] } }'
 
 jobs:
+  matrix-params:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix:
+        ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
+          # run: echo "::set-output name=matrix::{\"sales-engine\": { \"members\": [\"carlqt\", \"jawt94\"], \"labels\": [\"se\"] } }"
+
   display-stuff:
     strategy:
       matrix:
-        team: ['steve', ${{env.TECH_TEAM}}]
+        squads: ['sales-engine', 'user']
     runs-on: ubuntu-latest
     steps:
       - name: Display team
-        run: echo ${{ matrix.team }}
+        run: echo ${{ matrix.squads }}
+      - name: Display team object
+        run: echo ${{needs.matrix-params.outputs.matrix}}
