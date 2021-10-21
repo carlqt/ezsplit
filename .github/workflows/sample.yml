@@ -1,0 +1,16 @@
+name: Add label on Pull Request
+on: [push]
+
+env:
+  USERS: '["carlqt", "jawt94"]'
+  TECH_TEAM: '{"name": "se-squad", "members": ["carlqt", "jawt94"], "labels": ["se"]}'
+
+jobs:
+  display-stuff:
+    strategy:
+      matrix:
+        team: [ ${{ env.TECH_TEAM }} ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display team
+        run: echo ${{ matrix.team }}
