@@ -9,7 +9,7 @@ jobs:
   display-stuff:
     strategy:
       matrix:
-        team: [ ${{ env.TECH_TEAM }} ]
+        team: ['steve', 'roger']
     runs-on: ubuntu-latest
     steps:
       - name: Display team
