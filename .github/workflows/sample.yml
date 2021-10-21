@@ -1,4 +1,4 @@
-name: Add label on Pull Request
+name: Testing Matrix
 on: [push]
 
 env:
@@ -9,7 +9,7 @@ jobs:
   display-stuff:
     strategy:
       matrix:
-        team: ['steve', 'roger']
+        team: ['steve', ${{env.TECH_TEAM}}]
     runs-on: ubuntu-latest
     steps:
       - name: Display team
