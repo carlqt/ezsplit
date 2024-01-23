@@ -1,0 +1,56 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type User {
+  id: ID!
+  username: String!
+}
+
+type Receipt {
+  id: ID!
+  ownedBy: User
+  total: Float
+  items: [Item]!
+}
+
+type Item {
+  id: ID!
+  name: String!
+  price: Float
+  sharedBy: [User]!
+}
+
+input ReceiptInput {
+  ownedBy: ID!
+  name: String!
+  price: Float
+}
+
+input UserInput {
+  username: String!
+}
+
+input AddItemToReceiptInput {
+  receiptId: ID!
+  name: String!
+  price: Float
+}
+
+input AssignUserToItemInput {
+  itemId: ID!
+  userId: ID!
+}
+
+type Mutation {
+  createReceipt(input: ReceiptInput): Receipt!
+  addItemToReceipt(input: AddItemToReceiptInput): Receipt!
+  assignUserToItem(input: AssignUserToItemInput): Item!
+
+  createUser(input: UserInput): User!
+}
+
+type Query {
+  getReceipts: [Receipt]!
+  users: [User]!
+}

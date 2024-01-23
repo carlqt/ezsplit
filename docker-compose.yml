@@ -1,18 +1,21 @@
 version: '3'
 services:
-  server:
-    build: .
-    command: "bundle exec rails server -b 0.0.0.0"
-    tty: true
-    stdin_open: true
-    ports:
-      - "8000:3000"
-    volumes:
-      - '.:/myapp'
   database:
     restart: always
-    image: postgres:12
+    image: postgres:12.1
     environment:
       POSTGRES_PASSWORD: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "ezsplit_dev"
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5433:5432"
+      - "5432:5432"
+  pgweb:
+    restart: always
+    image: sosedoff/pgweb
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/ezsplit_dev?sslmode=disable
+    depends_on:
+      - database

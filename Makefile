@@ -1,19 +1,18 @@
-migrate:
-	docker-compose exec server bundle exec rails db:create
-	docker-compose exec server bundle exec rails db:migrate
-	docker-compose exec server bundle exec rails db:seed
+.PHONY: up
+up:
+	docker compose up
 
-console:
-	docker-compose exec server /bin/bash -c "bundle exec rails console"
+down:
+	docker compose down
 
-start:
-	docker-compose up
+run:
+	go run ./cmd/ezsplit/main.go
 
-start_daemon:
-	docker-compose up -d
+atlas_apply:
+	atlas schema apply --env local
 
-build_and_start:
-	docker-compose up --build
+graphql_playground:
+	go run ./cmd/graphql_playground/main.go
 
-stop:
-	docker-compose down
+schema_generate:
+	go run github.com/99designs/gqlgen generate
