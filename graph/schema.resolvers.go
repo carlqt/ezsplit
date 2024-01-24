@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal/repository"
 )
 
 // CreateReceipt is the resolver for the createReceipt field.
@@ -42,20 +43,19 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.User, error) {
-	user := model.User{
+	user := repository.User{
 		Username: input.Username,
 	}
 
-	n := len(r.Resolver.UserStore)
-	if n == 0 {
-		r.Resolver.UserStore = make(map[string]model.User)
+	err := r.Resolver.Repositories.UserRepository.Create(&user)
+	if err != nil {
+		return nil, err
 	}
 
-	id := strconv.Itoa(n + 1)
-	user.ID = id
-	r.Resolver.UserStore[id] = user
-
-	return &user, nil
+	return &model.User{
+		ID:       strconv.Itoa(user.ID),
+		Username: user.Username,
+	}, nil
 }
 
 // GetReceipts is the resolver for the getReceipts field.
@@ -65,13 +65,21 @@ func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, erro
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	users := make(([]*model.User), 0)
-	for idx := range r.Resolver.UserStore {
-		user := r.Resolver.UserStore[idx]
-		users = append(users, &user)
+	users, err := r.Resolver.Repositories.UserRepository.GetAllUsers()
+	if err != nil {
+		return nil, err
 	}
 
-	return users, nil
+	var modelUsers []*model.User
+	for _, user := range users {
+		modelUser := &model.User{
+			ID:       strconv.Itoa(user.ID),
+			Username: user.Username,
+		}
+		modelUsers = append(modelUsers, modelUser)
+	}
+
+	return modelUsers, nil
 }
 
 // Mutation returns MutationResolver implementation.

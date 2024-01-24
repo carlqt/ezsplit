@@ -8,18 +8,21 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
+	"github.com/carlqt/ezsplit/internal"
 	"github.com/gorilla/handlers"
 )
 
 const defaultPort = "8080"
 
 func main() {
-	port := os.Getenv("PORT")
+	app := internal.NewApp()
+
+	port := app.Config.Port
 	if port == "" {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories}}))
 
 	// srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 	// 	oc := graphql.GetOperationContext(ctx)

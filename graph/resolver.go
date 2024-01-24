@@ -1,6 +1,9 @@
 package graph
 
-import "github.com/carlqt/ezsplit/graph/model"
+import (
+	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal/repository"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -9,4 +12,5 @@ import "github.com/carlqt/ezsplit/graph/model"
 type Resolver struct {
 	ReceiptStore map[string]model.Receipt
 	UserStore    map[string]model.User
+	Repositories *repository.Repository
 }

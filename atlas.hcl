@@ -1,3 +1,8 @@
+variable "url" {
+  type = string
+  default = getenv("DATABASE_URL")
+}
+
 // Define an environment named "local"
 env "local" {
   // Declare where the schema definition resides.
@@ -8,7 +13,7 @@ env "local" {
 
   // Define the URL of the database which is managed in
   // this environment.
-  url = "postgres://postgres:postgres@localhost:5432/ezsplit_dev?sslmode=disable"
+  url = var.url
 
   // The schemas in the database that are managed by Atlas.
   schemas = ["public"]
