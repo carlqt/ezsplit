@@ -67,10 +67,11 @@ type ComplexityRoot struct {
 	}
 
 	Receipt struct {
-		ID      func(childComplexity int) int
-		Items   func(childComplexity int) int
-		OwnedBy func(childComplexity int) int
-		Total   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Items       func(childComplexity int) int
+		OwnedBy     func(childComplexity int) int
+		Total       func(childComplexity int) int
 	}
 
 	User struct {
@@ -198,6 +199,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity), true
+
+	case "Receipt.description":
+		if e.complexity.Receipt.Description == nil {
+			break
+		}
+
+		return e.complexity.Receipt.Description(childComplexity), true
 
 	case "Receipt.id":
 		if e.complexity.Receipt.ID == nil {
@@ -704,6 +712,8 @@ func (ec *executionContext) fieldContext_Mutation_createReceipt(ctx context.Cont
 				return ec.fieldContext_Receipt_id(ctx, field)
 			case "ownedBy":
 				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
 			case "items":
@@ -769,6 +779,8 @@ func (ec *executionContext) fieldContext_Mutation_addItemToReceipt(ctx context.C
 				return ec.fieldContext_Receipt_id(ctx, field)
 			case "ownedBy":
 				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
 			case "items":
@@ -960,6 +972,8 @@ func (ec *executionContext) fieldContext_Query_getReceipts(ctx context.Context, 
 				return ec.fieldContext_Receipt_id(ctx, field)
 			case "ownedBy":
 				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
 			case "items":
@@ -1236,6 +1250,50 @@ func (ec *executionContext) fieldContext_Receipt_ownedBy(ctx context.Context, fi
 				return ec.fieldContext_User_username(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Receipt_description(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receipt_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Receipt_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Receipt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3279,27 +3337,20 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"ownedBy", "name", "price"}
+	fieldsInOrder := [...]string{"description", "price"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "ownedBy":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownedBy"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.OwnedBy = data
-		case "name":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Name = data
+			it.Description = data
 		case "price":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -3581,6 +3632,11 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "ownedBy":
 			out.Values[i] = ec._Receipt_ownedBy(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._Receipt_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "total":
 			out.Values[i] = ec._Receipt_total(ctx, field, obj)
 		case "items":

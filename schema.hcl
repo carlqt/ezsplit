@@ -25,7 +25,6 @@ table "receipts" {
     type = serial
   }
   column "user_id" {
-    null = true
     type = int
   }
   column "description" {

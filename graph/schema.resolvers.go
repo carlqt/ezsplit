@@ -15,20 +15,23 @@ import (
 
 // CreateReceipt is the resolver for the createReceipt field.
 func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
-	receipt := model.Receipt{
-		Total: input.Price,
+	receipt := &repository.Receipt{
+		Total:       int(*input.Price * 100),
+		Description: input.Description,
 	}
 
-	n := len(r.Resolver.ReceiptStore)
-	if n == 0 {
-		r.Resolver.ReceiptStore = make(map[string]model.Receipt)
+	err := r.Repositories.ReceiptRepository.Create(receipt)
+	if err != nil {
+		return nil, err
 	}
 
-	id := strconv.Itoa(n + 1)
-	receipt.ID = id
-	r.Resolver.ReceiptStore[id] = receipt
+	receiptResponse := &model.Receipt{
+		ID:          strconv.Itoa(receipt.ID),
+		Total:       input.Price,
+		Description: input.Description,
+	}
 
-	return &receipt, nil
+	return receiptResponse, nil
 }
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
@@ -60,7 +63,25 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 // GetReceipts is the resolver for the getReceipts field.
 func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, error) {
-	panic(fmt.Errorf("not implemented: GetReceipts - getReceipts"))
+	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var modelReceipts []*model.Receipt
+
+	for _, receipt := range receipts {
+		total := float64(receipt.Total) / 100
+
+		modelReceipt := &model.Receipt{
+			ID:          strconv.Itoa(receipt.ID),
+			Total:       &total,
+			Description: receipt.Description,
+		}
+		modelReceipts = append(modelReceipts, modelReceipt)
+	}
+
+	return modelReceipts, nil
 }
 
 // Users is the resolver for the users field.

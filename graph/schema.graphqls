@@ -10,6 +10,7 @@ type User {
 type Receipt {
   id: ID!
   ownedBy: User
+  description: String!
   total: Float
   items: [Item]!
 }
@@ -22,8 +23,7 @@ type Item {
 }
 
 input ReceiptInput {
-  ownedBy: ID!
-  name: String!
+  description: String!
   price: Float
 }
 

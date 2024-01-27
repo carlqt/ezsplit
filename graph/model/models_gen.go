@@ -27,16 +27,16 @@ type Query struct {
 }
 
 type Receipt struct {
-	ID      string   `json:"id"`
-	OwnedBy *User    `json:"ownedBy,omitempty"`
-	Total   *float64 `json:"total,omitempty"`
-	Items   []*Item  `json:"items"`
+	ID          string   `json:"id"`
+	OwnedBy     *User    `json:"ownedBy,omitempty"`
+	Description string   `json:"description"`
+	Total       *float64 `json:"total,omitempty"`
+	Items       []*Item  `json:"items"`
 }
 
 type ReceiptInput struct {
-	OwnedBy string   `json:"ownedBy"`
-	Name    string   `json:"name"`
-	Price   *float64 `json:"price,omitempty"`
+	Description string   `json:"description"`
+	Price       *float64 `json:"price,omitempty"`
 }
 
 type User struct {
