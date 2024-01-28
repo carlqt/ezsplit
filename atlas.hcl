@@ -3,6 +3,26 @@ variable "url" {
   default = getenv("DATABASE_URL")
 }
 
+variable "port" {
+  type = string
+  default = getenv("DB_PORT")
+}
+
+variable "host" {
+  type = string
+  default = getenv("DB_HOST")
+}
+
+variable "user" {
+  type = string
+  default = getenv("DB_USER")
+}
+
+variable "name" {
+  type = string
+  default = getenv("DB_NAME")
+}
+
 // Define an environment named "local"
 env "local" {
   // Declare where the schema definition resides.
@@ -13,7 +33,7 @@ env "local" {
 
   // Define the URL of the database which is managed in
   // this environment.
-  url = var.url
+  url = "postgres://postgres:${var.user}@${var.host}:${var.port}/${var.name}?sslmode=disable"
 
   // The schemas in the database that are managed by Atlas.
   schemas = ["public"]

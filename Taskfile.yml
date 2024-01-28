@@ -1,0 +1,29 @@
+version: '3'
+
+dotenv: [.env]
+
+env:
+  ENV: local
+
+tasks:
+  run:playground:
+    cmds:
+      - go run ./cmd/graphql_playground/main.go
+  
+  apply:schema:
+    cmds:
+      - docker compose exec web atlas schema apply --env local
+  
+  down:
+    cmds:
+      - docker compose down
+      - pgrep -f 'docker-compose compose watch' | xargs kill -SIGINT
+  
+  up:
+    desc: Runs the application in development mode in docker
+    cmds:
+      - docker compose watch
+  
+  generate:schema:
+    cmds:
+      - docker compose run --rm dev-cli go run github.com/99designs/gqlgen generate

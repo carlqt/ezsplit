@@ -2,6 +2,7 @@ package internal
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -32,7 +33,9 @@ func NewApp() *App {
 
 // TODO: Split the databsae config into host, dbname, port, user and password
 func newDB(config *EnvConfig) *sql.DB {
-	connectionString := config.DatabaseURL
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable",
+		config.DBHost, config.DBPort, config.DBUser, config.DBName)
+
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)

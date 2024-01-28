@@ -1,4 +1,12 @@
 version: '3'
+
+x-app: &app
+  build:
+    context: .
+    target: base
+  env_file:
+    - .env
+
 services:
   database:
     restart: always
@@ -10,6 +18,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
+
   pgweb:
     restart: always
     image: sosedoff/pgweb
@@ -19,3 +28,25 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@database:5432/ezsplit_dev?sslmode=disable
     depends_on:
       - database
+
+  web:
+    <<: *app
+    command: go run ./cmd/graphql_playground/main.go
+    develop:
+      watch:
+        - action: sync+restart
+          path: .
+          target: /app
+    ports:
+      - "7777:7777"
+    depends_on:
+      - database
+
+  dev-cli:
+    <<: *app
+    command: bash
+    volumes:
+      - .:/app
+    profiles:
+      - dev-cli
+

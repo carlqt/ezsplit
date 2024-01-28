@@ -6,6 +6,10 @@ import (
 
 type EnvConfig struct {
 	DatabaseURL string
+	DBHost      string
+	DBName      string
+	DBPort      string
+	DBUser      string
 	Port        string
 }
 
@@ -16,5 +20,9 @@ func NewConfig() *EnvConfig {
 	return &EnvConfig{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 		Port:        os.Getenv("PORT"),
+		DBHost:      os.Getenv("DB_HOST"),
+		DBName:      os.Getenv("DB_NAME"),
+		DBPort:      os.Getenv("DB_PORT"),
+		DBUser:      os.Getenv("DB_USER"),
 	}
 }
