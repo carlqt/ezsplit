@@ -3,7 +3,6 @@ version: '3'
 x-app: &app
   build:
     context: .
-    target: base
   env_file:
     - .env
 
