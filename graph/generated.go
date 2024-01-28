@@ -62,8 +62,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetReceipts func(childComplexity int) int
-		Users       func(childComplexity int) int
+		GetReceiptByID func(childComplexity int) int
+		GetReceipts    func(childComplexity int) int
+		Users          func(childComplexity int) int
 	}
 
 	Receipt struct {
@@ -82,12 +83,13 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
-	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Receipt, error)
+	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
 	AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.User, error)
 }
 type QueryResolver interface {
 	GetReceipts(ctx context.Context) ([]*model.Receipt, error)
+	GetReceiptByID(ctx context.Context) (*model.Receipt, error)
 	Users(ctx context.Context) ([]*model.User, error)
 }
 
@@ -185,6 +187,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(*model.UserInput)), true
+
+	case "Query.getReceiptById":
+		if e.complexity.Query.GetReceiptByID == nil {
+			break
+		}
+
+		return e.complexity.Query.GetReceiptByID(childComplexity), true
 
 	case "Query.getReceipts":
 		if e.complexity.Query.GetReceipts == nil {
@@ -762,9 +771,9 @@ func (ec *executionContext) _Mutation_addItemToReceipt(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Receipt)
+	res := resTmp.(*model.Item)
 	fc.Result = res
-	return ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addItemToReceipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -776,17 +785,15 @@ func (ec *executionContext) fieldContext_Mutation_addItemToReceipt(ctx context.C
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Receipt_id(ctx, field)
-			case "ownedBy":
-				return ec.fieldContext_Receipt_ownedBy(ctx, field)
-			case "description":
-				return ec.fieldContext_Receipt_description(ctx, field)
-			case "total":
-				return ec.fieldContext_Receipt_total(ctx, field)
-			case "items":
-				return ec.fieldContext_Receipt_items(ctx, field)
+				return ec.fieldContext_Item_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Item_name(ctx, field)
+			case "price":
+				return ec.fieldContext_Item_price(ctx, field)
+			case "sharedBy":
+				return ec.fieldContext_Item_sharedBy(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
 		},
 	}
 	defer func() {
@@ -961,6 +968,62 @@ func (ec *executionContext) _Query_getReceipts(ctx context.Context, field graphq
 }
 
 func (ec *executionContext) fieldContext_Query_getReceipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Receipt_id(ctx, field)
+			case "ownedBy":
+				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
+			case "total":
+				return ec.fieldContext_Receipt_total(ctx, field)
+			case "items":
+				return ec.fieldContext_Receipt_items(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getReceiptById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getReceiptById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetReceiptByID(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Receipt)
+	fc.Result = res
+	return ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getReceiptById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -3549,6 +3612,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getReceipts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getReceiptById":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getReceiptById(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

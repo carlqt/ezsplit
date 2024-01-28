@@ -18,15 +18,7 @@ type Receipt struct {
 }
 
 func (r *ReceiptRepository) Create(receipt *Receipt) error {
-	err := r.DB.QueryRow("INSERT INTO receipts (total, description) VALUES ($1, $2) RETURNING id", receipt.Total, receipt.Description).Scan(&receipt.ID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *ReceiptRepository) CreateWithUser(receipt *Receipt) error {
-	err := r.DB.QueryRow("INSERT INTO receipts (user_id, total, description) VALUES ($1, $2, $3) RETURNING id", receipt.UserID, receipt.Total, receipt.Description).Scan(&receipt.ID)
+	err := r.DB.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
 	if err != nil {
 		return err
 	}
@@ -34,7 +26,7 @@ func (r *ReceiptRepository) CreateWithUser(receipt *Receipt) error {
 }
 
 func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
-	rows, err := r.DB.Query("SELECT * FROM receipts")
+	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts")
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +35,7 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 	var receipts []*Receipt
 	for rows.Next() {
 		receipt := &Receipt{}
-		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt, &receipt.UserID)
+		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
 		if err != nil {
 			return nil, err
 		}

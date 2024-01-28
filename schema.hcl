@@ -58,7 +58,6 @@ table "items" {
     type = serial
   }
   column "receipt_id" {
-    null = true
     type = int
   }
   column "price" {

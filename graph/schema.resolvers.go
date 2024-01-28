@@ -18,6 +18,8 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 	receipt := &repository.Receipt{
 		Total:       int(*input.Price * 100),
 		Description: input.Description,
+		// TODO: UserID should come from the context.
+		// UserID: 1,
 	}
 
 	err := r.Repositories.ReceiptRepository.Create(receipt)
@@ -35,8 +37,29 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 }
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
-func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Receipt, error) {
-	panic(fmt.Errorf("not implemented: AddItemToReceipt - addItemToReceipt"))
+func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
+	receiptID, err := strconv.Atoi(input.ReceiptID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize repository struct using the input
+	item := repository.Item{
+		ReceiptID: receiptID,
+		Name:      input.Name,
+		Price:     int(*input.Price * 100),
+	}
+
+	err = r.Repositories.ItemRepository.Create(&item)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Item{
+		ID:    strconv.Itoa(item.ID),
+		Name:  item.Name,
+		Price: input.Price,
+	}, nil
 }
 
 // AssignUserToItem is the resolver for the assignUserToItem field.
@@ -50,7 +73,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		Username: input.Username,
 	}
 
-	err := r.Resolver.Repositories.UserRepository.Create(&user)
+	err := r.Repositories.UserRepository.Create(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +107,14 @@ func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, erro
 	return modelReceipts, nil
 }
 
+// GetReceiptByID is the resolver for the getReceiptById field.
+func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, error) {
+	panic(fmt.Errorf("not implemented: GetReceiptByID - getReceiptById"))
+}
+
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	users, err := r.Resolver.Repositories.UserRepository.GetAllUsers()
+	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}

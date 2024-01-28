@@ -44,7 +44,7 @@ input AssignUserToItemInput {
 
 type Mutation {
   createReceipt(input: ReceiptInput): Receipt!
-  addItemToReceipt(input: AddItemToReceiptInput): Receipt!
+  addItemToReceipt(input: AddItemToReceiptInput): Item!
   assignUserToItem(input: AssignUserToItemInput): Item!
 
   createUser(input: UserInput): User!
@@ -52,5 +52,6 @@ type Mutation {
 
 type Query {
   getReceipts: [Receipt]!
+  getReceiptById: Receipt!
   users: [User]!
 }
