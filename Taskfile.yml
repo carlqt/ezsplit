@@ -27,3 +27,7 @@ tasks:
   generate:schema:
     cmds:
       - docker compose run --rm dev-cli go run github.com/99designs/gqlgen generate
+
+  logs:
+    cmds:
+      - docker compose logs -f
