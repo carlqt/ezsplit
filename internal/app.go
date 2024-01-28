@@ -33,8 +33,8 @@ func NewApp() *App {
 
 // TODO: Split the databsae config into host, dbname, port, user and password
 func newDB(config *EnvConfig) *sql.DB {
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable",
-		config.DBHost, config.DBPort, config.DBUser, config.DBName)
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		config.DBHost, config.DBPort, config.DBUser, config.DBName, config.DBPassword)
 
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
