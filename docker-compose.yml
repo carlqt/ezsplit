@@ -30,7 +30,7 @@ services:
 
   web:
     <<: *app
-    command: go run ./cmd/graphql_playground/main.go
+    command: go run ./cmd/ezsplit/main.go
     develop:
       watch:
         - action: sync+restart
