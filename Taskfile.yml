@@ -31,3 +31,8 @@ tasks:
   logs:
     cmds:
       - docker compose logs -f
+
+  compose:
+    desc: Acts as a proxy for `docker compose` command
+    cmds:
+      - docker compose {{.CLI_ARGS}}
