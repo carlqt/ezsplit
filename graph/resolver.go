@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
@@ -10,7 +10,6 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	ReceiptStore map[string]model.Receipt
-	UserStore    map[string]model.User
+	Config       *internal.EnvConfig
 	Repositories *repository.Repository
 }

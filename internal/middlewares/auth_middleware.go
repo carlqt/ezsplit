@@ -14,6 +14,7 @@ import (
 
 const userKey = "User"
 
+// TODO: Handle error if Authorization header doesn't have the correct format - Bearer <token>
 func getBearerToken(r *http.Request) string {
 	authHeaderString := r.Header.Get("Authorization")
 	authHeader := strings.Split(authHeaderString, " ")
@@ -46,6 +47,9 @@ func validateBearerToken(bearerToken string, secret []byte) (*model.User, error)
 	return nil, err
 }
 
+// TODO: Do not run the middleware for createUserMutation
+// refactor to: Change this middleware's responsibility to only extracting the validating the Authorization header
+// Move the validation logic to the resolver
 func AuthMiddleware(next http.Handler, conf internal.EnvConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		secretKey := []byte(conf.JWTSecret)

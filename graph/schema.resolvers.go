@@ -11,6 +11,7 @@ import (
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/repository"
+	"github.com/golang-jwt/jwt"
 )
 
 // CreateReceipt is the resolver for the createReceipt field.
@@ -68,7 +69,7 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 }
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.User, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
 	user := repository.User{
 		Username: input.Username,
 	}
@@ -78,9 +79,23 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	return &model.User{
+	// TODO: Add more to the payload  like issuedAt (iat), expiration (exp)
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":       strconv.Itoa(user.ID),
+		"username": user.Username,
+	})
+
+	key := []byte(r.Config.JWTSecret)
+	signedToken, err := t.SignedString(key)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UserWithJwt{
 		ID:       strconv.Itoa(user.ID),
 		Username: user.Username,
+		Jwt:      signedToken,
 	}, nil
 }
 

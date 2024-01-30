@@ -15,6 +15,12 @@ type Receipt {
   items: [Item]!
 }
 
+type UserWithJwt {
+  id: ID!
+  username: String!
+  jwt: String!
+}
+
 type Item {
   id: ID!
   name: String!
@@ -47,7 +53,7 @@ type Mutation {
   addItemToReceipt(input: AddItemToReceiptInput): Item!
   assignUserToItem(input: AssignUserToItemInput): Item!
 
-  createUser(input: UserInput): User!
+  createUser(input: UserInput): UserWithJwt!
 }
 
 type Query {

@@ -47,3 +47,9 @@ type User struct {
 type UserInput struct {
 	Username string `json:"username"`
 }
+
+type UserWithJwt struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Jwt      string `json:"jwt"`
+}
