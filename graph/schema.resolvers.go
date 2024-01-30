@@ -114,6 +114,9 @@ func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, err
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	// Fetch the user from the context
+	// strContext := ctx.Value("user").(model.User)
+
 	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {
 		return nil, err
