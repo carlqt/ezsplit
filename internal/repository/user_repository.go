@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	ID        int       `db:"id"`
+	ID        string    `db:"id"`
 	Username  string    `db:"username"`
 	CreatedAt time.Time `db:"created_at"`
 }

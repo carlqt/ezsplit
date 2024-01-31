@@ -10,7 +10,7 @@ type ItemRepository struct {
 }
 
 type Item struct {
-	ID        int       `db:"id"`
+	ID        string    `db:"id"`
 	Name      string    `db:"name"`
 	Price     int       `db:"price"`
 	ReceiptID int       `db:"receipt_id"`

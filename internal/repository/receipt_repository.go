@@ -10,8 +10,8 @@ type ReceiptRepository struct {
 }
 
 type Receipt struct {
-	UserID      int       `db:"user_id"`
-	ID          int       `db:"id"`
+	UserID      string    `db:"user_id"`
+	ID          string    `db:"id"`
 	Total       int       `db:"total"`
 	Description string    `db:"description"`
 	CreatedAt   time.Time `db:"created_at"`

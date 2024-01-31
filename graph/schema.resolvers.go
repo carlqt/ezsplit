@@ -26,16 +26,10 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 		return nil, errors.New("unauthorized access")
 	}
 
-	userID, err := strconv.Atoi(userClaim.ID)
-	if err != nil {
-		log.Println("String to int conversion error: ", userClaim.ID)
-		return nil, err
-	}
-
 	receipt := &repository.Receipt{
 		Total:       int(*input.Price * 100),
 		Description: input.Description,
-		UserID:      userID,
+		UserID:      userClaim.ID,
 	}
 
 	err = r.Repositories.ReceiptRepository.CreateForUser(receipt)
@@ -44,10 +38,10 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 	}
 
 	receiptResponse := &model.Receipt{
-		ID:          strconv.Itoa(receipt.ID),
+		ID:          receipt.ID,
 		Total:       input.Price,
 		Description: input.Description,
-		UserID:      strconv.Itoa(receipt.UserID),
+		UserID:      receipt.UserID,
 	}
 
 	return receiptResponse, nil
@@ -73,7 +67,7 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 	}
 
 	return &model.Item{
-		ID:    strconv.Itoa(item.ID),
+		ID:    item.ID,
 		Name:  item.Name,
 		Price: input.Price,
 	}, nil
@@ -92,7 +86,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}
 
 	userClaim := auth.UserClaim{
-		ID:       strconv.Itoa(user.ID),
+		ID:       user.ID,
 		Username: user.Username,
 	}
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
@@ -102,7 +96,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}
 
 	return &model.UserWithJwt{
-		ID:          strconv.Itoa(user.ID),
+		ID:          user.ID,
 		Username:    user.Username,
 		AccessToken: signedToken,
 	}, nil
@@ -121,7 +115,7 @@ func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, erro
 		total := float64(receipt.Total) / 100
 
 		modelReceipt := &model.Receipt{
-			ID:          strconv.Itoa(receipt.ID),
+			ID:          receipt.ID,
 			Total:       &total,
 			Description: receipt.Description,
 		}
@@ -156,7 +150,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	var modelUsers []*model.User
 	for _, user := range users {
 		modelUser := &model.User{
-			ID:       strconv.Itoa(user.ID),
+			ID:       user.ID,
 			Username: user.Username,
 		}
 		modelUsers = append(modelUsers, modelUser)
@@ -180,7 +174,7 @@ func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.
 	}
 
 	return &model.User{
-		ID:       strconv.Itoa(user.ID),
+		ID:       user.ID,
 		Username: user.Username,
 	}, nil
 }
