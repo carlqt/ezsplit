@@ -14,19 +14,31 @@ import (
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
-	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // CreateReceipt is the resolver for the createReceipt field.
 func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
+
+	userID, err := strconv.Atoi(userClaim.ID)
+	if err != nil {
+		log.Println("String to int conversion error: ", userClaim.ID)
+		return nil, err
+	}
+
 	receipt := &repository.Receipt{
 		Total:       int(*input.Price * 100),
 		Description: input.Description,
-		// TODO: UserID should come from the context.
-		// UserID: 1,
+		UserID:      userID,
 	}
 
-	err := r.Repositories.ReceiptRepository.Create(receipt)
+	err = r.Repositories.ReceiptRepository.CreateForUser(receipt)
 	if err != nil {
 		return nil, err
 	}
@@ -78,15 +90,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	// TODO: Add more to the payload  like issuedAt (iat), expiration (exp)
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, auth.UserClaim{
-		ID:               strconv.Itoa(user.ID),
-		Username:         user.Username,
-		RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(user.CreatedAt)},
-	})
-
-	signedToken, err := t.SignedString(r.Config.JWTSecret)
-
+	userClaim := auth.UserClaim{
+		ID:       strconv.Itoa(user.ID),
+		Username: user.Username,
+	}
+	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
 		return nil, errors.New("error signing token")

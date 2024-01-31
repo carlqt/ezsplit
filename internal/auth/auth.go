@@ -3,12 +3,11 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
-	"github.com/carlqt/ezsplit/graph/model"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -18,6 +17,18 @@ type UserClaim struct {
 	jwt.RegisteredClaims
 	ID       string `json:"id"`
 	Username string `json:"username"`
+}
+
+func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
+	userClaim.IssuedAt = jwt.NewNumericDate(time.Now())
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userClaim)
+	signedToken, err := token.SignedString(secret)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	return signedToken, nil
 }
 
 // getBearerToken extracts the bearer token from the Authorization header.
@@ -37,30 +48,20 @@ func getBearerToken(r *http.Request) (string, error) {
 }
 
 // TODO: Move all auth/jwt related functions to a separate package
-func ValidateBearerToken(bearerToken string, secret []byte) (model.User, error) {
-	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
+func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
+	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})
 
 	if err != nil {
 		log.Println(err)
-		return model.User{}, err
+		return UserClaim{}, err
+	} else if claims, ok := token.Claims.(*UserClaim); ok && token.Valid {
+		return *claims, nil
+	} else {
+		log.Println("unknown claims type")
+		return *claims, errors.New("unknown claims type")
 	}
-
-	if claims, ok := token.Claims.(UserClaim); ok && token.Valid {
-		// TODO: Research if this is enough or should we validate the user in the database
-		return model.User{
-			ID:       claims.ID,
-			Username: claims.Username,
-		}, nil
-	}
-
-	errMsg := fmt.Sprint("invalid token: ", bearerToken)
-	return model.User{}, errors.New(errMsg)
 }
 
 // BearerTokenMiddleware extracts the bearer token from the Authorization header
