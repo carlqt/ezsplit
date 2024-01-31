@@ -12,7 +12,7 @@ import (
 	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
-	middleware "github.com/carlqt/ezsplit/internal/middlewares"
+	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
@@ -79,9 +79,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}
 
 	// TODO: Add more to the payload  like issuedAt (iat), expiration (exp)
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":       strconv.Itoa(user.ID),
-		"username": user.Username,
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, auth.UserClaim{
+		ID:               strconv.Itoa(user.ID),
+		Username:         user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(user.CreatedAt)},
 	})
 
 	signedToken, err := t.SignedString(r.Config.JWTSecret)
@@ -128,11 +129,11 @@ func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, err
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	bearerToken := ctx.Value(middleware.TokenKey).(string)
+	bearerToken := ctx.Value(auth.TokenKey).(string)
 
 	// Validate token
 	// If not valid - return error
-	_, err := middleware.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
 		return nil, errors.New("unauthorized access")

@@ -8,7 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/internal"
-	middleware "github.com/carlqt/ezsplit/internal/middlewares"
+	"github.com/carlqt/ezsplit/internal/auth"
 )
 
 const defaultPort = "8080"
@@ -34,7 +34,7 @@ func main() {
 
 	// http.Handle("/query", handlers.CombinedLoggingHandler(os.Stdout, srv))
 
-	http.Handle("/query", middleware.BearerTokenMiddleware(srv))
+	http.Handle("/query", auth.BearerTokenMiddleware(srv))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

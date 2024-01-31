@@ -1,4 +1,4 @@
-package middleware
+package auth
 
 import (
 	"context"
@@ -9,10 +9,16 @@ import (
 	"strings"
 
 	"github.com/carlqt/ezsplit/graph/model"
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 const TokenKey = "Token"
+
+type UserClaim struct {
+	jwt.RegisteredClaims
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
 
 // getBearerToken extracts the bearer token from the Authorization header.
 // An error is returned if Authorization header is missing or the format is invalid.
@@ -45,18 +51,16 @@ func ValidateBearerToken(bearerToken string, secret []byte) (model.User, error) 
 		return model.User{}, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if len(claims) == 0 {
-			return model.User{}, errors.New("empty payload")
-		}
+	if claims, ok := token.Claims.(UserClaim); ok && token.Valid {
 		// TODO: Research if this is enough or should we validate the user in the database
 		return model.User{
-			ID:       claims["id"].(string),
-			Username: claims["username"].(string),
+			ID:       claims.ID,
+			Username: claims.Username,
 		}, nil
 	}
 
-	return model.User{}, err
+	errMsg := fmt.Sprint("invalid token: ", bearerToken)
+	return model.User{}, errors.New(errMsg)
 }
 
 // BearerTokenMiddleware extracts the bearer token from the Authorization header
