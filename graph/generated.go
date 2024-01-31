@@ -41,6 +41,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Receipt() ReceiptResolver
 }
 
 type DirectiveRoot struct {
@@ -71,8 +72,8 @@ type ComplexityRoot struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Items       func(childComplexity int) int
-		OwnedBy     func(childComplexity int) int
 		Total       func(childComplexity int) int
+		User        func(childComplexity int) int
 	}
 
 	User struct {
@@ -97,6 +98,9 @@ type QueryResolver interface {
 	GetReceipts(ctx context.Context) ([]*model.Receipt, error)
 	GetReceiptByID(ctx context.Context) (*model.Receipt, error)
 	Users(ctx context.Context) ([]*model.User, error)
+}
+type ReceiptResolver interface {
+	User(ctx context.Context, obj *model.Receipt) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -236,19 +240,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Receipt.Items(childComplexity), true
 
-	case "Receipt.ownedBy":
-		if e.complexity.Receipt.OwnedBy == nil {
-			break
-		}
-
-		return e.complexity.Receipt.OwnedBy(childComplexity), true
-
 	case "Receipt.total":
 		if e.complexity.Receipt.Total == nil {
 			break
 		}
 
 		return e.complexity.Receipt.Total(childComplexity), true
+
+	case "Receipt.user":
+		if e.complexity.Receipt.User == nil {
+			break
+		}
+
+		return e.complexity.Receipt.User(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -746,8 +750,8 @@ func (ec *executionContext) fieldContext_Mutation_createReceipt(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
-			case "ownedBy":
-				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "user":
+				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
@@ -1006,8 +1010,8 @@ func (ec *executionContext) fieldContext_Query_getReceipts(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
-			case "ownedBy":
-				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "user":
+				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
@@ -1062,8 +1066,8 @@ func (ec *executionContext) fieldContext_Query_getReceiptById(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
-			case "ownedBy":
-				return ec.fieldContext_Receipt_ownedBy(ctx, field)
+			case "user":
+				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
@@ -1300,8 +1304,8 @@ func (ec *executionContext) fieldContext_Receipt_id(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Receipt_ownedBy(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Receipt_ownedBy(ctx, field)
+func (ec *executionContext) _Receipt_user(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receipt_user(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1314,7 +1318,7 @@ func (ec *executionContext) _Receipt_ownedBy(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.OwnedBy, nil
+		return ec.resolvers.Receipt().User(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1328,12 +1332,12 @@ func (ec *executionContext) _Receipt_ownedBy(ctx context.Context, field graphql.
 	return ec.marshalOUser2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Receipt_ownedBy(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Receipt_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Receipt",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -3874,21 +3878,52 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Receipt_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "ownedBy":
-			out.Values[i] = ec._Receipt_ownedBy(ctx, field, obj)
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Receipt_user(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "description":
 			out.Values[i] = ec._Receipt_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "total":
 			out.Values[i] = ec._Receipt_total(ctx, field, obj)
 		case "items":
 			out.Values[i] = ec._Receipt_items(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

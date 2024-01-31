@@ -47,6 +47,7 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 		ID:          strconv.Itoa(receipt.ID),
 		Total:       input.Price,
 		Description: input.Description,
+		UserID:      strconv.Itoa(receipt.UserID),
 	}
 
 	return receiptResponse, nil
@@ -164,11 +165,35 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return modelUsers, nil
 }
 
+// User is the resolver for the user field.
+func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
+	userId, err := strconv.Atoi(obj.UserID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	user, err := r.Repositories.UserRepository.FindByID(userId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &model.User{
+		ID:       strconv.Itoa(user.ID),
+		Username: user.Username,
+	}, nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Receipt returns ReceiptResolver implementation.
+func (r *Resolver) Receipt() ReceiptResolver { return &receiptResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type receiptResolver struct{ *Resolver }

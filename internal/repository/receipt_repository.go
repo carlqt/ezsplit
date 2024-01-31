@@ -52,3 +52,23 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 
 	return receipts, nil
 }
+
+func (r *ReceiptRepository) SelectForUser(userID int) ([]*Receipt, error) {
+	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var receipts []*Receipt
+	for rows.Next() {
+		receipt := &Receipt{}
+		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		receipts = append(receipts, receipt)
+	}
+
+	return receipts, nil
+}

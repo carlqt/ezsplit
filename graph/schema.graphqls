@@ -9,7 +9,7 @@ type User {
 
 type Receipt {
   id: ID!
-  ownedBy: User
+  user: User
   description: String!
   total: Float
   items: [Item]!

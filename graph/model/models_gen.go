@@ -26,14 +26,6 @@ type Mutation struct {
 type Query struct {
 }
 
-type Receipt struct {
-	ID          string   `json:"id"`
-	OwnedBy     *User    `json:"ownedBy,omitempty"`
-	Description string   `json:"description"`
-	Total       *float64 `json:"total,omitempty"`
-	Items       []*Item  `json:"items"`
-}
-
 type ReceiptInput struct {
 	Description string   `json:"description"`
 	Price       *float64 `json:"price,omitempty"`

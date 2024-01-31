@@ -47,7 +47,6 @@ func getBearerToken(r *http.Request) (string, error) {
 	return parts[1], nil
 }
 
-// TODO: Move all auth/jwt related functions to a separate package
 func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
 	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
