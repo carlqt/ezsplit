@@ -34,8 +34,7 @@ func main() {
 
 	// http.Handle("/query", handlers.CombinedLoggingHandler(os.Stdout, srv))
 
-	// TODO: Add authentication middleware
-	http.Handle("/query", middleware.AuthMiddleware(srv, *app.Config))
+	http.Handle("/query", middleware.BearerTokenMiddleware(srv))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

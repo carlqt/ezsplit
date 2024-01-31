@@ -2,28 +2,36 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/carlqt/ezsplit/graph/model"
-	"github.com/carlqt/ezsplit/internal"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-const userKey = "User"
+const TokenKey = "Token"
 
-// TODO: Handle error if Authorization header doesn't have the correct format - Bearer <token>
-func getBearerToken(r *http.Request) string {
-	authHeaderString := r.Header.Get("Authorization")
-	authHeader := strings.Split(authHeaderString, " ")
+// getBearerToken extracts the bearer token from the Authorization header.
+// An error is returned if Authorization header is missing or the format is invalid.
+func getBearerToken(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", errors.New("authorization header is missing")
+	}
 
-	return authHeader[1]
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", errors.New("authorization header format must be Bearer <token>")
+	}
+
+	return parts[1], nil
 }
 
-func validateBearerToken(bearerToken string, secret []byte) (*model.User, error) {
-	// Notes: Find a way to return a concrete type instead of an empty interface
+// TODO: Move all auth/jwt related functions to a separate package
+func ValidateBearerToken(bearerToken string, secret []byte) (model.User, error) {
 	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -33,40 +41,33 @@ func validateBearerToken(bearerToken string, secret []byte) (*model.User, error)
 	})
 
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return model.User{}, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if len(claims) == 0 {
+			return model.User{}, errors.New("empty payload")
+		}
 		// TODO: Research if this is enough or should we validate the user in the database
-		return &model.User{
+		return model.User{
 			ID:       claims["id"].(string),
 			Username: claims["username"].(string),
 		}, nil
 	}
 
-	return nil, err
+	return model.User{}, err
 }
 
-// TODO: Do not run the middleware for createUserMutation
-// refactor to: Change this middleware's responsibility to only extracting the validating the Authorization header
-// Move the validation logic to the resolver
-func AuthMiddleware(next http.Handler, conf internal.EnvConfig) http.Handler {
+// BearerTokenMiddleware extracts the bearer token from the Authorization header
+// and stores it in the context.
+// The error is ignored because the token is optional and the resolver will handle the error.
+func BearerTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		secretKey := []byte(conf.JWTSecret)
-		bearerToken := getBearerToken(r)
+		bearerToken, _ := getBearerToken(r)
 
-		user, err := validateBearerToken(bearerToken, secretKey)
-
-		// TODO: Figure out what to do with the error here
-		if err != nil {
-			log.Println(err)
-		}
-
-		// TODO: Fix warning
-		ctx := context.WithValue(r.Context(), userKey, user)
+		ctx := context.WithValue(r.Context(), TokenKey, bearerToken)
 		newReq := r.WithContext(ctx)
-
-		log.Println("GET Middleware")
 
 		next.ServeHTTP(w, newReq)
 	})

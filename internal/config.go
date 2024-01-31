@@ -12,7 +12,7 @@ type EnvConfig struct {
 	DBUser      string
 	DBPassword  string
 	Port        string
-	JWTSecret   string
+	JWTSecret   []byte
 }
 
 // NewConfig creates a new config using the environment variables.
@@ -27,6 +27,6 @@ func NewConfig() *EnvConfig {
 		DBPort:      os.Getenv("DB_PORT"),
 		DBUser:      os.Getenv("DB_USER"),
 		DBPassword:  os.Getenv("DB_PASSWORD"),
-		JWTSecret:   os.Getenv("JWT_SECRET"),
+		JWTSecret:   []byte(os.Getenv("JWT_SECRET")),
 	}
 }

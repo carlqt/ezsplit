@@ -15,12 +15,14 @@ type UserRepository struct {
 	DB *sql.DB
 }
 
-func (r *UserRepository) Create(user *User) error {
+func (r *UserRepository) Create(username string) (User, error) {
+	user := User{Username: username}
+
 	err := r.DB.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
 	if err != nil {
-		return err
+		return user, err
 	}
-	return nil
+	return user, nil
 }
 
 func (r *UserRepository) FindByID(id int) (*User, error) {

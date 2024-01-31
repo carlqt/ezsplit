@@ -18,7 +18,7 @@ type Receipt {
 type UserWithJwt {
   id: ID!
   username: String!
-  jwt: String!
+  accessToken: String!
 }
 
 type Item {

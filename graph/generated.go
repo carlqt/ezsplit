@@ -81,9 +81,9 @@ type ComplexityRoot struct {
 	}
 
 	UserWithJwt struct {
-		ID       func(childComplexity int) int
-		Jwt      func(childComplexity int) int
-		Username func(childComplexity int) int
+		AccessToken func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Username    func(childComplexity int) int
 	}
 }
 
@@ -264,19 +264,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Username(childComplexity), true
 
+	case "UserWithJwt.accessToken":
+		if e.complexity.UserWithJwt.AccessToken == nil {
+			break
+		}
+
+		return e.complexity.UserWithJwt.AccessToken(childComplexity), true
+
 	case "UserWithJwt.id":
 		if e.complexity.UserWithJwt.ID == nil {
 			break
 		}
 
 		return e.complexity.UserWithJwt.ID(childComplexity), true
-
-	case "UserWithJwt.jwt":
-		if e.complexity.UserWithJwt.Jwt == nil {
-			break
-		}
-
-		return e.complexity.UserWithJwt.Jwt(childComplexity), true
 
 	case "UserWithJwt.username":
 		if e.complexity.UserWithJwt.Username == nil {
@@ -945,8 +945,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_UserWithJwt_id(ctx, field)
 			case "username":
 				return ec.fieldContext_UserWithJwt_username(ctx, field)
-			case "jwt":
-				return ec.fieldContext_UserWithJwt_jwt(ctx, field)
+			case "accessToken":
+				return ec.fieldContext_UserWithJwt_accessToken(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserWithJwt", field.Name)
 		},
@@ -1662,8 +1662,8 @@ func (ec *executionContext) fieldContext_UserWithJwt_username(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _UserWithJwt_jwt(ctx context.Context, field graphql.CollectedField, obj *model.UserWithJwt) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserWithJwt_jwt(ctx, field)
+func (ec *executionContext) _UserWithJwt_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.UserWithJwt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserWithJwt_accessToken(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1676,7 +1676,7 @@ func (ec *executionContext) _UserWithJwt_jwt(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Jwt, nil
+		return obj.AccessToken, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1693,7 +1693,7 @@ func (ec *executionContext) _UserWithJwt_jwt(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_UserWithJwt_jwt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_UserWithJwt_accessToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserWithJwt",
 		Field:      field,
@@ -3978,8 +3978,8 @@ func (ec *executionContext) _UserWithJwt(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "jwt":
-			out.Values[i] = ec._UserWithJwt_jwt(ctx, field, obj)
+		case "accessToken":
+			out.Values[i] = ec._UserWithJwt_accessToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

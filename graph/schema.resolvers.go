@@ -6,12 +6,15 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
+	middleware "github.com/carlqt/ezsplit/internal/middlewares"
 	"github.com/carlqt/ezsplit/internal/repository"
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // CreateReceipt is the resolver for the createReceipt field.
@@ -70,11 +73,7 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
-	user := repository.User{
-		Username: input.Username,
-	}
-
-	err := r.Repositories.UserRepository.Create(&user)
+	user, err := r.Repositories.UserRepository.Create(input.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -85,17 +84,17 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		"username": user.Username,
 	})
 
-	key := []byte(r.Config.JWTSecret)
-	signedToken, err := t.SignedString(key)
+	signedToken, err := t.SignedString(r.Config.JWTSecret)
 
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return nil, errors.New("error signing token")
 	}
 
 	return &model.UserWithJwt{
-		ID:       strconv.Itoa(user.ID),
-		Username: user.Username,
-		Jwt:      signedToken,
+		ID:          strconv.Itoa(user.ID),
+		Username:    user.Username,
+		AccessToken: signedToken,
 	}, nil
 }
 
@@ -129,8 +128,15 @@ func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, err
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	// Fetch the user from the context
-	// strContext := ctx.Value("user").(model.User)
+	bearerToken := ctx.Value(middleware.TokenKey).(string)
+
+	// Validate token
+	// If not valid - return error
+	_, err := middleware.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
 
 	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {

@@ -49,7 +49,7 @@ type UserInput struct {
 }
 
 type UserWithJwt struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Jwt      string `json:"jwt"`
+	ID          string `json:"id"`
+	Username    string `json:"username"`
+	AccessToken string `json:"accessToken"`
 }

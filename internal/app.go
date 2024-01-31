@@ -24,6 +24,8 @@ func NewApp() *App {
 		panic(err)
 	}
 
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	config := NewConfig()
 	db := newDB(config)
 	repositories := repository.NewRepository(db)
@@ -31,7 +33,6 @@ func NewApp() *App {
 	return &App{Config: config, DB: db, Repositories: repositories}
 }
 
-// TODO: Split the databsae config into host, dbname, port, user and password
 func newDB(config *EnvConfig) *sql.DB {
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		config.DBHost, config.DBPort, config.DBUser, config.DBName, config.DBPassword)
