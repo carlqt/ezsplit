@@ -79,6 +79,25 @@ You can access the graphql playground by going to `localhost:7777` in your brows
 
 `Postman` is also another tool you can use which will give you more features than the in-built playground. For a smoother experience, prefer using Postman but if you don't want to download another app, then the playground is always available.
 
+## Setting up data
+
+Right now, it's done manually so you have to create all the records that you need in development.
+
+Here's how to set it up with the help of postman, in this example I'm using `Postman Lite` since I'm not signed-in:
+- Click `new` in postman's sidebar and select `Graphql`
+
+![Alt text](images/readme/image.png)
+- Enter the url. By default, it's `localhost:7777/query`
+- Click `Query` button. This will activate Postman's graphql introspect and when it's successful, you'll see the query tabs gets populated.
+- From the mutation section, select `createUser`. Enter a username in the input, make sure that `accessToken` is checked then click `Query`. When successful, this will create a user in the database that you can use.
+
+![alt](images/readme/create.png)
+- Take note of the `accessToken` in the response. Copy it and navigate to `Authorization` tab of postman. Select `Bearer Token` in type and paste the token in the `Token` field.
+
+![Alt text](images/readme/token.png)
+
+- You should now be able to use the other available queries and mutations
+
 ## Unit and Integration tests
 
 [Coming Soon]
