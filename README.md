@@ -50,3 +50,35 @@ To see more available commands, you can run:
 task list
 ```
 Or checkout `Taskfile.yml`
+
+## Navigating the codebase
+
+The entrypoint is found in `cmd/ezsplit/main.go`. This convention allows us to generate multiple `main packages` that we can use for creating simple scripts.
+
+The `graph` directory contains the graphql logic. It contains the graphql schema and generated codes by `gqlgen`. If you're unfamiliar with the tool, it's highly recommended to read https://www.apollographql.com/blog/using-graphql-with-golang.
+
+The `internal` directory structure is as follows:
+```
+├── internal
+│   ├── auth            - A package that contains the auth logic. We're using JWT for auth.
+│   │   └── auth.go
+│   ├── repository       - A package for accessing the database
+│   │   └── receipt_repository.go
+│   │   └── user_repository.go
+│   ├── app.go         - Instantiates the app with dependencies using depency injection pattern 
+│   ├── config.go      - Contains env variables needed to run the app. Values are found in .env file
+```
+
+# Testing
+
+## Interacting with the server
+
+You can access the graphql playground by going to `localhost:7777` in your browser. This will let you interact with the graphql server and lets you create/update and fetch records from the database.
+
+![](images/readme/playground.png)
+
+`Postman` is also another tool you can use which will give you more features than the in-built playground. For a smoother experience, prefer using Postman but if you don't want to download another app, then the playground is always available.
+
+## Unit and Integration tests
+
+[Coming Soon]
