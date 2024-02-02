@@ -82,3 +82,7 @@ You can access the graphql playground by going to `localhost:7777` in your brows
 ## Unit and Integration tests
 
 [Coming Soon]
+
+# Contributing Guidelines
+
+[Contributing Guidelines](./CONTRIBUTING.md)
