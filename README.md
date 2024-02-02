@@ -8,7 +8,15 @@ The goal of this app is to move the responsibility of tracking payments to your 
 
 # Roadmap
 
-# Installation
+# Requirements
 
 - [Docker](https://docs.docker.com/engine/install/)
 - [Task](https://taskfile.dev/installation/)
+
+# Running the server
+
+Once Docker and Task are successfully installed, running the server is as easy as just running the command:
+
+```
+task up
+```
