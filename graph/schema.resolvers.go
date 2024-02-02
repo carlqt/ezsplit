@@ -77,6 +77,10 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 
 // AssignUserToItem is the resolver for the assignUserToItem field.
 func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error) {
+	// TODO: Implement this method
+	// As a signed in user, I can assign myself to an item in a receipt - assignMeToItem
+	// As a receipt owner, I can assign any user to an item in a receipt - assignUserToItem
+
 	panic(fmt.Errorf("not implemented: AssignUserToItem - assignUserToItem"))
 }
 
