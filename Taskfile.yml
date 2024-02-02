@@ -44,7 +44,7 @@ tasks:
   ping:
     desc: Pings the application
     cmds:
-      - curl http://localhost:7777/ping
+      - curl http://localhost:$PORT/ping
 
   db:seed:run:
     desc: Initialize database with data
