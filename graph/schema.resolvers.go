@@ -49,14 +49,16 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
-	receiptID, err := strconv.Atoi(input.ReceiptID)
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
 	}
 
-	// Initialize repository struct using the input
 	item := repository.Item{
-		ReceiptID: receiptID,
+		ReceiptID: input.ReceiptID,
 		Name:      input.Name,
 		Price:     int(*input.Price * 100),
 	}
@@ -104,6 +106,14 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 // GetReceipts is the resolver for the getReceipts field.
 func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, error) {
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
+
 	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
 	if err != nil {
 		return nil, err
@@ -134,8 +144,6 @@ func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, err
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	bearerToken := ctx.Value(auth.TokenKey).(string)
 
-	// Validate token
-	// If not valid - return error
 	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
@@ -169,7 +177,7 @@ func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.
 
 	user, err := r.Repositories.UserRepository.FindByID(userId)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return nil, err
 	}
 
@@ -177,6 +185,27 @@ func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.
 		ID:       user.ID,
 		Username: user.Username,
 	}, nil
+}
+
+// Items is the resolver for the items field.
+func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*model.Item, error) {
+	items, err := r.Repositories.ItemRepository.SelectAllForReceipt(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var modelItems []*model.Item
+	for _, item := range items {
+		price := float64(item.Price) / 100
+		modelItem := &model.Item{
+			ID:    item.ID,
+			Name:  item.Name,
+			Price: &price,
+		}
+		modelItems = append(modelItems, modelItem)
+	}
+
+	return modelItems, nil
 }
 
 // Mutation returns MutationResolver implementation.

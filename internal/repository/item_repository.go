@@ -13,7 +13,7 @@ type Item struct {
 	ID        string    `db:"id"`
 	Name      string    `db:"name"`
 	Price     int       `db:"price"`
-	ReceiptID int       `db:"receipt_id"`
+	ReceiptID string    `db:"receipt_id"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
@@ -23,4 +23,24 @@ func (i *ItemRepository) Create(item *Item) error {
 		return err
 	}
 	return nil
+}
+
+func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]*Item, error) {
+	rows, err := i.DB.Query("SELECT id, name, price, created_at FROM items WHERE receipt_id = $1", receiptID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []*Item
+	for rows.Next() {
+		item := &Item{}
+		err := rows.Scan(&item.ID, &item.Name, &item.Price, &item.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
 }

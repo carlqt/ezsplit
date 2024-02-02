@@ -25,6 +25,7 @@ tasks:
       - docker compose run --rm dev-cli go run github.com/99designs/gqlgen generate
 
   logs:
+    desc: Tails the logs of the application
     cmds:
       - docker compose logs -f
 
@@ -32,3 +33,8 @@ tasks:
     desc: Acts as a proxy for `docker compose` command
     cmds:
       - docker compose {{.CLI_ARGS}}
+
+  list:
+    desc: Lists all available tasks
+    cmds:
+      - task --list-all
