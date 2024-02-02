@@ -45,3 +45,8 @@ tasks:
     desc: Pings the application
     cmds:
       - curl http://localhost:7777/ping
+
+  apply:db:seed:
+    desc: Initialize database with data
+    cmds:
+      - docker compose run --rm dev-cli go run cmd/seed/main.go
