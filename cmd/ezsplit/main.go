@@ -13,6 +13,10 @@ import (
 
 const defaultPort = "8080"
 
+func pong(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("pong"))
+}
+
 func main() {
 	app := internal.NewApp()
 
@@ -32,9 +36,8 @@ func main() {
 	// TODO: Remove the playground handler in production.
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 
-	// http.Handle("/query", handlers.CombinedLoggingHandler(os.Stdout, srv))
-
 	http.Handle("/query", auth.BearerTokenMiddleware(srv))
+	http.Handle("/ping", http.HandlerFunc(pong))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

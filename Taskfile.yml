@@ -7,8 +7,9 @@ env:
 
 tasks:
   apply:db:schema:
+    desc: Applies schema to the database which will take care of creating the tables
     cmds:
-      - docker compose exec web atlas schema apply --env local
+      - docker compose run --rm dev-cli atlas schema apply --env local
   
   down:
     cmds:
@@ -21,6 +22,7 @@ tasks:
       - docker compose watch
   
   generate:graphql:schema:
+    desc: Generate graphql schema
     cmds:
       - docker compose run --rm dev-cli go run github.com/99designs/gqlgen generate
 
@@ -38,3 +40,8 @@ tasks:
     desc: Lists all available tasks
     cmds:
       - task --list-all
+
+  ping:
+    desc: Pings the application
+    cmds:
+      - curl http://localhost:7777/ping
