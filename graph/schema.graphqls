@@ -48,10 +48,15 @@ input AssignUserToItemInput {
   userId: ID!
 }
 
+input AssignMeToItemInput {
+  itemId: ID!
+}
+
 type Mutation {
   createReceipt(input: ReceiptInput): Receipt!
   addItemToReceipt(input: AddItemToReceiptInput): Item!
   assignUserToItem(input: AssignUserToItemInput): Item!
+  assignMeToItem(input: AssignMeToItemInput): Item!
 
   createUser(input: UserInput): UserWithJwt!
 }
