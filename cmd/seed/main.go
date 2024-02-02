@@ -83,6 +83,6 @@ func createItems(repo *repository.ItemRepository, receiptID string) error {
 		}
 	}
 
-	slog.Info("Items created", "receiptID", receiptID)
+	slog.Info("Items created")
 	return nil
 }
