@@ -10,6 +10,15 @@ The goal of this app is to move the responsibility of tracking payments to your 
 [Coming Soon]
 
 # Getting Started
+## Introduction
+
+The backend uses `Go` version 1.21.6. It's not required to download the Go runtime since the project uses docker but you're free to do so if it helps with productivity.
+
+The project uses Graphql for the API. To learn more about the concept, visit https://graphql.org/.
+
+The project uses the gqlgen to help with organizing the queries/mutations and generating the graphql schema. Please check out the library to learn more about the tool's style and convention at https://gqlgen.com/getting-started/
+
+
 ## Requirements
 
 - [Docker](https://docs.docker.com/engine/install/)
@@ -34,7 +43,9 @@ task apply:db:schema
 
 This project uses atlasgo tool to implement a declarative style of db management as opposed to the common versioned style. Read https://atlasgo.io/concepts/declarative-vs-versioned to learn more.
 
-To see more available commands, run:
+To view the database, the project ships with `pgweb` client which is found on `localhost:8082`
+
+To see more available commands, you can run:
 ```
 task list
 ```
