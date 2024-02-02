@@ -22,10 +22,20 @@ If Docker and Task are installed, you can start the server using the command
 ```
 task up
 ```
+Verify if the server running:
+```
+task ping
+```
 
-Once the server is running, you need to apply the database schema. Applying the schema will create all the necessary tables needed for development:
+After verifying that the server is running, you need to apply the database schema. Applying the schema will create all the necessary tables needed for development:
 ```
 task apply:db:schema
 ```
 
 This project uses atlasgo tool to implement a declarative style of db management as opposed to the common versioned style. Read https://atlasgo.io/concepts/declarative-vs-versioned to learn more.
+
+To see more available commands, run:
+```
+task list
+```
+Or checkout `Taskfile.yml`
