@@ -11,10 +11,6 @@ import (
 func main() {
 	app := internal.NewApp()
 
-	// create user
-	// create receipt
-	// create item
-
 	userID, err := createUser(app.Repositories.UserRepository, app.Config.JWTSecret)
 	if err != nil {
 		return

@@ -38,7 +38,7 @@ task ping
 
 After verifying that the server is running, you need to apply the database schema. Applying the schema will create all the necessary tables needed for development:
 ```
-task apply:db:schema
+task db:schema:apply
 ```
 
 This project uses atlasgo tool to implement a declarative style of db management as opposed to the common versioned style. Read https://atlasgo.io/concepts/declarative-vs-versioned to learn more.
@@ -81,12 +81,23 @@ You can access the graphql playground by going to `localhost:7777` in your brows
 
 ## Setting up data
 
+### Seed command
+
+```
+task seed:db:run
+```
+This will create a `User`, `Receipt created by the user` and a single `Item` on the receipt.
+
+Running this command will output the `accessToken` you can use for graphql requests
+
+### Manual
+
 Right now, it's done manually so you have to create all the records that you need in development.
 
 Here's how to set it up with the help of postman, in this example I'm using `Postman Lite` since I'm not signed-in:
 - Click `new` in postman's sidebar and select `Graphql`
 
-![Alt text](images/readme/image.png)
+![Alt text](images/readme/new_gql.png)
 - Enter the url. By default, it's `localhost:7777/query`
 - Click `Query` button. This will activate Postman's graphql introspect and when it's successful, you'll see the query tabs gets populated.
 - From the mutation section, select `createUser`. Enter a username in the input, make sure that `accessToken` is checked then click `Query`. When successful, this will create a user in the database that you can use.
