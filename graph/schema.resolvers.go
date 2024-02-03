@@ -77,15 +77,23 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 
 // AssignUserToItem is the resolver for the assignUserToItem field.
 func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error) {
-	// TODO: Implement this method
-	// As a signed in user, I can assign myself to an item in a receipt - assignMeToItem
-	// User vali
-
 	panic(fmt.Errorf("not implemented: AssignUserToItem - assignUserToItem"))
 }
 
 // AssignMeToItem is the resolver for the assignMeToItem field.
 func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignMeToItemInput) (*model.Item, error) {
+	// TODO: Implement this method
+	// As a signed in user, I can assign myself to an item in a receipt - assignMeToItem
+	// User validation
+
+	// bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	// userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, errors.New("unauthorized access")
+	// }
+
 	panic(fmt.Errorf("not implemented: AssignMeToItem - assignMeToItem"))
 }
 
