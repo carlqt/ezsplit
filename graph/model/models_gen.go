@@ -8,9 +8,18 @@ type AddItemToReceiptInput struct {
 	Price     *float64 `json:"price,omitempty"`
 }
 
+type AssignOrDeleteMeToItemInput struct {
+	ItemID string `json:"itemId"`
+}
+
 type AssignUserToItemInput struct {
 	ItemID string `json:"itemId"`
 	UserID string `json:"userId"`
+}
+
+type DeleteItemPayload struct {
+	Msg string `json:"msg"`
+	ID  string `json:"id"`
 }
 
 type Item struct {

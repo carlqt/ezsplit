@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log/slog"
 	"time"
 )
 
@@ -43,4 +44,14 @@ func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]*Item, error) 
 	}
 
 	return items, nil
+}
+
+func (i *ItemRepository) FindByID(id string) (*Item, error) {
+	item := &Item{}
+	err := i.DB.QueryRow("SELECT id, name, price, receipt_id, created_at FROM items WHERE id = $1", id).Scan(&item.ID, &item.Name, &item.Price, &item.ReceiptID, &item.CreatedAt)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+	return item, nil
 }

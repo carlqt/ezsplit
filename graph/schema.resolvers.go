@@ -80,6 +80,59 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 	panic(fmt.Errorf("not implemented: AssignUserToItem - assignUserToItem"))
 }
 
+// AssignMeToItem is the resolver for the assignMeToItem field.
+func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error) {
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
+
+	// Create a New UserOrder using ItemID and userID
+	// Need to return an item or user object?
+	err = r.Repositories.UserOrdersRepository.Create(userClaim.ID, input.ItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	// fetch item by ID
+	item, err := r.Repositories.ItemRepository.FindByID(input.ItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	priceItem := float64(item.Price) / 100
+	return &model.Item{
+		ID:    item.ID,
+		Name:  item.Name,
+		Price: &priceItem,
+	}, nil
+}
+
+// RemoveMeToItem is the resolver for the removeMeToItem field.
+func (r *mutationResolver) RemoveMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error) {
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
+
+	err = r.Repositories.UserOrdersRepository.Delete(userClaim.ID, input.ItemID)
+	if err != nil {
+		return nil, errors.New("failed to unassign user")
+	}
+
+	// fetch item by ID
+	return &model.DeleteItemPayload{
+		ID:  input.ItemID,
+		Msg: "Item removed",
+	}, nil
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
 	user, err := r.Repositories.UserRepository.Create(input.Username)

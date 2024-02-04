@@ -49,7 +49,7 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 	receipt := repository.Receipt{
 		UserID:      userID,
 		Description: "Jollibee",
-		Total:       40.00,
+		Total:       4000,
 	}
 
 	err := repo.Create(&receipt)
@@ -67,7 +67,7 @@ func createItems(repo *repository.ItemRepository, receiptID string) error {
 		{
 			ReceiptID: receiptID,
 			Name:      "Chickenjoy",
-			Price:     40.00,
+			Price:     4000,
 		},
 	}
 

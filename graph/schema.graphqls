@@ -28,6 +28,11 @@ type Item {
   sharedBy: [User]!
 }
 
+type DeleteItemPayload {
+  msg: String!
+  id: ID!
+}
+
 input ReceiptInput {
   description: String!
   price: Float
@@ -48,10 +53,16 @@ input AssignUserToItemInput {
   userId: ID!
 }
 
+input AssignOrDeleteMeToItemInput {
+  itemId: ID!
+}
+
 type Mutation {
   createReceipt(input: ReceiptInput): Receipt!
   addItemToReceipt(input: AddItemToReceiptInput): Item!
   assignUserToItem(input: AssignUserToItemInput): Item!
+  assignMeToItem(input: AssignOrDeleteMeToItemInput): Item!
+  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload!
 
   createUser(input: UserInput): UserWithJwt!
 }
