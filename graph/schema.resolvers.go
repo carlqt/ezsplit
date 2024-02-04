@@ -17,13 +17,7 @@ import (
 
 // CreateReceipt is the resolver for the createReceipt field.
 func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	receipt := &repository.Receipt{
 		Total:       int(*input.Price * 100),
@@ -31,7 +25,7 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 		UserID:      userClaim.ID,
 	}
 
-	err = r.Repositories.ReceiptRepository.CreateForUser(receipt)
+	err := r.Repositories.ReceiptRepository.CreateForUser(receipt)
 	if err != nil {
 		return nil, err
 	}
@@ -48,21 +42,13 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
-
 	item := repository.Item{
 		ReceiptID: input.ReceiptID,
 		Name:      input.Name,
 		Price:     int(*input.Price * 100),
 	}
 
-	err = r.Repositories.ItemRepository.Create(&item)
+	err := r.Repositories.ItemRepository.Create(&item)
 	if err != nil {
 		return nil, err
 	}
@@ -81,17 +67,11 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 
 // AssignMeToItem is the resolver for the assignMeToItem field.
 func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	// Create a New UserOrder using ItemID and userID
 	// Need to return an item or user object?
-	err = r.Repositories.UserOrdersRepository.Create(userClaim.ID, input.ItemID)
+	err := r.Repositories.UserOrdersRepository.Create(userClaim.ID, input.ItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -112,15 +92,9 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 
 // RemoveMeToItem is the resolver for the removeMeToItem field.
 func (r *mutationResolver) RemoveMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
-	userClaim, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
-
-	err = r.Repositories.UserOrdersRepository.Delete(userClaim.ID, input.ItemID)
+	err := r.Repositories.UserOrdersRepository.Delete(userClaim.ID, input.ItemID)
 	if err != nil {
 		return nil, errors.New("failed to unassign user")
 	}
@@ -158,14 +132,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 // GetReceipts is the resolver for the getReceipts field.
 func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
-
 	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
 	if err != nil {
 		return nil, err
@@ -194,14 +160,6 @@ func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, err
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	_, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
-
 	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {
 		return nil, err
@@ -221,13 +179,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 // Me is the resolver for the Me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	bearerToken := ctx.Value(auth.TokenKey).(string)
-
-	claims, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
-	if err != nil {
-		log.Println(err)
-		return nil, errors.New("unauthorized access")
-	}
+	claims := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
 	if err != nil {

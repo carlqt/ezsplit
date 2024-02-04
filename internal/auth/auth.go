@@ -11,7 +11,10 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-const TokenKey = "Token"
+type AuthKey string
+
+const TokenKey AuthKey = "Token"
+const UserClaimKey AuthKey = "UserClaim"
 
 type UserClaim struct {
 	jwt.RegisteredClaims

@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
+	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 )
@@ -25,7 +29,24 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}))
+	c := graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}
+	c.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (interface{}, error) {
+		if role == model.RoleAuthenticatedUser {
+			bearerToken := ctx.Value(auth.TokenKey).(string)
+
+			claims, err := auth.ValidateBearerToken(bearerToken, app.Config.JWTSecret)
+			if err != nil {
+				log.Println(err)
+				return nil, errors.New("graphql auth halt")
+			}
+
+			ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
+		}
+
+		return next(ctx)
+	}
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 
 	// srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 	// 	oc := graphql.GetOperationContext(ctx)
