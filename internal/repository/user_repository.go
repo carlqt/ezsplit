@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log/slog"
 	"time"
 )
 
@@ -25,10 +26,11 @@ func (r *UserRepository) Create(username string) (User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) FindByID(id int) (*User, error) {
+func (r *UserRepository) FindByID(id string) (*User, error) {
 	user := &User{}
 	err := r.DB.QueryRow("SELECT id, username FROM users WHERE id = $1", id).Scan(&user.ID, &user.Username)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 	return user, nil

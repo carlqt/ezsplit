@@ -7,6 +7,12 @@ type User {
   username: String!
 }
 
+# Gets the current user
+type Me {
+  id: ID!
+  username: String!
+} 
+
 type Receipt {
   id: ID!
   user: User
@@ -71,4 +77,5 @@ type Query {
   getReceipts: [Receipt]!
   getReceiptById: Receipt!
   users: [User]!
+  Me: User!
 }

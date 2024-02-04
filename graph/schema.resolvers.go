@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/auth"
@@ -220,15 +219,30 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return modelUsers, nil
 }
 
-// User is the resolver for the user field.
-func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
-	userId, err := strconv.Atoi(obj.UserID)
+// Me is the resolver for the Me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	bearerToken := ctx.Value(auth.TokenKey).(string)
+
+	claims, err := auth.ValidateBearerToken(bearerToken, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
+		return nil, errors.New("unauthorized access")
+	}
+
+	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
+	if err != nil {
 		return nil, err
 	}
 
-	user, err := r.Repositories.UserRepository.FindByID(userId)
+	return &model.User{
+		ID:       user.ID,
+		Username: user.Username,
+	}, nil
+}
+
+// User is the resolver for the user field.
+func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
+	user, err := r.Repositories.UserRepository.FindByID(obj.UserID)
 	if err != nil {
 		// log.Println(err)
 		return nil, err

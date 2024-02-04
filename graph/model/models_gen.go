@@ -29,6 +29,11 @@ type Item struct {
 	SharedBy []*User  `json:"sharedBy"`
 }
 
+type Me struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
+
 type Mutation struct {
 }
 
