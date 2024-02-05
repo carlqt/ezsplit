@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
-	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 )
@@ -30,18 +30,16 @@ func main() {
 	}
 
 	c := graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}
-	c.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (interface{}, error) {
-		if role == model.RoleAuthenticatedUser {
-			bearerToken := ctx.Value(auth.TokenKey).(string)
+	c.Directives.Authenticated = func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
+		bearerToken := ctx.Value(auth.TokenKey).(string)
 
-			claims, err := auth.ValidateBearerToken(bearerToken, app.Config.JWTSecret)
-			if err != nil {
-				log.Println(err)
-				return nil, errors.New("unauthorized access")
-			}
-
-			ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
+		claims, err := auth.ValidateBearerToken(bearerToken, app.Config.JWTSecret)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, errors.New("unauthorized access")
 		}
+
+		ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
 
 		return next(ctx)
 	}

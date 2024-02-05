@@ -45,7 +45,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	HasRole func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (res interface{}, err error)
+	Authenticated func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -495,21 +495,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.Role
-	if tmp, ok := rawArgs["role"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-		arg0, err = ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["role"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_addItemToReceipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1027,14 +1012,10 @@ func (ec *executionContext) _Mutation_createReceipt(ctx context.Context, field g
 			return ec.resolvers.Mutation().CreateReceipt(rctx, fc.Args["input"].(*model.ReceiptInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1118,14 +1099,10 @@ func (ec *executionContext) _Mutation_addItemToReceipt(ctx context.Context, fiel
 			return ec.resolvers.Mutation().AddItemToReceipt(rctx, fc.Args["input"].(*model.AddItemToReceiptInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1207,14 +1184,10 @@ func (ec *executionContext) _Mutation_assignUserToItem(ctx context.Context, fiel
 			return ec.resolvers.Mutation().AssignUserToItem(rctx, fc.Args["input"].(*model.AssignUserToItemInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1296,14 +1269,10 @@ func (ec *executionContext) _Mutation_assignMeToItem(ctx context.Context, field 
 			return ec.resolvers.Mutation().AssignMeToItem(rctx, fc.Args["input"].(*model.AssignOrDeleteMeToItemInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1385,14 +1354,10 @@ func (ec *executionContext) _Mutation_removeMeToItem(ctx context.Context, field 
 			return ec.resolvers.Mutation().RemoveMeToItem(rctx, fc.Args["input"].(*model.AssignOrDeleteMeToItemInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1533,14 +1498,10 @@ func (ec *executionContext) _Query_getReceipts(ctx context.Context, field graphq
 			return ec.resolvers.Query().GetReceipts(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1669,14 +1630,10 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 			return ec.resolvers.Query().Users(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -1743,14 +1700,10 @@ func (ec *executionContext) _Query_Me(ctx context.Context, field graphql.Collect
 			return ec.resolvers.Query().Me(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx, "AUTHENTICATED_USER")
-			if err != nil {
-				return nil, err
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
 			}
-			if ec.directives.HasRole == nil {
-				return nil, errors.New("directive hasRole is not implemented")
-			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.Authenticated(ctx, nil, directive0)
 		}
 
 		tmp, err := directive1(rctx)
@@ -5363,16 +5316,6 @@ func (ec *executionContext) marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplit�
 		return graphql.Null
 	}
 	return ec._Receipt(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
-	var res model.Role
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRole2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
-	return v
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

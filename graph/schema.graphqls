@@ -2,13 +2,7 @@
 #
 # https://gqlgen.com/getting-started/
 
-directive @hasRole(role: Role!) on FIELD_DEFINITION
-
-enum Role {
-  RECEIPT_OWNER
-  AUTHENTICATED_USER
-  USER
-}
+directive @authenticated repeatable on OBJECT | FIELD_DEFINITION
 
 type User {
   id: ID!
@@ -74,18 +68,18 @@ input AssignOrDeleteMeToItemInput {
 }
 
 type Mutation {
-  createReceipt(input: ReceiptInput): Receipt! @hasRole(role: AUTHENTICATED_USER)
-  addItemToReceipt(input: AddItemToReceiptInput): Item! @hasRole(role: AUTHENTICATED_USER)
-  assignUserToItem(input: AssignUserToItemInput): Item! @hasRole(role: AUTHENTICATED_USER)
-  assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @hasRole(role: AUTHENTICATED_USER)
-  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @hasRole(role: AUTHENTICATED_USER)
+  createReceipt(input: ReceiptInput): Receipt! @authenticated
+  addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
+  assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
+  assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
+  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
 }
 
 type Query {
-  getReceipts: [Receipt]! @hasRole(role: AUTHENTICATED_USER)
+  getReceipts: [Receipt]! @authenticated
   getReceiptById: Receipt!
-  users: [User]! @hasRole(role: AUTHENTICATED_USER)
-  Me: User! @hasRole(role: AUTHENTICATED_USER)
+  users: [User]! @authenticated
+  Me: User! @authenticated
 }
