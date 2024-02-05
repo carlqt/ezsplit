@@ -149,8 +149,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}, nil
 }
 
-// GetReceipts is the resolver for the getReceipts field.
-func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, error) {
+// Receipts is the resolver for the receipts field.
+func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) {
 	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
 	if err != nil {
 		return nil, err
@@ -172,8 +172,8 @@ func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, erro
 	return modelReceipts, nil
 }
 
-// GetReceiptByID is the resolver for the getReceiptById field.
-func (r *queryResolver) GetReceiptByID(ctx context.Context, id string) (*model.Receipt, error) {
+// Receipt is the resolver for the receipt field.
+func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt, error) {
 	receipt, err := r.Repositories.ReceiptRepository.FindByID(id)
 	if err != nil {
 		return nil, err

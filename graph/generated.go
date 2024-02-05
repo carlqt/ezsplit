@@ -77,10 +77,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetReceiptByID func(childComplexity int, id string) int
-		GetReceipts    func(childComplexity int) int
-		Me             func(childComplexity int) int
-		Users          func(childComplexity int) int
+		Me       func(childComplexity int) int
+		Receipt  func(childComplexity int, id string) int
+		Receipts func(childComplexity int) int
+		Users    func(childComplexity int) int
 	}
 
 	Receipt struct {
@@ -115,8 +115,8 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
 }
 type QueryResolver interface {
-	GetReceipts(ctx context.Context) ([]*model.Receipt, error)
-	GetReceiptByID(ctx context.Context, id string) (*model.Receipt, error)
+	Receipts(ctx context.Context) ([]*model.Receipt, error)
+	Receipt(ctx context.Context, id string) (*model.Receipt, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	Me(ctx context.Context) (*model.User, error)
 }
@@ -273,31 +273,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RemoveMeToItem(childComplexity, args["input"].(*model.AssignOrDeleteMeToItemInput)), true
 
-	case "Query.getReceiptById":
-		if e.complexity.Query.GetReceiptByID == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getReceiptById_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetReceiptByID(childComplexity, args["id"].(string)), true
-
-	case "Query.getReceipts":
-		if e.complexity.Query.GetReceipts == nil {
-			break
-		}
-
-		return e.complexity.Query.GetReceipts(childComplexity), true
-
-	case "Query.Me":
+	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
+
+	case "Query.receipt":
+		if e.complexity.Query.Receipt == nil {
+			break
+		}
+
+		args, err := ec.field_Query_receipt_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Receipt(childComplexity, args["id"].(string)), true
+
+	case "Query.receipts":
+		if e.complexity.Query.Receipts == nil {
+			break
+		}
+
+		return e.complexity.Query.Receipts(childComplexity), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -610,7 +610,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getReceiptById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_receipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1504,8 +1504,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getReceipts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getReceipts(ctx, field)
+func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receipts(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1519,7 +1519,7 @@ func (ec *executionContext) _Query_getReceipts(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().GetReceipts(rctx)
+			return ec.resolvers.Query().Receipts(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -1555,7 +1555,7 @@ func (ec *executionContext) _Query_getReceipts(ctx context.Context, field graphq
 	return ec.marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getReceipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_receipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1580,8 +1580,8 @@ func (ec *executionContext) fieldContext_Query_getReceipts(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getReceiptById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getReceiptById(ctx, field)
+func (ec *executionContext) _Query_receipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receipt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1594,7 +1594,7 @@ func (ec *executionContext) _Query_getReceiptById(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReceiptByID(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().Receipt(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1611,7 +1611,7 @@ func (ec *executionContext) _Query_getReceiptById(ctx context.Context, field gra
 	return ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getReceiptById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_receipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1640,7 +1640,7 @@ func (ec *executionContext) fieldContext_Query_getReceiptById(ctx context.Contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getReceiptById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_receipt_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1717,8 +1717,8 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_Me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_Me(ctx, field)
+func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_me(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1768,7 +1768,7 @@ func (ec *executionContext) _Query_Me(ctx context.Context, field graphql.Collect
 	return ec.marshalNUser2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_Me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -4583,7 +4583,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getReceipts":
+		case "receipts":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4592,7 +4592,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getReceipts(ctx, field)
+				res = ec._Query_receipts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4605,7 +4605,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getReceiptById":
+		case "receipt":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4614,7 +4614,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getReceiptById(ctx, field)
+				res = ec._Query_receipt(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4649,7 +4649,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "Me":
+		case "me":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4658,7 +4658,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_Me(ctx, field)
+				res = ec._Query_me(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
