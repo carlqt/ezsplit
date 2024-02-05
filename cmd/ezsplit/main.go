@@ -1,16 +1,13 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"log"
-	"log/slog"
 	"net/http"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
+	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 )
@@ -30,19 +27,7 @@ func main() {
 	}
 
 	c := graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}
-	c.Directives.Authenticated = func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
-		bearerToken := ctx.Value(auth.TokenKey).(string)
-
-		claims, err := auth.ValidateBearerToken(bearerToken, app.Config.JWTSecret)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, errors.New("unauthorized access")
-		}
-
-		ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
-
-		return next(ctx)
-	}
+	c.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 
