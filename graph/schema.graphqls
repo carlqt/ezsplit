@@ -36,8 +36,6 @@ type Item {
   sharedBy: [User]!
 }
 
-# I think magandang tanong, anung advice ang mabibigay nyo sa mga taong papasok sa tech industry
-
 type DeleteItemPayload {
   msg: String!
   id: ID!
