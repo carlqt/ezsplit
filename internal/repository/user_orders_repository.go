@@ -50,6 +50,7 @@ func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, e
 
 	rows, err := r.DB.Query(query, itemID)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 	defer rows.Close()

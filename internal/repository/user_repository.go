@@ -21,6 +21,7 @@ func (r *UserRepository) Create(username string) (User, error) {
 
 	err := r.DB.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
 	if err != nil {
+		slog.Error(err.Error())
 		return user, err
 	}
 	return user, nil
@@ -39,6 +40,7 @@ func (r *UserRepository) FindByID(id string) (*User, error) {
 func (r *UserRepository) GetAllUsers() ([]*User, error) {
 	rows, err := r.DB.Query("SELECT id, username FROM users")
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -48,6 +50,7 @@ func (r *UserRepository) GetAllUsers() ([]*User, error) {
 		user := &User{}
 		err := rows.Scan(&user.ID, &user.Username)
 		if err != nil {
+			slog.Error(err.Error())
 			return nil, err
 		}
 		users = append(users, user)

@@ -21,6 +21,7 @@ type Receipt struct {
 func (r *ReceiptRepository) Create(receipt *Receipt) error {
 	err := r.DB.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
 	if err != nil {
+		slog.Error(err.Error())
 		return err
 	}
 	return nil
@@ -29,6 +30,7 @@ func (r *ReceiptRepository) Create(receipt *Receipt) error {
 func (r *ReceiptRepository) CreateForUser(receipt *Receipt) error {
 	err := r.DB.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
 	if err != nil {
+		slog.Error(err.Error())
 		return err
 	}
 	return nil
@@ -46,6 +48,7 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 		receipt := &Receipt{}
 		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
 		if err != nil {
+			slog.Error(err.Error())
 			return nil, err
 		}
 		receipts = append(receipts, receipt)
@@ -57,6 +60,7 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 func (r *ReceiptRepository) SelectForUser(userID int) ([]*Receipt, error) {
 	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", userID)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 	defer rows.Close()
