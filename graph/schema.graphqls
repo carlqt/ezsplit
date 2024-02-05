@@ -2,6 +2,8 @@
 #
 # https://gqlgen.com/getting-started/
 
+directive @authenticated repeatable on OBJECT | FIELD_DEFINITION
+
 type User {
   id: ID!
   username: String!
@@ -34,6 +36,8 @@ type Item {
   sharedBy: [User]!
 }
 
+# I think magandang tanong, anung advice ang mabibigay nyo sa mga taong papasok sa tech industry
+
 type DeleteItemPayload {
   msg: String!
   id: ID!
@@ -64,18 +68,18 @@ input AssignOrDeleteMeToItemInput {
 }
 
 type Mutation {
-  createReceipt(input: ReceiptInput): Receipt!
-  addItemToReceipt(input: AddItemToReceiptInput): Item!
-  assignUserToItem(input: AssignUserToItemInput): Item!
-  assignMeToItem(input: AssignOrDeleteMeToItemInput): Item!
-  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload!
+  createReceipt(input: ReceiptInput): Receipt! @authenticated
+  addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
+  assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
+  assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
+  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
 }
 
 type Query {
-  getReceipts: [Receipt]!
+  getReceipts: [Receipt]! @authenticated
   getReceiptById: Receipt!
-  users: [User]!
-  Me: User!
+  users: [User]! @authenticated
+  Me: User! @authenticated
 }

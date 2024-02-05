@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
+	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 )
@@ -25,7 +26,10 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}))
+	c := graph.Config{Resolvers: &graph.Resolver{Repositories: app.Repositories, Config: app.Config}}
+	c.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 
 	// srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 	// 	oc := graphql.GetOperationContext(ctx)
