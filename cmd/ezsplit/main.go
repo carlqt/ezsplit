@@ -37,7 +37,7 @@ func main() {
 			claims, err := auth.ValidateBearerToken(bearerToken, app.Config.JWTSecret)
 			if err != nil {
 				log.Println(err)
-				return nil, errors.New("graphql auth halt")
+				return nil, errors.New("unauthorized access")
 			}
 
 			ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
