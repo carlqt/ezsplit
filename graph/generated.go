@@ -39,6 +39,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Item() ItemResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Receipt() ReceiptResolver
@@ -76,7 +77,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetReceiptByID func(childComplexity int) int
+		GetReceiptByID func(childComplexity int, id string) int
 		GetReceipts    func(childComplexity int) int
 		Me             func(childComplexity int) int
 		Users          func(childComplexity int) int
@@ -102,6 +103,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type ItemResolver interface {
+	SharedBy(ctx context.Context, obj *model.Item) ([]*model.User, error)
+}
 type MutationResolver interface {
 	CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
 	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
@@ -112,7 +116,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetReceipts(ctx context.Context) ([]*model.Receipt, error)
-	GetReceiptByID(ctx context.Context) (*model.Receipt, error)
+	GetReceiptByID(ctx context.Context, id string) (*model.Receipt, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	Me(ctx context.Context) (*model.User, error)
 }
@@ -274,7 +278,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.GetReceiptByID(childComplexity), true
+		args, err := ec.field_Query_getReceiptById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetReceiptByID(childComplexity, args["id"].(string)), true
 
 	case "Query.getReceipts":
 		if e.complexity.Query.GetReceipts == nil {
@@ -601,6 +610,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_getReceiptById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -870,7 +894,7 @@ func (ec *executionContext) _Item_sharedBy(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.SharedBy, nil
+		return ec.resolvers.Item().SharedBy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -891,8 +915,8 @@ func (ec *executionContext) fieldContext_Item_sharedBy(ctx context.Context, fiel
 	fc = &graphql.FieldContext{
 		Object:     "Item",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -1570,7 +1594,7 @@ func (ec *executionContext) _Query_getReceiptById(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReceiptByID(rctx)
+		return ec.resolvers.Query().GetReceiptByID(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1608,6 +1632,17 @@ func (ec *executionContext) fieldContext_Query_getReceiptById(ctx context.Contex
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getReceiptById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4333,20 +4368,51 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Item_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Item_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "price":
 			out.Values[i] = ec._Item_price(ctx, field, obj)
 		case "sharedBy":
-			out.Values[i] = ec._Item_sharedBy(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Item_sharedBy(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

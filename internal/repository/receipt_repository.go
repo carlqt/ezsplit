@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log/slog"
 	"time"
 )
 
@@ -65,10 +66,21 @@ func (r *ReceiptRepository) SelectForUser(userID int) ([]*Receipt, error) {
 		receipt := &Receipt{}
 		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
 		if err != nil {
+			slog.Error(err.Error())
 			return nil, err
 		}
 		receipts = append(receipts, receipt)
 	}
 
 	return receipts, nil
+}
+
+func (r *ReceiptRepository) FindByID(id string) (*Receipt, error) {
+	receipt := &Receipt{}
+	err := r.DB.QueryRow("SELECT id, total, description, created_at FROM receipts WHERE id = $1", id).Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+	return receipt, nil
 }

@@ -15,6 +15,25 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
+// SharedBy is the resolver for the sharedBy field.
+func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.User, error) {
+	users, err := r.Repositories.UserOrdersRepository.SelectAllUsersFromItem(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var modelUsers []*model.User
+	for _, user := range users {
+		modelUser := &model.User{
+			ID:       user.ID,
+			Username: user.Username,
+		}
+		modelUsers = append(modelUsers, modelUser)
+	}
+
+	return modelUsers, nil
+}
+
 // CreateReceipt is the resolver for the createReceipt field.
 func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
@@ -154,8 +173,20 @@ func (r *queryResolver) GetReceipts(ctx context.Context) ([]*model.Receipt, erro
 }
 
 // GetReceiptByID is the resolver for the getReceiptById field.
-func (r *queryResolver) GetReceiptByID(ctx context.Context) (*model.Receipt, error) {
-	panic(fmt.Errorf("not implemented: GetReceiptByID - getReceiptById"))
+func (r *queryResolver) GetReceiptByID(ctx context.Context, id string) (*model.Receipt, error) {
+	receipt, err := r.Repositories.ReceiptRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	total := float64(receipt.Total) / 100
+	modelReceipt := &model.Receipt{
+		ID:          receipt.ID,
+		Total:       &total,
+		Description: receipt.Description,
+	}
+
+	return modelReceipt, nil
 }
 
 // Users is the resolver for the users field.
@@ -227,6 +258,9 @@ func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*mod
 	return modelItems, nil
 }
 
+// Item returns ItemResolver implementation.
+func (r *Resolver) Item() ItemResolver { return &itemResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -236,6 +270,7 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 // Receipt returns ReceiptResolver implementation.
 func (r *Resolver) Receipt() ReceiptResolver { return &receiptResolver{r} }
 
+type itemResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type receiptResolver struct{ *Resolver }

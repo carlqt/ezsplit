@@ -92,3 +92,8 @@ models:
         resolver: true
       items:
         resolver: true
+  
+  Item:
+    fields:
+      sharedBy:
+        resolver: true

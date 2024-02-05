@@ -44,3 +44,26 @@ func (r *UserOrdersRepository) Delete(userID string, itemID string) error {
 
 	return err
 }
+
+func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, error) {
+	query := "select users.id, users.username from users inner join user_orders on users.id = user_orders.user_id where user_orders.item_id = $1"
+
+	rows, err := r.DB.Query(query, itemID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		user := &User{}
+		err := rows.Scan(&user.ID, &user.Username)
+		if err != nil {
+			slog.Error(err.Error())
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}

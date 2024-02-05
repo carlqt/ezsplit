@@ -22,13 +22,6 @@ type DeleteItemPayload struct {
 	ID  string `json:"id"`
 }
 
-type Item struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Price    *float64 `json:"price,omitempty"`
-	SharedBy []*User  `json:"sharedBy"`
-}
-
 type Me struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
