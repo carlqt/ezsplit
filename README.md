@@ -12,7 +12,7 @@ The goal of this app is to move the responsibility of tracking payments to your 
 # Getting Started
 ## Introduction
 
-The backend uses `Go` version 1.21.6. It's not required to download the Go runtime since the project uses docker but you're free to do so if it helps with productivity.
+The backend uses `Go` version `1.22.0`. It's not required to download the Go runtime since the project uses docker but you're free to do so if it helps with productivity.
 
 The project uses Graphql for the API. To learn more about the concept, visit https://graphql.org/.
 
