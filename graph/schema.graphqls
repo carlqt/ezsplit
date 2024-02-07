@@ -19,7 +19,7 @@ type Receipt {
   id: ID!
   user: User
   description: String!
-  total: Float
+  total: String
   items: [Item]!
 }
 
@@ -32,7 +32,7 @@ type UserWithJwt {
 type Item {
   id: ID!
   name: String!
-  price: Float
+  price: String!
   sharedBy: [User]!
 }
 
@@ -66,11 +66,11 @@ input AssignOrDeleteMeToItemInput {
 }
 
 type Mutation {
-  createReceipt(input: ReceiptInput): Receipt! @authenticated
+  createMyReceipt(input: ReceiptInput): Receipt! @authenticated
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
-  removeMeToItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
+  removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
 }

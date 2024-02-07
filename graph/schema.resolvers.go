@@ -24,22 +24,19 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := &model.User{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		modelUser := newModelUser(user)
 		modelUsers = append(modelUsers, modelUser)
 	}
 
 	return modelUsers, nil
 }
 
-// CreateReceipt is the resolver for the createReceipt field.
-func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
+// CreateMyReceipt is the resolver for the createMyReceipt field.
+func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	receipt := &repository.Receipt{
-		Total:       int(*input.Price * 100),
+		Total:       toPriceCents(*input.Price),
 		Description: input.Description,
 		UserID:      userClaim.ID,
 	}
@@ -49,22 +46,16 @@ func (r *mutationResolver) CreateReceipt(ctx context.Context, input *model.Recei
 		return nil, err
 	}
 
-	receiptResponse := &model.Receipt{
-		ID:          receipt.ID,
-		Total:       input.Price,
-		Description: input.Description,
-		UserID:      receipt.UserID,
-	}
-
-	return receiptResponse, nil
+	return newModelReceipt(receipt), nil
 }
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
+	price := toPriceCents(*input.Price)
 	item := repository.Item{
 		ReceiptID: input.ReceiptID,
 		Name:      input.Name,
-		Price:     int(*input.Price * 100),
+		Price:     price,
 	}
 
 	err := r.Repositories.ItemRepository.Create(&item)
@@ -75,7 +66,7 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 	return &model.Item{
 		ID:    item.ID,
 		Name:  item.Name,
-		Price: input.Price,
+		Price: toPriceDisplay(price),
 	}, nil
 }
 
@@ -101,16 +92,11 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 		return nil, err
 	}
 
-	priceItem := float64(item.Price) / 100
-	return &model.Item{
-		ID:    item.ID,
-		Name:  item.Name,
-		Price: &priceItem,
-	}, nil
+	return newModelItem(item), nil
 }
 
-// RemoveMeToItem is the resolver for the removeMeToItem field.
-func (r *mutationResolver) RemoveMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error) {
+// RemoveMeFromItem is the resolver for the removeMeFromItem field.
+func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error) {
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	err := r.Repositories.UserOrdersRepository.Delete(userClaim.ID, input.ItemID)
@@ -159,13 +145,7 @@ func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) 
 	var modelReceipts []*model.Receipt
 
 	for _, receipt := range receipts {
-		total := float64(receipt.Total) / 100
-
-		modelReceipt := &model.Receipt{
-			ID:          receipt.ID,
-			Total:       &total,
-			Description: receipt.Description,
-		}
+		modelReceipt := newModelReceipt(receipt)
 		modelReceipts = append(modelReceipts, modelReceipt)
 	}
 
@@ -179,14 +159,7 @@ func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt,
 		return nil, err
 	}
 
-	total := float64(receipt.Total) / 100
-	modelReceipt := &model.Receipt{
-		ID:          receipt.ID,
-		Total:       &total,
-		Description: receipt.Description,
-	}
-
-	return modelReceipt, nil
+	return newModelReceipt(receipt), nil
 }
 
 // Users is the resolver for the users field.
@@ -246,12 +219,7 @@ func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*mod
 
 	var modelItems []*model.Item
 	for _, item := range items {
-		price := float64(item.Price) / 100
-		modelItem := &model.Item{
-			ID:    item.ID,
-			Name:  item.Name,
-			Price: &price,
-		}
+		modelItem := newModelItem(item)
 		modelItems = append(modelItems, modelItem)
 	}
 
@@ -274,3 +242,13 @@ type itemResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type receiptResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *receiptResolver) Total(ctx context.Context, obj *model.Receipt) (*string, error) {
+	panic(fmt.Errorf("not implemented: Total - total"))
+}

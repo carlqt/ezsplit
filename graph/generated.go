@@ -71,9 +71,9 @@ type ComplexityRoot struct {
 		AddItemToReceipt func(childComplexity int, input *model.AddItemToReceiptInput) int
 		AssignMeToItem   func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 		AssignUserToItem func(childComplexity int, input *model.AssignUserToItemInput) int
-		CreateReceipt    func(childComplexity int, input *model.ReceiptInput) int
+		CreateMyReceipt  func(childComplexity int, input *model.ReceiptInput) int
 		CreateUser       func(childComplexity int, input *model.UserInput) int
-		RemoveMeToItem   func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
+		RemoveMeFromItem func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 	}
 
 	Query struct {
@@ -107,11 +107,11 @@ type ItemResolver interface {
 	SharedBy(ctx context.Context, obj *model.Item) ([]*model.User, error)
 }
 type MutationResolver interface {
-	CreateReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
+	CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
 	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
 	AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error)
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
-	RemoveMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
+	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
 }
 type QueryResolver interface {
@@ -237,17 +237,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AssignUserToItem(childComplexity, args["input"].(*model.AssignUserToItemInput)), true
 
-	case "Mutation.createReceipt":
-		if e.complexity.Mutation.CreateReceipt == nil {
+	case "Mutation.createMyReceipt":
+		if e.complexity.Mutation.CreateMyReceipt == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createReceipt_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_createMyReceipt_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateReceipt(childComplexity, args["input"].(*model.ReceiptInput)), true
+		return e.complexity.Mutation.CreateMyReceipt(childComplexity, args["input"].(*model.ReceiptInput)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -261,17 +261,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(*model.UserInput)), true
 
-	case "Mutation.removeMeToItem":
-		if e.complexity.Mutation.RemoveMeToItem == nil {
+	case "Mutation.removeMeFromItem":
+		if e.complexity.Mutation.RemoveMeFromItem == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_removeMeToItem_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_removeMeFromItem_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RemoveMeToItem(childComplexity, args["input"].(*model.AssignOrDeleteMeToItemInput)), true
+		return e.complexity.Mutation.RemoveMeFromItem(childComplexity, args["input"].(*model.AssignOrDeleteMeToItemInput)), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -550,7 +550,7 @@ func (ec *executionContext) field_Mutation_assignUserToItem_args(ctx context.Con
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createReceipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createMyReceipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *model.ReceiptInput
@@ -580,7 +580,7 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_removeMeToItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_removeMeFromItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *model.AssignOrDeleteMeToItemInput
@@ -860,11 +860,14 @@ func (ec *executionContext) _Item_price(ctx context.Context, field graphql.Colle
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Item_price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -874,7 +877,7 @@ func (ec *executionContext) fieldContext_Item_price(ctx context.Context, field g
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1018,8 +1021,8 @@ func (ec *executionContext) fieldContext_Me_username(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createReceipt(ctx, field)
+func (ec *executionContext) _Mutation_createMyReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createMyReceipt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1033,7 +1036,7 @@ func (ec *executionContext) _Mutation_createReceipt(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateReceipt(rctx, fc.Args["input"].(*model.ReceiptInput))
+			return ec.resolvers.Mutation().CreateMyReceipt(rctx, fc.Args["input"].(*model.ReceiptInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -1069,7 +1072,7 @@ func (ec *executionContext) _Mutation_createReceipt(ctx context.Context, field g
 	return ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createReceipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createMyReceipt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1098,7 +1101,7 @@ func (ec *executionContext) fieldContext_Mutation_createReceipt(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createReceipt_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createMyReceipt_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1360,8 +1363,8 @@ func (ec *executionContext) fieldContext_Mutation_assignMeToItem(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_removeMeToItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_removeMeToItem(ctx, field)
+func (ec *executionContext) _Mutation_removeMeFromItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeMeFromItem(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1375,7 +1378,7 @@ func (ec *executionContext) _Mutation_removeMeToItem(ctx context.Context, field 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().RemoveMeToItem(rctx, fc.Args["input"].(*model.AssignOrDeleteMeToItemInput))
+			return ec.resolvers.Mutation().RemoveMeFromItem(rctx, fc.Args["input"].(*model.AssignOrDeleteMeToItemInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -1411,7 +1414,7 @@ func (ec *executionContext) _Mutation_removeMeToItem(ctx context.Context, field 
 	return ec.marshalNDeleteItemPayload2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐDeleteItemPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_removeMeToItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_removeMeFromItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1434,7 +1437,7 @@ func (ec *executionContext) fieldContext_Mutation_removeMeToItem(ctx context.Con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_removeMeToItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_removeMeFromItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2074,9 +2077,9 @@ func (ec *executionContext) _Receipt_total(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receipt_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2086,7 +2089,7 @@ func (ec *executionContext) fieldContext_Receipt_total(ctx context.Context, fiel
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4377,6 +4380,9 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "price":
 			out.Values[i] = ec._Item_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "sharedBy":
 			field := field
 
@@ -4499,9 +4505,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createReceipt":
+		case "createMyReceipt":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createReceipt(ctx, field)
+				return ec._Mutation_createMyReceipt(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -4527,9 +4533,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "removeMeToItem":
+		case "removeMeFromItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_removeMeToItem(ctx, field)
+				return ec._Mutation_removeMeFromItem(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5804,6 +5810,16 @@ func (ec *executionContext) unmarshalOReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋez
 	}
 	res, err := ec.unmarshalInputReceiptInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
