@@ -50,3 +50,11 @@ tasks:
     desc: Initialize database with data
     cmds:
       - docker compose run --rm dev-cli go run cmd/seed/main.go
+
+  test:
+    cmds:
+      - docker compose run --rm dev-cli go test cmd/ezsplit/**
+
+  dev-cli:
+    cmds:
+      - docker compose run --rm dev-cli sh

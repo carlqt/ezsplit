@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/joho/godotenv"
@@ -18,12 +21,20 @@ type App struct {
 	DB           *sql.DB
 }
 
-func NewApp() *App {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
+func init() {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env)")
+		os.Exit(1)
 	}
+	basepath := filepath.Dir(file)
+	err := godotenv.Load(filepath.Join(basepath, "../.env"))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
+func NewApp() *App {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	config := NewConfig()
