@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -9,9 +8,11 @@ import (
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGETPlayers(t *testing.T) {
+func TestGraphqlServer(t *testing.T) {
+	accessToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDc1MTU3NTEsImlkIjoiMyIsInVzZXJuYW1lIjoidGVzdGVzdCJ9.Wak-YpGFivPsTKQjU3k0wf9HmX5qIo0w4hgYU6nLS_8"
 	app := internal.NewApp()
 
 	resolvers := &graph.Resolver{Repositories: app.Repositories, Config: app.Config}
@@ -21,28 +22,28 @@ func TestGETPlayers(t *testing.T) {
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(srv)
 
-	t.Run("returns Pepper's score", func(t *testing.T) {
+	t.Run("createUser mutation", func(t *testing.T) {
 
-		query := "query { me { username } }"
+		query := `mutation createUser {
+			createUser(input: {username: "testest" }) {
+				username
+				id
+				accessToken
+			}
+		}`
 
 		var resp struct {
-			DirectiveArg *string
+			CreateUser struct {
+				Username    string
+				Id          string
+				AccessToken string
+			}
 		}
 
+		client.AddHeader("Authorization", "Bearer "+accessToken)
 		err := c.Post(query, &resp)
-		if err != nil {
-			t.Errorf(err.Error())
-		}
 
-		log.Println(resp)
-
-		// response := httptest.NewRecorder()
-
-		// got := response.Body.String()
-		// want := "20"
-
-		// if got != want {
-		// 	t.Errorf("got %q, want %q", got, want)
-		// }
+		assert.Nil(t, err)
+		assert.Equal(t, "testest", resp.CreateUser.Username)
 	})
 }
