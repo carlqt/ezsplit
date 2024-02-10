@@ -53,7 +53,7 @@ tasks:
 
   test:
     cmds:
-      - docker compose run --rm dev-cli go test cmd/ezsplit/**
+      - docker compose run --rm dev-cli go test -v ./...
 
   dev-cli:
     cmds:
