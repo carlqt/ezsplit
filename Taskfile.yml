@@ -9,7 +9,7 @@ tasks:
   db:schema:apply:
     desc: Applies schema to the database which will take care of creating the tables
     cmds:
-      - docker compose run --rm dev-cli atlas schema apply --env local
+      - docker compose run --rm dev-cli atlas schema apply --env local --auto-approve
   
   down:
     cmds:
@@ -52,9 +52,17 @@ tasks:
       - docker compose run --rm dev-cli go run cmd/seed/main.go
 
   test:
+    deps: [test:db:schema:apply]
+    tenv: [.env.test]
     cmds:
-      - docker compose run --rm dev-cli go test -v ./...
+      - docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from dev-cli
 
   dev-cli:
     cmds:
       - docker compose run --rm dev-cli sh
+
+  # TODO: Use atlas docker
+  test:db:schema:apply:
+    desc: Applies schema to the database which will take care of creating the tables
+    cmds:
+      - docker compose -f docker-compose.test.yml run --rm dev-cli atlas schema apply --env local --auto-approve

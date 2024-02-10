@@ -3,8 +3,6 @@ package graph
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"log"
 	"log/slog"
 	"testing"
 
@@ -17,34 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	Red   = "\033[31m"
-	Green = "\033[32m"
-	Blue  = "\033[34m"
-	Reset = "\033[0m"
-)
-
-func printRed(s string) {
-	fmt.Printf("%s%s%s", Red, s, Reset)
-}
-
-func printGreen(s string) {
-	fmt.Printf("%s%s%s", Green, s, Reset)
-}
-
-func printBlue(s string) {
-	fmt.Printf("%s%s%s", Blue, s, Reset)
-}
-
-func setupTest(tb testing.TB) func(tb testing.TB) {
-	printBlue(">> Setup Test\n")
-
-	return func(tb testing.TB) {
-
-		printBlue(">> Teardown Test\n")
-	}
-}
-
 func createUser(t *testing.T, db *sql.DB, user *repository.User) {
 	user.Username = "john_watson_test"
 	err := db.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
@@ -54,21 +24,18 @@ func createUser(t *testing.T, db *sql.DB, user *repository.User) {
 	}
 
 	t.Cleanup(func() {
-		log.Println("Cleaning up user=" + user.ID)
-		result, err := db.Exec("DELETE FROM users WHERE id = $1", user.ID)
-
-		if err == nil {
-			count, err := result.RowsAffected()
-			if err == nil {
-				log.Println("Deleted rows: ", count)
-			} else {
-				log.Println(err)
-			}
-		}
+		cleanupUser(db, user.ID)
 	})
 }
 
-func TestGraphqlServer(t *testing.T) {
+func cleanupUser(db *sql.DB, id string) {
+	_, err := db.Exec("DELETE FROM users WHERE id = $1", id)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+}
+
+func TestResolvers(t *testing.T) {
 	// Setting up the server
 	app := internal.NewApp()
 	resolvers := &Resolver{Repositories: app.Repositories, Config: app.Config}
@@ -78,9 +45,6 @@ func TestGraphqlServer(t *testing.T) {
 	c := client.New(srv)
 
 	t.Run("createUser mutation", func(t *testing.T) {
-		teardown := setupTest(t)
-		defer teardown(t)
-
 		query := `mutation createUser {
 			createUser(input: {username: "testest" }) {
 				username
@@ -102,6 +66,8 @@ func TestGraphqlServer(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, "testest", resp.CreateUser.Username)
+
+		cleanupUser(app.DB, resp.CreateUser.Id)
 	})
 
 	t.Run("query Me", func(t *testing.T) {
@@ -141,12 +107,4 @@ func TestGraphqlServer(t *testing.T) {
 		assert.Equal(t, user.Username, resp.Me.Username)
 		assert.Equal(t, user.ID, resp.Me.Id)
 	})
-}
-
-func addContext(token string) client.Option {
-	return func(bd *client.Request) {
-		ctx := context.WithValue(context.Background(), auth.TokenKey, token)
-		bd.HTTP = bd.HTTP.WithContext(ctx)
-		log.Println("Added Context")
-	}
 }

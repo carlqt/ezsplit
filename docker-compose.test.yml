@@ -1,0 +1,34 @@
+version: '3'
+
+x-app: &app
+  build:
+    context: .
+  env_file:
+    - .env.test
+
+services:
+  database:
+    restart: always
+    image: postgres:16.1
+    user: postgres
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+      PG_USER: "postgres"
+      POSTGRES_DB: "ezsplit_test"
+      POSTGRES_HOST_AUTH_METHOD: trust
+    env_file:
+      - .env.test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  dev-cli:
+    <<: *app
+    command: go test -v ./...
+    volumes:
+      - .:/app
+    depends_on:
+      database:
+        condition: service_healthy
