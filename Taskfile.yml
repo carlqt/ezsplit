@@ -55,7 +55,6 @@ tasks:
   test:
     tenv: [.env.test]
     cmds:
-      - docker compose -f docker-compose.test.yml -p ezsplit_test run --rm app atlas schema apply --env local --auto-approve
       - docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
       - docker compose -f docker-compose.test.yml -p ezsplit_test down
 
