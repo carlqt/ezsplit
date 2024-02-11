@@ -7,7 +7,7 @@ x-app: &app
     - .env.test
 
 services:
-  database:
+  db:
     restart: always
     image: postgres:16.1
     user: postgres
@@ -24,11 +24,11 @@ services:
       timeout: 5s
       retries: 5
 
-  dev-cli:
+  app:
     <<: *app
     command: go test -v ./...
     volumes:
       - .:/app
     depends_on:
-      database:
+      db:
         condition: service_healthy
