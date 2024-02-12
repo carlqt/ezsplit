@@ -64,8 +64,9 @@ func TestResolvers(t *testing.T) {
 		// client.AddHeader("Authorization", "Bearer "+accessToken)
 		err := c.Post(query, &resp)
 
-		assert.Nil(t, err)
-		assert.Equal(t, "testest", resp.CreateUser.Username)
+		if assert.Nil(t, err) {
+			assert.Equal(t, "testest", resp.CreateUser.Username)
+		}
 
 		cleanupUser(app.DB, resp.CreateUser.Id)
 	})
@@ -100,11 +101,10 @@ func TestResolvers(t *testing.T) {
 		}
 
 		err = c.Post(query, &resp, option)
-		if err != nil {
-			slog.Error(err.Error())
-		}
 
-		assert.Equal(t, user.Username, resp.Me.Username)
-		assert.Equal(t, user.ID, resp.Me.Id)
+		if assert.Nil(t, err) {
+			assert.Equal(t, user.Username, resp.Me.Username)
+			assert.Equal(t, user.ID, resp.Me.Id)
+		}
 	})
 }
