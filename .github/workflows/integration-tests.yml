@@ -1,5 +1,5 @@
 name: Automated Tests
-run-name: Running automated tests 🚀
+run-name: ${{ github.actor }} is running automated tests 🚀
 on: [push]
 jobs:
   Run-Integration-Tests:
