@@ -26,12 +26,13 @@ services:
 
   app:
     <<: *app
-    working_dir: /app
     command: >
         sh -c "atlas schema apply --env local --auto-approve &&
         go test -v ./..."
     volumes:
       - .:/app
+    environment:
+      GO_ENV: "test"
     depends_on:
       db:
         condition: service_healthy

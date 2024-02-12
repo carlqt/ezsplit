@@ -3,7 +3,6 @@ version: '3.8'
 x-app: &app
   build:
     context: .
-  working_dir: /app
   env_file:
     - .env
 
@@ -46,7 +45,8 @@ services:
     ports:
       - "7777:7777"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
 
   dev-cli:
     <<: *app

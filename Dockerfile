@@ -4,6 +4,8 @@ FROM golang:1.22.0-alpine3.19 as base
 
 LABEL maintainer="carltablante"
 
+WORKDIR /app
+
 RUN apk add curl
 
 RUN curl -sSf https://atlasgo.sh | sh

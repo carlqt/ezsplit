@@ -22,15 +22,24 @@ type App struct {
 }
 
 func init() {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env)")
-		os.Exit(1)
+	if os.Getenv("GO_ENV") == "test" {
+		_, file, _, ok := runtime.Caller(0)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env)")
+			os.Exit(1)
+		}
+		basepath := filepath.Dir(file)
+		err := godotenv.Load(filepath.Join(basepath, "../.env"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return
 	}
-	basepath := filepath.Dir(file)
-	err := godotenv.Load(filepath.Join(basepath, "../.env"))
+
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 

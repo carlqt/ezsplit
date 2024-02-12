@@ -19,7 +19,6 @@ tasks:
   up:
     desc: Runs the application in development mode in docker
     cmds:
-      - docker compose -f docker-compose.yml up -d
       - docker compose watch
   
   graphql:schema:generate:
