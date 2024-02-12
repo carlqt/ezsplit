@@ -107,4 +107,43 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, user.ID, resp.Me.Id)
 		}
 	})
+
+	t.Run("mutation createMyReceipt", func(t *testing.T) {
+		var user repository.User
+		createUser(t, app.DB, &user)
+
+		userClaim := auth.UserClaim{
+			ID:       user.ID,
+			Username: user.Username,
+		}
+		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		query := `mutation createMyReceipt {
+			createMyReceipt(input: {description: "test receipt", price: 350 }) {
+				description
+				total
+				id
+			}
+		}`
+
+		var resp struct {
+			CreateMyReceipt struct {
+				Description string
+				Total       string
+				Id          string
+			}
+		}
+
+		option := func(bd *client.Request) {
+			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+			bd.HTTP = bd.HTTP.WithContext(ctx)
+		}
+
+		err = c.Post(query, &resp, option)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "test receipt", resp.CreateMyReceipt.Description)
+			assert.Equal(t, "350.00", resp.CreateMyReceipt.Total)
+		}
+	})
 }

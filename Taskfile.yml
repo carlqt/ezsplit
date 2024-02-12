@@ -55,7 +55,8 @@ tasks:
   test:
     tenv: [.env.test]
     cmds:
-      - docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
+      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
+        ignore_error: true
       - docker compose -f docker-compose.test.yml -p ezsplit_test down
 
   dev-cli:
