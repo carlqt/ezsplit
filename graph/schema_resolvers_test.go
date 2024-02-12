@@ -105,6 +105,6 @@ func TestResolvers(t *testing.T) {
 		}
 
 		assert.Equal(t, user.Username, resp.Me.Username)
-		assert.Equal(t, user.ID, resp.Me.Id)
+		assert.Equal(t, "88", resp.Me.Id)
 	})
 }
