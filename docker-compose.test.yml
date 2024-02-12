@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 x-app: &app
   build:
@@ -26,7 +26,10 @@ services:
 
   app:
     <<: *app
-    command: go test -v ./...
+    working_dir: /app
+    command: >
+        sh -c "atlas schema apply --env local --auto-approve &&
+        go test -v ./..."
     volumes:
       - .:/app
     depends_on:

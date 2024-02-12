@@ -1,8 +1,8 @@
+# syntax=docker/dockerfile:1
+
 FROM golang:1.22.0-alpine3.19 as base
 
 LABEL maintainer="carltablante"
-
-WORKDIR /app
 
 RUN apk add curl
 
