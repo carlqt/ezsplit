@@ -17,30 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type UserFactory struct {
-	DB  *sql.DB
-	err error
-	repository.User
-}
-
-func NewUserFactory(db *sql.DB) UserFactory {
-	return UserFactory{DB: db}
-}
-
-func (u *UserFactory) Create() {
-	u.User.Username = "john_smith"
-
-	err := u.DB.QueryRow("insert into users (username) values ($1) returning id", u.User.Username).Scan(&u.User.ID)
-	if err != nil {
-		u.err = err
-		slog.Error(err.Error())
-	}
-}
-
-func (u *UserFactory) Error() error {
-	return u.err
-}
-
 func createUser(t *testing.T, db *sql.DB, user *repository.User) {
 	user.Username = "john_watson_test"
 	err := db.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
@@ -90,8 +66,12 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("query Me", func(t *testing.T) {
-		var user repository.User
-		createUser(t, app.DB, &user)
+		defer truncateAllTables(app.DB)
+
+		user, err := CreateUser(app.DB, "fake_user")
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		userClaim := auth.UserClaim{
 			ID:       user.ID,
@@ -128,14 +108,14 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("mutation createMyReceipt", func(t *testing.T) {
-		var user repository.User
-		createUser(t, app.DB, &user)
+		defer truncateAllTables(app.DB)
 
-		userClaim := auth.UserClaim{
-			ID:       user.ID,
-			Username: user.Username,
+		user, err := CreateUser(app.DB, "fake_user")
+		if err != nil {
+			t.Fatal(err)
 		}
-		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		accessToken, err := user.getAuthToken(app.Config.JWTSecret)
 
 		query := `mutation createMyReceipt {
 			createMyReceipt(input: {description: "test receipt", price: 350 }) {
