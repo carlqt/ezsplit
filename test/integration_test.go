@@ -1,4 +1,4 @@
-package testintegration
+package integration_test
 
 import (
 	"context"
@@ -16,6 +16,30 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/stretchr/testify/assert"
 )
+
+type UserFactory struct {
+	DB  *sql.DB
+	err error
+	repository.User
+}
+
+func NewUserFactory(db *sql.DB) UserFactory {
+	return UserFactory{DB: db}
+}
+
+func (u *UserFactory) Create() {
+	u.User.Username = "john_smith"
+
+	err := u.DB.QueryRow("insert into users (username) values ($1) returning id", u.User.Username).Scan(&u.User.ID)
+	if err != nil {
+		u.err = err
+		slog.Error(err.Error())
+	}
+}
+
+func (u *UserFactory) Error() error {
+	return u.err
+}
 
 func createUser(t *testing.T, db *sql.DB, user *repository.User) {
 	user.Username = "john_watson_test"
