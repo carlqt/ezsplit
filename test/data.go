@@ -43,22 +43,35 @@ func (u User) getAuthToken(secret []byte) (string, error) {
 
 type Receipt struct {
 	repository.Receipt
+	User User
 }
 
-func CreateReceiptWithUser(db *sql.DB, userID string, total int, description string) (Receipt, error) {
-
+func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, error) {
 	receipt := Receipt{
 		repository.Receipt{
-			UserID:      userID,
 			Total:       total,
 			Description: description,
 		},
+		User{},
 	}
 
-	err := r.DB.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
+	tx, err := db.Begin()
+	if err != nil {
+		return receipt, err
+	}
+
+	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
 	if err != nil {
 		slog.Error(err.Error())
-		return err
+		return receipt, err
 	}
-	return nil
+
+	user, err := CreateUser(db, "fake_user")
+	if err != nil {
+		return receipt, err
+	}
+
+	receipt.User = user
+
+	return receipt, nil
 }
