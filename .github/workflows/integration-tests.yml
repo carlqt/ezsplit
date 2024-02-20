@@ -1,0 +1,10 @@
+name: Automated Tests
+run-name: ${{ github.actor }} is running automated tests 🚀
+on: [push]
+jobs:
+  Run-Integration-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app

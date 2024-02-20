@@ -8,7 +8,15 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.11
 )
 
-require github.com/golang-jwt/jwt/v5 v5.2.0
+require (
+	github.com/golang-jwt/jwt/v5 v5.2.0
+	github.com/stretchr/testify v1.8.4
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+)
 
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect

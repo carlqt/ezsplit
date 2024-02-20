@@ -111,7 +111,10 @@ Here's how to set it up with the help of postman, in this example I'm using `Pos
 
 ## Unit and Integration tests
 
-[Coming Soon]
+Integration tests uses docker. To run:
+```
+task test
+```
 
 # Contributing Guidelines
 
