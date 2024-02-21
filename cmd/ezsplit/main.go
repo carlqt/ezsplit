@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -15,7 +16,10 @@ import (
 const defaultPort = "8080"
 
 func pong(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("pong"))
+	_, err := w.Write([]byte("pong"))
+	if err != nil {
+		slog.Error(err.Error())
+	}
 }
 
 func main() {

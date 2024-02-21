@@ -170,7 +170,7 @@ func TestResolvers(t *testing.T) {
 			ID:       user.ID,
 			Username: user.Username,
 		}
-		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation assignMeToItem{
 			assignMeToItem(input: { itemId: "%s" }) {
