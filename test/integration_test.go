@@ -17,19 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createUser(t *testing.T, db *sql.DB, user *repository.User) {
-	user.Username = "john_watson_test"
-	err := db.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		truncateAllTables(db)
-	})
-}
-
 func TestResolvers(t *testing.T) {
 	// Setting up the server
 	app := internal.NewApp()
@@ -78,6 +65,9 @@ func TestResolvers(t *testing.T) {
 			Username: user.Username,
 		}
 		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		query := `query Me {
 			me {
@@ -116,6 +106,9 @@ func TestResolvers(t *testing.T) {
 		}
 
 		accessToken, err := user.getAuthToken(app.Config.JWTSecret)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		query := `mutation createMyReceipt {
 			createMyReceipt(input: {description: "test receipt", price: 350 }) {
@@ -170,7 +163,7 @@ func TestResolvers(t *testing.T) {
 			ID:       user.ID,
 			Username: user.Username,
 		}
-		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation assignMeToItem{
 			assignMeToItem(input: { itemId: "%s" }) {

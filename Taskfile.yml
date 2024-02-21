@@ -61,3 +61,8 @@ tasks:
   dev-cli:
     cmds:
       - docker compose run --rm dev-cli sh
+
+  lint:
+    desc: Runs linter
+    cmds:
+      - docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.56.2 golangci-lint run -v
