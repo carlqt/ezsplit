@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 
-	createItems(app.Repositories.ItemRepository, receiptID)
+	_ = createItems(app.Repositories.ItemRepository, receiptID)
 }
 
 func createUser(repo *repository.UserRepository, secret []byte) (string, error) {
