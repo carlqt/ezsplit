@@ -24,13 +24,11 @@ services:
       timeout: 5s
       retries: 5
 
-  pgweb:
+  db-ui:
     restart: always
-    image: sosedoff/pgweb
+    image: webdb/app
     ports:
-      - "8082:8081"
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@database:5432/ezsplit_dev?sslmode=disable
+      - "8082:22071"
     depends_on:
       - database
 
