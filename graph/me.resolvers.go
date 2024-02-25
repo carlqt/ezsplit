@@ -11,10 +11,10 @@ import (
 	"github.com/carlqt/ezsplit/internal/auth"
 )
 
-// TotaylPayables is the resolver for the totaylPayables field.
-func (r *meResolver) TotaylPayables(ctx context.Context, obj *model.Me) (string, error) {
-	// panic(fmt.Errorf("not implemented: TotaylPayables - totaylPayables"))
-	return "222", nil
+// TotalPayables is the resolver for the totalPayables field.
+func (r *meResolver) TotalPayables(ctx context.Context, obj *model.Me) (string, error) {
+	// panic(fmt.Errorf("not implemented: TotalPayables - totalPayables"))
+	return "2222", nil
 }
 
 // Me is the resolver for the Me field.

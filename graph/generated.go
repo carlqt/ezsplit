@@ -64,9 +64,9 @@ type ComplexityRoot struct {
 	}
 
 	Me struct {
-		ID             func(childComplexity int) int
-		TotaylPayables func(childComplexity int) int
-		Username       func(childComplexity int) int
+		ID            func(childComplexity int) int
+		TotalPayables func(childComplexity int) int
+		Username      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -109,7 +109,7 @@ type ItemResolver interface {
 	SharedBy(ctx context.Context, obj *model.Item) ([]*model.User, error)
 }
 type MeResolver interface {
-	TotaylPayables(ctx context.Context, obj *model.Me) (string, error)
+	TotalPayables(ctx context.Context, obj *model.Me) (string, error)
 }
 type MutationResolver interface {
 	CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
@@ -199,12 +199,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Me.ID(childComplexity), true
 
-	case "Me.totaylPayables":
-		if e.complexity.Me.TotaylPayables == nil {
+	case "Me.totalPayables":
+		if e.complexity.Me.TotalPayables == nil {
 			break
 		}
 
-		return e.complexity.Me.TotaylPayables(childComplexity), true
+		return e.complexity.Me.TotalPayables(childComplexity), true
 
 	case "Me.username":
 		if e.complexity.Me.Username == nil {
@@ -1034,8 +1034,8 @@ func (ec *executionContext) fieldContext_Me_username(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Me_totaylPayables(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Me_totaylPayables(ctx, field)
+func (ec *executionContext) _Me_totalPayables(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Me_totalPayables(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1048,7 +1048,7 @@ func (ec *executionContext) _Me_totaylPayables(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Me().TotaylPayables(rctx, obj)
+		return ec.resolvers.Me().TotalPayables(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1065,7 +1065,7 @@ func (ec *executionContext) _Me_totaylPayables(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Me_totaylPayables(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Me_totalPayables(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Me",
 		Field:      field,
@@ -1840,8 +1840,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
 				return ec.fieldContext_Me_username(ctx, field)
-			case "totaylPayables":
-				return ec.fieldContext_Me_totaylPayables(ctx, field)
+			case "totalPayables":
+				return ec.fieldContext_Me_totalPayables(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
@@ -4522,7 +4522,7 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "totaylPayables":
+		case "totalPayables":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4531,7 +4531,7 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Me_totaylPayables(ctx, field, obj)
+				res = ec._Me_totalPayables(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
