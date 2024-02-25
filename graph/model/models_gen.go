@@ -22,11 +22,6 @@ type DeleteItemPayload struct {
 	ID  string `json:"id"`
 }
 
-type Me struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-}
-
 type Mutation struct {
 }
 

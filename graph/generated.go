@@ -40,6 +40,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Item() ItemResolver
+	Me() MeResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Receipt() ReceiptResolver
@@ -63,8 +64,9 @@ type ComplexityRoot struct {
 	}
 
 	Me struct {
-		ID       func(childComplexity int) int
-		Username func(childComplexity int) int
+		ID             func(childComplexity int) int
+		TotaylPayables func(childComplexity int) int
+		Username       func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -106,6 +108,9 @@ type ComplexityRoot struct {
 type ItemResolver interface {
 	SharedBy(ctx context.Context, obj *model.Item) ([]*model.User, error)
 }
+type MeResolver interface {
+	TotaylPayables(ctx context.Context, obj *model.Me) (string, error)
+}
 type MutationResolver interface {
 	CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
 	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
@@ -118,7 +123,7 @@ type QueryResolver interface {
 	Receipts(ctx context.Context) ([]*model.Receipt, error)
 	Receipt(ctx context.Context, id string) (*model.Receipt, error)
 	Users(ctx context.Context) ([]*model.User, error)
-	Me(ctx context.Context) (*model.User, error)
+	Me(ctx context.Context) (*model.Me, error)
 }
 type ReceiptResolver interface {
 	User(ctx context.Context, obj *model.Receipt) (*model.User, error)
@@ -193,6 +198,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Me.ID(childComplexity), true
+
+	case "Me.totaylPayables":
+		if e.complexity.Me.TotaylPayables == nil {
+			break
+		}
+
+		return e.complexity.Me.TotaylPayables(childComplexity), true
 
 	case "Me.username":
 		if e.complexity.Me.Username == nil {
@@ -1021,6 +1033,50 @@ func (ec *executionContext) fieldContext_Me_username(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Me_totaylPayables(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Me_totaylPayables(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Me().TotaylPayables(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Me_totaylPayables(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Me",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createMyReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createMyReceipt(ctx, field)
 	if err != nil {
@@ -1751,10 +1807,10 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*model.User); ok {
+		if data, ok := tmp.(*model.Me); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/carlqt/ezsplit/graph/model.User`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/carlqt/ezsplit/graph/model.Me`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1766,9 +1822,9 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*model.Me)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1780,11 +1836,13 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_User_id(ctx, field)
+				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
-				return ec.fieldContext_User_username(ctx, field)
+				return ec.fieldContext_Me_username(ctx, field)
+			case "totaylPayables":
+				return ec.fieldContext_Me_totaylPayables(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
 	}
 	return fc, nil
@@ -4456,13 +4514,49 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 		case "id":
 			out.Values[i] = ec._Me_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "username":
 			out.Values[i] = ec._Me_username(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "totaylPayables":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Me_totaylPayables(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5338,6 +5432,20 @@ func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgr
 	return ec._Item(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMe2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v model.Me) graphql.Marshaler {
+	return ec._Me(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v *model.Me) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Me(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNReceipt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v model.Receipt) graphql.Marshaler {
 	return ec._Receipt(ctx, sel, &v)
 }
@@ -5405,10 +5513,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -5445,16 +5549,6 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplit�
 	wg.Wait()
 
 	return ret
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserWithJwt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v model.UserWithJwt) graphql.Marshaler {

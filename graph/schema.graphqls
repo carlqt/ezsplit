@@ -13,6 +13,7 @@ type User {
 type Me {
   id: ID!
   username: String!
+  totaylPayables: String!
 } 
 
 type Receipt {
@@ -79,5 +80,5 @@ type Query {
   receipts: [Receipt]! @authenticated
   receipt(id: ID!): Receipt!
   users: [User]! @authenticated
-  me: User! @authenticated
+  me: Me! @authenticated
 }
