@@ -31,12 +31,6 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 	return modelUsers, nil
 }
 
-// TotaylPayables is the resolver for the totaylPayables field.
-func (r *meResolver) TotaylPayables(ctx context.Context, obj *model.Me) (string, error) {
-	// panic(fmt.Errorf("not implemented: TotaylPayables - totaylPayables"))
-	return "222", nil
-}
-
 // CreateMyReceipt is the resolver for the createMyReceipt field.
 func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
@@ -187,21 +181,6 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return modelUsers, nil
 }
 
-// Me is the resolver for the Me field.
-func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
-	claims := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
-
-	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.Me{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
-}
-
 // User is the resolver for the user field.
 func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
 	user, err := r.Repositories.UserRepository.FindByID(obj.UserID)
@@ -235,9 +214,6 @@ func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*mod
 // Item returns ItemResolver implementation.
 func (r *Resolver) Item() ItemResolver { return &itemResolver{r} }
 
-// Me returns MeResolver implementation.
-func (r *Resolver) Me() MeResolver { return &meResolver{r} }
-
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -248,7 +224,6 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 func (r *Resolver) Receipt() ReceiptResolver { return &receiptResolver{r} }
 
 type itemResolver struct{ *Resolver }
-type meResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type receiptResolver struct{ *Resolver }
