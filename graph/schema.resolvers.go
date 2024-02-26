@@ -181,21 +181,6 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return modelUsers, nil
 }
 
-// Me is the resolver for the Me field.
-func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	claims := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
-
-	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.User{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
-}
-
 // User is the resolver for the user field.
 func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
 	user, err := r.Repositories.UserRepository.FindByID(obj.UserID)

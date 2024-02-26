@@ -9,12 +9,6 @@ type User {
   username: String!
 }
 
-# Gets the current user
-type Me {
-  id: ID!
-  username: String!
-} 
-
 type Receipt {
   id: ID!
   user: User
@@ -79,5 +73,4 @@ type Query {
   receipts: [Receipt]! @authenticated
   receipt(id: ID!): Receipt!
   users: [User]! @authenticated
-  me: User! @authenticated
 }

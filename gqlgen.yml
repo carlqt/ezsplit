@@ -97,3 +97,8 @@ models:
     fields:
       sharedBy:
         resolver: true
+
+  Me:
+    fields:
+      totalPayables:
+        resolver: true

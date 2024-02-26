@@ -1,0 +1,11 @@
+
+# Gets the current user
+type Me {
+  id: ID!
+  username: String!
+  totalPayables: String!
+} 
+
+extend type Query {
+  me: Me! @authenticated
+}

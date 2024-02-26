@@ -202,6 +202,75 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, user.Username, resp.AssignMeToItem.SharedBy[0].Username)
 		}
 	})
+
+	t.Run("totalPayables of Me", func(t *testing.T) {
+		defer truncateAllTables(app.DB)
+
+		// Creating 2 users
+		user, err := app.Repositories.UserRepository.Create("john_doe")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		user2, err := app.Repositories.UserRepository.Create("jane_doe")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Receipt
+		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		err = app.Repositories.ItemRepository.Create(&item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receipt.ID}
+		err = app.Repositories.ItemRepository.Create(&item2)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Create user_orders
+		// repository.UserOrdersRepository.
+		_ = app.Repositories.UserOrdersRepository.Create(user.ID, item.ID)
+		_ = app.Repositories.UserOrdersRepository.Create(user2.ID, item.ID)
+		_ = app.Repositories.UserOrdersRepository.Create(user.ID, item2.ID)
+
+		userClaim := auth.UserClaim{
+			ID:       user.ID,
+			Username: user.Username,
+		}
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		query := `query Me {
+			me {
+				totalPayables
+			}
+		}`
+
+		var resp struct {
+			Me struct {
+				TotalPayables string
+			}
+		}
+
+		option := func(bd *client.Request) {
+			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+			bd.HTTP = bd.HTTP.WithContext(ctx)
+		}
+
+		err = c.Post(query, &resp, option)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "77.88", resp.Me.TotalPayables)
+		}
+	})
 }
 
 func truncateAllTables(db *sql.DB) {
