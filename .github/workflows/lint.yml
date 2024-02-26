@@ -17,3 +17,13 @@ jobs:
           version: v1.56.2
           skip-pkg-cache: true
           skip-build-cache: true
+
+  test-gqlgen-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.0
+      - name: GQLGen Generate test
+        run: go run github.com/99designs/gqlgen generate
