@@ -231,7 +231,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receipt.ID}
-		err = app.Repositories.ItemRepository.Create(&item)
+		err = app.Repositories.ItemRepository.Create(&item2)
 		if err != nil {
 			t.Fatal(err)
 		}

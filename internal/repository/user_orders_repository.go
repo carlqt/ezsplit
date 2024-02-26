@@ -68,3 +68,35 @@ func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, e
 
 	return users, nil
 }
+
+func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
+	var totalPayables int
+
+	query := `SELECT div(items.price, item_count.shared_by_count) as total_payables
+	FROM items
+	JOIN user_orders as uo ON items.id = uo.item_id
+	JOIN (
+		SELECT count(*) as shared_by_count, item_id FROM user_orders GROUP BY item_id
+	) AS item_count on item_count.item_id = uo.item_id
+	WHERE uo.user_id = $1`
+
+	rows, err := r.DB.Query(query, userID)
+	if err != nil {
+		slog.Error(err.Error())
+		return 0, err
+	}
+
+	for rows.Next() {
+		var p int
+
+		err := rows.Scan(&p)
+		if err != nil {
+			slog.Error(err.Error())
+			return 0, err
+		}
+
+		totalPayables += p
+	}
+
+	return totalPayables, err
+}

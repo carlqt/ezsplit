@@ -12,9 +12,15 @@ import (
 )
 
 // TotalPayables is the resolver for the totalPayables field.
+// Monitor this resolver. It has the potential to be very inefficient.
 func (r *meResolver) TotalPayables(ctx context.Context, obj *model.Me) (string, error) {
 	// panic(fmt.Errorf("not implemented: TotalPayables - totalPayables"))
-	return "2222", nil
+	totalPayables, err := r.Repositories.UserOrdersRepository.GetTotalPayables(obj.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return toPriceDisplay(totalPayables), nil
 }
 
 // Me is the resolver for the Me field.
