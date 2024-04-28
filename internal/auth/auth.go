@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -36,7 +35,7 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 
 // getBearerToken extracts the bearer token from the Authorization header.
 // An error is returned if Authorization header is missing or the format is invalid.
-func getBearerToken(r *http.Request) (string, error) {
+func GetBearerToken(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return "", errors.New("authorization header is missing")
@@ -64,18 +63,4 @@ func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
 		log.Println("unknown claims type")
 		return *claims, errors.New("unknown claims type")
 	}
-}
-
-// BearerTokenMiddleware extracts the bearer token from the Authorization header
-// and stores it in the context.
-// The error is ignored because the token is optional and the resolver will handle the error.
-func BearerTokenMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearerToken, _ := getBearerToken(r)
-
-		ctx := context.WithValue(r.Context(), TokenKey, bearerToken)
-		newReq := r.WithContext(ctx)
-
-		next.ServeHTTP(w, newReq)
-	})
 }

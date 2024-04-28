@@ -9,8 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
+	"net/http"
 
 	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
 )
@@ -127,6 +130,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		log.Println(err)
 		return nil, errors.New("error signing token")
 	}
+
+	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
+	if !ok {
+		slog.Error("WTF Happened?")
+		return nil, errors.New("error setting cookie")
+	}
+
+	setCookieFn(&http.Cookie{
+		Name:     "bearerToken",
+		Value:    signedToken,
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	return &model.UserWithJwt{
 		ID:          user.ID,

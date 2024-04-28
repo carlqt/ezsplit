@@ -24,7 +24,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(srv)
+	c := client.New(internal.InjectSetCookieMiddleware(srv))
 
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
