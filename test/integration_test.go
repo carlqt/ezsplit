@@ -121,7 +121,7 @@ func TestResolvers(t *testing.T) {
 
 			if assert.NotNil(t, err) {
 				// TODO: There should be a better way to check the error message
-				assert.Equal(t, `[{"message":"unauthorized access","path":["me"]}]`, err.Error())
+				assert.EqualError(t, err, `[{"message":"unauthorized access","path":["me"]}]`)
 			}
 		})
 	})
