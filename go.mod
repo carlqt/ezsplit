@@ -1,6 +1,6 @@
 module github.com/carlqt/ezsplit
 
-go 1.22.0
+go 1.22.2
 
 require (
 	github.com/99designs/gqlgen v0.17.44
