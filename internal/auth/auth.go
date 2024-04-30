@@ -3,8 +3,6 @@ package auth
 import (
 	"errors"
 	"log"
-	"net/http"
-	"strings"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -31,22 +29,6 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 	}
 
 	return signedToken, nil
-}
-
-// getBearerToken extracts the bearer token from the Authorization header.
-// An error is returned if Authorization header is missing or the format is invalid.
-func GetBearerToken(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		return "", errors.New("authorization header is missing")
-	}
-
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("authorization header format must be Bearer <token>")
-	}
-
-	return parts[1], nil
 }
 
 func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {

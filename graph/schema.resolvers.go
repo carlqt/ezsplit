@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -133,12 +132,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		slog.Error("WTF Happened?")
 		return nil, errors.New("error setting cookie")
 	}
 
 	setCookieFn(&http.Cookie{
-		Name:     "bearerToken",
+		Name:     string(internal.BearerTokenCookie),
 		Value:    signedToken,
 		Path:     "/",
 		MaxAge:   3600,

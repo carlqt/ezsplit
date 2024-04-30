@@ -2,19 +2,27 @@ package internal
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/carlqt/ezsplit/internal/auth"
 )
 
-var ContextKeySetCookie string = "setCookieFn"
+type ContextKey string
+
+const ContextKeySetCookie ContextKey = "setCookieFn"
+const BearerTokenCookie = "bearerTokenCookie"
 
 // BearerTokenMiddleware extracts the bearer token from the Authorization header
 // and stores it in the context.
 // The error is ignored because the token is optional and the resolver will handle the error.
 func BearerTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearerToken, _ := auth.GetBearerToken(r)
+		bearerToken, err := getBearerToken(r)
+		if err != nil {
+			slog.Warn(err.Error())
+		}
 
 		ctx := context.WithValue(r.Context(), auth.TokenKey, bearerToken)
 		newReq := r.WithContext(ctx)
@@ -35,4 +43,23 @@ func InjectSetCookieMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, newReq)
 	})
+}
+
+// getBearerToken extracts the bearer token from the Authorization header.
+// An error is returned if Authorization header is missing or the format is invalid.
+func getBearerToken(r *http.Request) (string, error) {
+	cookie, err := r.Cookie(BearerTokenCookie)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			slog.Error("auth cookie not found")
+			return "", errors.New("auth cookie not found")
+		default:
+			slog.Error(err.Error())
+			return "", errors.New("internal server error")
+		}
+	}
+
+	return cookie.Value, nil
 }
