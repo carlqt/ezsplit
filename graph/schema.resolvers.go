@@ -10,11 +10,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
+	"github.com/goombaio/namegenerator"
 )
 
 // SharedBy is the resolver for the sharedBy field.
@@ -115,7 +117,15 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
-	user, err := r.Repositories.UserRepository.Create(input.Username)
+	var username string
+
+	if input.Username == "" {
+		username = generateName()
+	} else {
+		username = input.Username
+	}
+
+	user, err := r.Repositories.UserRepository.Create(username)
 	if err != nil {
 		return nil, err
 	}
@@ -244,3 +254,11 @@ type itemResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type receiptResolver struct{ *Resolver }
+
+// TODO: Remove when proper Sign-up is introduced
+func generateName() string {
+	seed := time.Now().UTC().UnixNano()
+	nameGenerator := namegenerator.NewNameGenerator(seed)
+
+	return nameGenerator.Generate()
+}
