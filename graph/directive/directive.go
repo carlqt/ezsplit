@@ -14,7 +14,12 @@ type GqlDirective func(ctx context.Context, obj interface{}, next graphql.Resolv
 func AuthDirective(tokenSecret []byte) GqlDirective {
 	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
 		// TODO: Check the 2nd return value. Basically, handle if this failes. 1 scenario is empty token.
-		bearerToken := ctx.Value(auth.TokenKey).(string)
+		bearerToken, ok := ctx.Value(auth.TokenKey).(string)
+		if !ok {
+			slog.Error("no token found in context")
+			return nil, errors.New("unauthorized access")
+		}
+
 		claims, err := auth.ValidateBearerToken(bearerToken, tokenSecret)
 		if err != nil {
 			slog.Error(err.Error())

@@ -24,7 +24,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(srv)
+	c := client.New(internal.InjectSetCookieMiddleware(srv))
 
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
@@ -60,41 +60,70 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		userClaim := auth.UserClaim{
-			ID:       user.ID,
-			Username: user.Username,
-		}
-		accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		query := `query Me {
-			me {
-				username
-				id
+		t.Run("when jwt exists", func(t *testing.T) {
+			userClaim := auth.UserClaim{
+				ID:       user.ID,
+				Username: user.Username,
 			}
-		}`
-
-		var resp struct {
-			Me struct {
-				Username string
-				Id       string
+			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+			if err != nil {
+				t.Fatal(err)
 			}
-		}
 
-		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
-		}
+			query := `query Me {
+				me {
+					username
+					id
+				}
+			}`
 
-		err = c.Post(query, &resp, option)
+			var resp struct {
+				Me struct {
+					Username string
+					Id       string
+				}
+			}
 
-		if assert.Nil(t, err) {
-			assert.Equal(t, user.Username, resp.Me.Username)
-			assert.Equal(t, user.ID, resp.Me.Id)
-		}
+			option := func(bd *client.Request) {
+				ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+				bd.HTTP = bd.HTTP.WithContext(ctx)
+			}
 
+			err = c.Post(query, &resp, option)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, user.Username, resp.Me.Username)
+				assert.Equal(t, user.ID, resp.Me.Id)
+			}
+		})
+
+		t.Run("when jwt does not exists", func(t *testing.T) {
+			query := `query Me {
+				me {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				Me struct {
+					Username string
+					Id       string
+				}
+			}
+
+			option := func(bd *client.Request) {
+				ctx := context.WithValue(context.Background(), auth.TokenKey, nil)
+				bd.HTTP = bd.HTTP.WithContext(ctx)
+			}
+
+			err = c.Post(query, &resp, option)
+
+			if assert.NotNil(t, err) {
+				// TODO: There should be a better way to check the error message
+				assert.EqualError(t, err, `[{"message":"unauthorized access","path":["me"]}]`)
+			}
+		})
 	})
 
 	t.Run("mutation createMyReceipt", func(t *testing.T) {

@@ -6,7 +6,7 @@ table "users" {
   }
   column "username" {
     null    = false
-    type    = varchar
+    type    = varchar(25)
   }
   column "created_at" {
     null    = false
@@ -15,6 +15,10 @@ table "users" {
   }
   primary_key {
     columns = [column.id]
+  }
+  index "idx_username" {
+    unique = true
+    columns = [column.username]
   }
 }
 

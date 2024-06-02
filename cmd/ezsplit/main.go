@@ -10,7 +10,6 @@ import (
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
-	"github.com/carlqt/ezsplit/internal/auth"
 )
 
 const defaultPort = "8080"
@@ -44,7 +43,7 @@ func main() {
 	// TODO: Remove the playground handler in production.
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 
-	http.Handle("/query", auth.BearerTokenMiddleware(srv))
+	http.Handle("/query", internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 	http.Handle("/ping", http.HandlerFunc(pong))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
