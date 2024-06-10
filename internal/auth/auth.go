@@ -2,10 +2,12 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthKey string
@@ -45,4 +47,22 @@ func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
 		log.Println("unknown claims type")
 		return *claims, errors.New("unknown claims type")
 	}
+}
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("cannot generate hash from string")
+	}
+
+	return string(hash), nil
+}
+
+func ComparePassword(password string, hashedPassword string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(hashedPassword)); err != nil {
+		log.Println(err)
+		return false
+	}
+
+	return true
 }

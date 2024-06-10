@@ -39,7 +39,9 @@ type User struct {
 }
 
 type UserInput struct {
-	Username string `json:"username"`
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
 }
 
 type UserWithJwt struct {

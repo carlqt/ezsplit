@@ -16,10 +16,10 @@ type UserRepository struct {
 	DB *sql.DB
 }
 
-func (r *UserRepository) Create(username string) (User, error) {
+func (r *UserRepository) Create(username string, password string) (User, error) {
 	user := User{Username: username}
 
-	err := r.DB.QueryRow("INSERT INTO users (username) VALUES ($1) RETURNING id", user.Username).Scan(&user.ID)
+	err := r.DB.QueryRow("INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id", username, password).Scan(&user.ID)
 	if err != nil {
 		slog.Error(err.Error())
 		return user, err

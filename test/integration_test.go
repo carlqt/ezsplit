@@ -30,7 +30,7 @@ func TestResolvers(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
 		query := `mutation createUser {
-			createUser(input: {username: "testest" }) {
+			createUser(input: {username: "mutation_user160", password: "password", confirmPassword: "password" }) {
 				username
 				id
 				accessToken
@@ -48,7 +48,7 @@ func TestResolvers(t *testing.T) {
 		err := c.Post(query, &resp)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, "testest", resp.CreateUser.Username)
+			assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
 		}
 	})
 
@@ -171,7 +171,7 @@ func TestResolvers(t *testing.T) {
 	t.Run("mutation assignMeToItem", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
-		user, err := app.Repositories.UserRepository.Create("john_doe")
+		user, err := app.Repositories.UserRepository.Create("john_doe", "testing")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,12 +236,12 @@ func TestResolvers(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
 		// Creating 2 users
-		user, err := app.Repositories.UserRepository.Create("john_doe")
+		user, err := app.Repositories.UserRepository.Create("john_doe", "password")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		user2, err := app.Repositories.UserRepository.Create("jane_doe")
+		user2, err := app.Repositories.UserRepository.Create("jane_doe", "password")
 		if err != nil {
 			t.Fatal(err)
 		}

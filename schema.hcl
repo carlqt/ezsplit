@@ -10,7 +10,7 @@ table "users" {
   }
   column "password" {
     null    = false
-    type    = varchar(25)
+    type    = varchar(255)
   }
   column "created_at" {
     null    = false
