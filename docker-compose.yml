@@ -24,11 +24,13 @@ services:
 
   db-ui:
     restart: always
-    image: webdb/app
+    image: sosedoff/pgweb
     ports:
-      - "8082:22071"
+      - "8081:8081"
     depends_on:
       - database
+    environment:
+      - PGWEB_DATABASE_URL=postgres://postgres:postgres@database:5432/ezsplit_dev?sslmode=disable
 
   web:
     <<: *app
