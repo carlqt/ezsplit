@@ -12,11 +12,9 @@ jobs:
           cache: false
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.56.2
-          skip-pkg-cache: true
-          skip-build-cache: true
+          version: v1.58
 
   test-gqlgen-generate:
     runs-on: ubuntu-latest
