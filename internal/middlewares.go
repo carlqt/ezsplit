@@ -20,14 +20,19 @@ const BearerTokenCookie = "bearerTokenCookie"
 func BearerTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bearerToken, err := getBearerToken(r)
-		if err != nil {
-			slog.Warn(err.Error())
+
+		if bearerToken == "" && err == nil {
+			next.ServeHTTP(w, r)
+		} else {
+			if err != nil {
+				slog.Warn(err.Error())
+			}
+
+			ctx := context.WithValue(r.Context(), auth.TokenKey, bearerToken)
+			newReq := r.WithContext(ctx)
+
+			next.ServeHTTP(w, newReq)
 		}
-
-		ctx := context.WithValue(r.Context(), auth.TokenKey, bearerToken)
-		newReq := r.WithContext(ctx)
-
-		next.ServeHTTP(w, newReq)
 	})
 }
 
@@ -53,8 +58,8 @@ func getBearerToken(r *http.Request) (string, error) {
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
-			slog.Error("auth cookie not found")
-			return "", errors.New("auth cookie not found")
+			slog.Warn("auth cookie not found")
+			return "", nil
 		default:
 			slog.Error(err.Error())
 			return "", errors.New("internal server error")

@@ -26,6 +26,68 @@ func TestResolvers(t *testing.T) {
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.InjectSetCookieMiddleware(srv))
 
+	t.Run("loginUser mutation", func(t *testing.T) {
+		t.Run("when password is correct", func(t *testing.T) {
+			defer truncateAllTables(app.DB)
+
+			_, err := CreateUser(app.DB, "mutation_user160")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `mutation loginUser {
+				loginUser(input: {username: "mutation_user160", password: "password"}) {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				LoginUser struct {
+					Username string
+					Id       string
+				}
+			}
+
+			err = c.Post(query, &resp)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, "mutation_user160", resp.LoginUser.Username)
+			}
+		})
+
+		t.Run("when password is wrong", func(t *testing.T) {
+			defer truncateAllTables(app.DB)
+
+			_, err := CreateUser(app.DB, "mutation_user160")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `mutation loginUser {
+				loginUser(input: {username: "mutation_user160", password: "passwordX"}) {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				LoginUser struct {
+					Username string
+					Id       string
+				}
+			}
+
+			err = c.Post(query, &resp)
+
+			// if assert.Nil(t, err) {
+			// 	assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
+			// }
+			if assert.NotNil(t, err) {
+				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
+			}
+		})
+	})
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
@@ -49,6 +111,24 @@ func TestResolvers(t *testing.T) {
 
 		if assert.Nil(t, err) {
 			assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
+		}
+	})
+
+	t.Run("logoutUser mutation works", func(t *testing.T) {
+		defer truncateAllTables(app.DB)
+
+		query := `mutation logoutUser {
+			logoutUser
+		}`
+
+		var resp struct {
+			LogoutUser string
+		}
+
+		err := c.Post(query, &resp)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "ok", resp.LogoutUser)
 		}
 	})
 

@@ -11,6 +11,7 @@ type User struct {
 	ID        string    `db:"id"`
 	Username  string    `db:"username"`
 	CreatedAt time.Time `db:"created_at"`
+	Password  string    `db:"password"`
 }
 
 type UserRepository struct {
@@ -33,6 +34,17 @@ func (r *UserRepository) FindByID(id string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
+	return user, nil
+}
+
+func (r *UserRepository) FindByUsername(username string) (User, error) {
+	user := User{}
+	err := r.DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Password)
+	if err != nil {
+		slog.Error(err.Error())
+		return user, err
+	}
+
 	return user, nil
 }
 
