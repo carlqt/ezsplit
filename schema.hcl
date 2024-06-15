@@ -8,6 +8,10 @@ table "users" {
     null    = false
     type    = varchar(25)
   }
+  column "password" {
+    null    = false
+    type    = varchar(255)
+  }
   column "created_at" {
     null    = false
     type    = timestamp

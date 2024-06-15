@@ -13,14 +13,15 @@ type User struct {
 }
 
 func CreateUser(db *sql.DB, username string) (User, error) {
+	fakePassword := "password"
 	user := User{
 		repository.User{
 			Username: username,
 		},
 	}
 
-	sql := "INSERT INTO users (username) VALUES ($1) RETURNING id"
-	err := db.QueryRow(sql, username).Scan(&user.ID)
+	sql := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
+	err := db.QueryRow(sql, username, fakePassword).Scan(&user.ID)
 	if err != nil {
 		return user, err
 	}
