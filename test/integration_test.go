@@ -114,6 +114,24 @@ func TestResolvers(t *testing.T) {
 		}
 	})
 
+	t.Run("logoutUser mutation works", func(t *testing.T) {
+		defer truncateAllTables(app.DB)
+
+		query := `mutation logoutUser {
+			logoutUser
+		}`
+
+		var resp struct {
+			LogoutUser string
+		}
+
+		err := c.Post(query, &resp)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "ok", resp.LogoutUser)
+		}
+	})
+
 	t.Run("query Me", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 

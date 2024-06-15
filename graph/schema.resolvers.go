@@ -11,6 +11,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
@@ -204,6 +205,27 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		Username:    user.Username,
 		AccessToken: signedToken,
 	}, nil
+}
+
+// LogoutUser is the resolver for the logoutUser field.
+func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
+	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
+	if !ok {
+		return "", errors.New("error setting cookie")
+	}
+
+	setCookieFn(&http.Cookie{
+		Name:     string(internal.BearerTokenCookie),
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   0,
+		Expires:  time.Unix(0, 0),
+	})
+
+	return "ok", nil
 }
 
 // Receipts is the resolver for the receipts field.

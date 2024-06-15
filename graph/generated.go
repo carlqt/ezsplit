@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 		CreateMyReceipt  func(childComplexity int, input *model.ReceiptInput) int
 		CreateUser       func(childComplexity int, input *model.UserInput) int
 		LoginUser        func(childComplexity int, input *model.LoginUserInput) int
+		LogoutUser       func(childComplexity int) int
 		RemoveMeFromItem func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 	}
 
@@ -120,6 +121,7 @@ type MutationResolver interface {
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
 	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
+	LogoutUser(ctx context.Context) (string, error)
 }
 type QueryResolver interface {
 	Receipts(ctx context.Context) ([]*model.Receipt, error)
@@ -286,6 +288,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(*model.LoginUserInput)), true
+
+	case "Mutation.logoutUser":
+		if e.complexity.Mutation.LogoutUser == nil {
+			break
+		}
+
+		return e.complexity.Mutation.LogoutUser(childComplexity), true
 
 	case "Mutation.removeMeFromItem":
 		if e.complexity.Mutation.RemoveMeFromItem == nil {
@@ -1653,6 +1662,50 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 	if fc.Args, err = ec.field_Mutation_loginUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_logoutUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_logoutUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LogoutUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_logoutUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -4786,6 +4839,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "loginUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_loginUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "logoutUser":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_logoutUser(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
