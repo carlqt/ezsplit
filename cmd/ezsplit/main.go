@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -46,6 +45,6 @@ func main() {
 	http.Handle("/query", internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 	http.Handle("/ping", http.HandlerFunc(pong))
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	slog.Debug("connect to http://localhost:%s/ for GraphQL playground", "port", port)
+	slog.Error(http.ListenAndServe(":"+port, nil).Error())
 }

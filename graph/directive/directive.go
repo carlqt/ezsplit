@@ -16,7 +16,7 @@ func AuthDirective(tokenSecret []byte) GqlDirective {
 		// TODO: Check the 2nd return value. Basically, handle if this failes. 1 scenario is empty token.
 		bearerToken, ok := ctx.Value(auth.TokenKey).(string)
 		if !ok {
-			slog.Error("no token found in context")
+			slog.Info("no token found in context")
 			return nil, errors.New("unauthorized access")
 		}
 

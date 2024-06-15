@@ -32,7 +32,7 @@ func init() {
 		basepath := filepath.Dir(file)
 		err := godotenv.Load(filepath.Join(basepath, "../.env"))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("can't load environments", err)
 		}
 
 		return
