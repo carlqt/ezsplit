@@ -46,6 +46,11 @@ input UserInput {
   confirmPassword: String!
 }
 
+input LoginUserInput {
+  username: String!
+  password: String!
+}
+
 input AddItemToReceiptInput {
   receiptId: ID!
   name: String!
@@ -69,6 +74,7 @@ type Mutation {
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
+  loginUser(input: UserInput): UserWithJwt!
 }
 
 type Query {

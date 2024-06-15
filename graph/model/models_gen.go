@@ -22,6 +22,11 @@ type DeleteItemPayload struct {
 	ID  string `json:"id"`
 }
 
+type LoginUserInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Mutation struct {
 }
 

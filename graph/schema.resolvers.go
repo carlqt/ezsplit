@@ -161,6 +161,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}, nil
 }
 
+// LoginUser is the resolver for the loginUser field.
+func (r *mutationResolver) LoginUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
+	panic(fmt.Errorf("not implemented: LoginUser - loginUser"))
+}
+
 // Receipts is the resolver for the receipts field.
 func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) {
 	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
