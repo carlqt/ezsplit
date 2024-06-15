@@ -166,7 +166,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
 	user, err := r.Repositories.UserRepository.FindByUsername(input.Username)
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Warn(err.Error())
 	}
 
 	ok := auth.ComparePassword(user.Password, input.Password)

@@ -83,7 +83,9 @@ func TestResolvers(t *testing.T) {
 			// if assert.Nil(t, err) {
 			// 	assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
 			// }
-			assert.NotNil(t, err)
+			if assert.NotNil(t, err) {
+				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
+			}
 		})
 	})
 	t.Run("createUser mutation", func(t *testing.T) {
