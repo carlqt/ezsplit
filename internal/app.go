@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,7 +32,7 @@ func init() {
 		basepath := filepath.Dir(file)
 		err := godotenv.Load(filepath.Join(basepath, "../.env"))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("can't load environments", err)
 		}
 
 		return
@@ -44,7 +45,13 @@ func init() {
 }
 
 func NewApp() *App {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	// log.SetFlags(log.LstdFlags | log.Lshortfile)
+	opts := &slog.HandlerOptions{
+		Level:     slog.LevelDebug,
+		AddSource: true,
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
 
 	config := NewConfig()
 	db := newDB(config)

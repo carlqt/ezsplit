@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"time"
 )
@@ -21,8 +22,7 @@ func (r *UserRepository) Create(username string, password string) (User, error) 
 
 	err := r.DB.QueryRow("INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id", username, password).Scan(&user.ID)
 	if err != nil {
-		slog.Error(err.Error())
-		return user, err
+		return user, fmt.Errorf("%w | failed to insert username %s", err, username)
 	}
 	return user, nil
 }
@@ -31,8 +31,7 @@ func (r *UserRepository) FindByID(id string) (*User, error) {
 	user := &User{}
 	err := r.DB.QueryRow("SELECT id, username FROM users WHERE id = $1", id).Scan(&user.ID, &user.Username)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
+		return nil, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
 	return user, nil
 }
@@ -40,7 +39,6 @@ func (r *UserRepository) FindByID(id string) (*User, error) {
 func (r *UserRepository) GetAllUsers() ([]*User, error) {
 	rows, err := r.DB.Query("SELECT id, username FROM users")
 	if err != nil {
-		slog.Error(err.Error())
 		return nil, err
 	}
 	defer rows.Close()

@@ -6,6 +6,8 @@ package graph
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/auth"
@@ -28,7 +30,8 @@ func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
 
 	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
 	if err != nil {
-		return nil, err
+		slog.Debug(err.Error())
+		return nil, errors.New("can't find current user")
 	}
 
 	return &model.Me{

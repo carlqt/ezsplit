@@ -1,9 +1,7 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -26,7 +24,6 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userClaim)
 	signedToken, err := token.SignedString(secret)
 	if err != nil {
-		log.Println(err)
 		return "", err
 	}
 
@@ -39,13 +36,11 @@ func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
 	})
 
 	if err != nil {
-		log.Println(err)
 		return UserClaim{}, err
 	} else if claims, ok := token.Claims.(*UserClaim); ok && token.Valid {
 		return *claims, nil
 	} else {
-		log.Println("unknown claims type")
-		return *claims, errors.New("unknown claims type")
+		return *claims, fmt.Errorf("unknown claims type")
 	}
 }
 
@@ -60,7 +55,6 @@ func HashPassword(password string) (string, error) {
 
 func ComparePassword(password string, hashedPassword string) bool {
 	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(hashedPassword)); err != nil {
-		log.Println(err)
 		return false
 	}
 
