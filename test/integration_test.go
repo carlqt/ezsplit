@@ -26,6 +26,66 @@ func TestResolvers(t *testing.T) {
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.InjectSetCookieMiddleware(srv))
 
+	t.Run("loginUser mutation", func(t *testing.T) {
+		t.Run("when password is correct", func(t *testing.T) {
+			defer truncateAllTables(app.DB)
+
+			_, err := CreateUser(app.DB, "mutation_user160")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `mutation loginUser {
+				loginUser(input: {username: "mutation_user160", password: "password"}) {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				CreateUser struct {
+					Username string
+					Id       string
+				}
+			}
+
+			err = c.Post(query, &resp)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
+			}
+		})
+
+		t.Run("when password is wrong", func(t *testing.T) {
+			defer truncateAllTables(app.DB)
+
+			_, err := CreateUser(app.DB, "mutation_user160")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `mutation loginUser {
+				loginUser(input: {username: "mutation_user160", password: "passwordX"}) {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				CreateUser struct {
+					Username string
+					Id       string
+				}
+			}
+
+			err = c.Post(query, &resp)
+
+			// if assert.Nil(t, err) {
+			// 	assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
+			// }
+			assert.NotNil(t, err)
+		})
+	})
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
