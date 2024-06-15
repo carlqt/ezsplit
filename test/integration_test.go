@@ -43,7 +43,7 @@ func TestResolvers(t *testing.T) {
 			}`
 
 			var resp struct {
-				CreateUser struct {
+				LoginUser struct {
 					Username string
 					Id       string
 				}
@@ -52,7 +52,7 @@ func TestResolvers(t *testing.T) {
 			err = c.Post(query, &resp)
 
 			if assert.Nil(t, err) {
-				assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
+				assert.Equal(t, "mutation_user160", resp.LoginUser.Username)
 			}
 		})
 
@@ -72,7 +72,7 @@ func TestResolvers(t *testing.T) {
 			}`
 
 			var resp struct {
-				CreateUser struct {
+				LoginUser struct {
 					Username string
 					Id       string
 				}

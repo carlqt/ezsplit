@@ -39,7 +39,7 @@ func (r *UserRepository) FindByID(id string) (*User, error) {
 
 func (r *UserRepository) FindByUsername(username string) (*User, error) {
 	user := User{}
-	err := r.DB.QueryRow("SELECT id, username, password FROM users WHERE id = $1", username).Scan(&user.ID, &user.Username, &user.Password)
+	err := r.DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err

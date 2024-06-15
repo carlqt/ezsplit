@@ -74,7 +74,7 @@ type Mutation {
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
-  loginUser(input: UserInput): UserWithJwt!
+  loginUser(input: LoginUserInput): UserWithJwt!
 }
 
 type Query {

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -162,8 +163,47 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 }
 
 // LoginUser is the resolver for the loginUser field.
-func (r *mutationResolver) LoginUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
-	panic(fmt.Errorf("not implemented: LoginUser - loginUser"))
+func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
+	user, err := r.Repositories.UserRepository.FindByUsername(input.Username)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+
+	ok := auth.ComparePassword(user.Password, input.Password)
+	if !ok {
+		return nil, errors.New("incorrect username or password")
+	}
+
+	userClaim := auth.UserClaim{
+		ID:       user.ID,
+		Username: user.Username,
+	}
+	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, errors.New("error signing token")
+	}
+
+	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
+	if !ok {
+		return nil, errors.New("error setting cookie")
+	}
+
+	setCookieFn(&http.Cookie{
+		Name:     string(internal.BearerTokenCookie),
+		Value:    signedToken,
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return &model.UserWithJwt{
+		ID:          user.ID,
+		Username:    user.Username,
+		AccessToken: signedToken,
+	}, nil
 }
 
 // Receipts is the resolver for the receipts field.

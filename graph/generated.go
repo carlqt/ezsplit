@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 		AssignUserToItem func(childComplexity int, input *model.AssignUserToItemInput) int
 		CreateMyReceipt  func(childComplexity int, input *model.ReceiptInput) int
 		CreateUser       func(childComplexity int, input *model.UserInput) int
-		LoginUser        func(childComplexity int, input *model.UserInput) int
+		LoginUser        func(childComplexity int, input *model.LoginUserInput) int
 		RemoveMeFromItem func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 	}
 
@@ -119,7 +119,7 @@ type MutationResolver interface {
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
-	LoginUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
+	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
 }
 type QueryResolver interface {
 	Receipts(ctx context.Context) ([]*model.Receipt, error)
@@ -285,7 +285,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(*model.UserInput)), true
+		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(*model.LoginUserInput)), true
 
 	case "Mutation.removeMeFromItem":
 		if e.complexity.Mutation.RemoveMeFromItem == nil {
@@ -611,10 +611,10 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.UserInput
+	var arg0 *model.LoginUserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOUserInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalOLoginUserInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐLoginUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1608,7 +1608,7 @@ func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().LoginUser(rctx, fc.Args["input"].(*model.UserInput))
+		return ec.resolvers.Mutation().LoginUser(rctx, fc.Args["input"].(*model.LoginUserInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6038,6 +6038,14 @@ func (ec *executionContext) marshalOItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgr
 		return graphql.Null
 	}
 	return ec._Item(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOLoginUserInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐLoginUserInput(ctx context.Context, v interface{}) (*model.LoginUserInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputLoginUserInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
