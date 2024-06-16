@@ -25,7 +25,10 @@ func main() {
 }
 
 func createUser(repo *repository.UserRepository, secret []byte) (string, error) {
-	user, err := repo.Create("john_smith", "password")
+	password := "password"
+	hashedPassword, _ := auth.HashPassword(password)
+
+	user, err := repo.Create("john_smith", hashedPassword)
 	if err != nil {
 		slog.Error(err.Error())
 		return "", err
