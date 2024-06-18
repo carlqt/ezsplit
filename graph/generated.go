@@ -1758,7 +1758,7 @@ func (ec *executionContext) _Query_receipts(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*model.Receipt)
 	fc.Result = res
-	return ec.marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
+	return ec.marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceiptᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5659,7 +5659,7 @@ func (ec *executionContext) marshalNReceipt2githubᚗcomᚋcarlqtᚋezsplitᚋgr
 	return ec._Receipt(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v []*model.Receipt) graphql.Marshaler {
+func (ec *executionContext) marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceiptᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Receipt) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5683,7 +5683,7 @@ func (ec *executionContext) marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezspli
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, sel, v[i])
+			ret[i] = ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5693,6 +5693,12 @@ func (ec *executionContext) marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezspli
 
 	}
 	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
 
 	return ret
 }
@@ -6106,13 +6112,6 @@ func (ec *executionContext) unmarshalOLoginUserInput2ᚖgithubᚗcomᚋcarlqtᚋ
 	}
 	res, err := ec.unmarshalInputLoginUserInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v *model.Receipt) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Receipt(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceiptInput(ctx context.Context, v interface{}) (*model.ReceiptInput, error) {
