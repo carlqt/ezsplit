@@ -79,7 +79,7 @@ type Mutation {
 }
 
 type Query {
-  receipts: [Receipt]! @authenticated
+  receipts: [Receipt!]! @authenticated
   receipt(id: ID!): Receipt!
   users: [User]! @authenticated
 }
