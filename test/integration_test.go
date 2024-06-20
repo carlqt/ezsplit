@@ -2,9 +2,7 @@ package integration_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"log/slog"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -81,9 +79,6 @@ func TestResolvers(t *testing.T) {
 
 			err = c.Post(query, &resp)
 
-			// if assert.Nil(t, err) {
-			// 	assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
-			// }
 			if assert.NotNil(t, err) {
 				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
 			}
@@ -141,6 +136,7 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		// Need to refactor this test and make it isolated
 		t.Run("with Receipts field", func(t *testing.T) {
 			userClaim := auth.UserClaim{
 				ID:       user.ID,
@@ -151,50 +147,89 @@ func TestResolvers(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Receipt
-			receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
-			err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
-			if err != nil {
-				t.Fatal(err)
-			}
+			t.Run("when receipts is empty", func(t *testing.T) {
+				query := `query Me {
+          me {
+            username
+            id
+            receipts {
+              id
+              description
+              total
+            }
+          }
+        }`
 
-			query := `query Me {
-				me {
-					username
-					id
-					receipts {
-						id
-						description
-						total
+				var resp struct {
+					Me struct {
+						Username string
+						Id       string
+						Receipts []*model.Receipt
 					}
 				}
-			}`
 
-			var resp struct {
-				Me struct {
-					Username string
-					Id       string
-					Receipts []*model.Receipt
+				option := func(bd *client.Request) {
+					ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+					bd.HTTP = bd.HTTP.WithContext(ctx)
 				}
-			}
 
-			option := func(bd *client.Request) {
-				ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-				bd.HTTP = bd.HTTP.WithContext(ctx)
-			}
+				err = c.Post(query, &resp, option)
 
-			err = c.Post(query, &resp, option)
+				if assert.Nil(t, err) {
+					responseReceipt := resp.Me.Receipts
 
-			if assert.Nil(t, err) {
-				responseReceipt := resp.Me.Receipts[0]
+					assert.Equal(t, user.ID, resp.Me.Id)
+					assert.Empty(t, responseReceipt)
+				}
+			})
 
-				assert.Equal(t, user.Username, resp.Me.Username)
-				assert.Equal(t, receipt.ID, responseReceipt.ID)
-				assert.Equal(t, receipt.Description, responseReceipt.Description)
+			t.Run("when a receipt exists", func(t *testing.T) {
+				// Receipt
+				receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-				// Formatted total
-				assert.Equal(t, responseReceipt.Total, "350.00")
-			}
+				query := `query Me {
+          me {
+            username
+            id
+            receipts {
+              id
+              description
+              total
+            }
+          }
+        }`
+
+				var resp struct {
+					Me struct {
+						Username string
+						Id       string
+						Receipts []*model.Receipt
+					}
+				}
+
+				option := func(bd *client.Request) {
+					ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+					bd.HTTP = bd.HTTP.WithContext(ctx)
+				}
+
+				err = c.Post(query, &resp, option)
+
+				if assert.Nil(t, err) {
+					responseReceipt := resp.Me.Receipts[0]
+
+					assert.Equal(t, user.Username, resp.Me.Username)
+					assert.Equal(t, receipt.ID, responseReceipt.ID)
+					assert.Equal(t, receipt.Description, responseReceipt.Description)
+
+					// Formatted total
+					assert.Equal(t, responseReceipt.Total, "350.00")
+				}
+			})
+
 		})
 
 		t.Run("when jwt exists", func(t *testing.T) {
@@ -437,23 +472,4 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, "77.88", resp.Me.TotalPayables)
 		}
 	})
-}
-
-func truncateAllTables(db *sql.DB) {
-	query := `
-		DO $$ DECLARE
-			r RECORD;
-		BEGIN
-			FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname =current_schema()) LOOP
-				EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE';
-			END LOOP;
-		END $$;
-	`
-
-	slog.Debug("Clearing data")
-
-	_, err := db.Exec(query)
-	if err != nil {
-		slog.Error(err.Error())
-	}
 }
