@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
+	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -139,6 +140,62 @@ func TestResolvers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		t.Run("with Receipts field", func(t *testing.T) {
+			userClaim := auth.UserClaim{
+				ID:       user.ID,
+				Username: user.Username,
+			}
+			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Receipt
+			receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+			err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `query Me {
+				me {
+					username
+					id
+					receipts {
+						id
+						description
+						total
+					}
+				}
+			}`
+
+			var resp struct {
+				Me struct {
+					Username string
+					Id       string
+					Receipts []*model.Receipt
+				}
+			}
+
+			option := func(bd *client.Request) {
+				ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
+				bd.HTTP = bd.HTTP.WithContext(ctx)
+			}
+
+			err = c.Post(query, &resp, option)
+
+			if assert.Nil(t, err) {
+				responseReceipt := resp.Me.Receipts[0]
+
+				assert.Equal(t, user.Username, resp.Me.Username)
+				assert.Equal(t, receipt.ID, responseReceipt.ID)
+				assert.Equal(t, receipt.Description, responseReceipt.Description)
+
+				// Formatted total
+				assert.Equal(t, responseReceipt.Total, "350.00")
+			}
+		})
 
 		t.Run("when jwt exists", func(t *testing.T) {
 			userClaim := auth.UserClaim{

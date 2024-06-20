@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 
 	Me struct {
 		ID            func(childComplexity int) int
+		Receipts      func(childComplexity int) int
 		TotalPayables func(childComplexity int) int
 		Username      func(childComplexity int) int
 	}
@@ -112,6 +113,7 @@ type ItemResolver interface {
 }
 type MeResolver interface {
 	TotalPayables(ctx context.Context, obj *model.Me) (string, error)
+	Receipts(ctx context.Context, obj *model.Me) ([]*model.Receipt, error)
 }
 type MutationResolver interface {
 	CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
@@ -202,6 +204,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Me.ID(childComplexity), true
+
+	case "Me.receipts":
+		if e.complexity.Me.Receipts == nil {
+			break
+		}
+
+		return e.complexity.Me.Receipts(childComplexity), true
 
 	case "Me.totalPayables":
 		if e.complexity.Me.TotalPayables == nil {
@@ -1117,6 +1126,62 @@ func (ec *executionContext) fieldContext_Me_totalPayables(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Me_receipts(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Me_receipts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Me().Receipts(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Receipt)
+	fc.Result = res
+	return ec.marshalNReceipt2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceiptᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Me_receipts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Me",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Receipt_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Receipt_user(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
+			case "total":
+				return ec.fieldContext_Receipt_total(ctx, field)
+			case "items":
+				return ec.fieldContext_Receipt_items(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createMyReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createMyReceipt(ctx, field)
 	if err != nil {
@@ -1988,6 +2053,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_Me_username(ctx, field)
 			case "totalPayables":
 				return ec.fieldContext_Me_totalPayables(ctx, field)
+			case "receipts":
+				return ec.fieldContext_Me_receipts(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
@@ -4726,6 +4793,42 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 					}
 				}()
 				res = ec._Me_totalPayables(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "receipts":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Me_receipts(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
