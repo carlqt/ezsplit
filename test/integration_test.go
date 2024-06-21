@@ -84,6 +84,7 @@ func TestResolvers(t *testing.T) {
 			}
 		})
 	})
+
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
@@ -136,7 +137,6 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// Need to refactor this test and make it isolated
 		t.Run("with Receipts field", func(t *testing.T) {
 			userClaim := auth.UserClaim{
 				ID:       user.ID,
@@ -147,43 +147,14 @@ func TestResolvers(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Run("when receipts is empty", func(t *testing.T) {
-				query := `query Me {
-          me {
-            username
-            id
-            receipts {
-              id
-              description
-              total
-            }
-          }
-        }`
-
-				var resp struct {
-					Me struct {
-						Username string
-						Id       string
-						Receipts []*model.Receipt
-					}
-				}
-
-				option := func(bd *client.Request) {
-					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
-				}
-
-				err = c.Post(query, &resp, option)
-
-				if assert.Nil(t, err) {
-					responseReceipt := resp.Me.Receipts
-
-					assert.Equal(t, user.ID, resp.Me.Id)
-					assert.Empty(t, responseReceipt)
-				}
-			})
-
 			t.Run("when a receipt exists", func(t *testing.T) {
-				// Receipt
+				t.Cleanup(func() {
+					_, err := app.DB.Exec("DELETE FROM receipts")
+					if err != nil {
+						t.Fatal(err)
+					}
+				})
+
 				receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
 				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
 				if err != nil {
@@ -224,10 +195,44 @@ func TestResolvers(t *testing.T) {
 					assert.Equal(t, receipt.Description, responseReceipt.Description)
 
 					// Formatted total
-					assert.Equal(t, responseReceipt.Total, "350.00")
+					assert.Equal(t, "350.00", responseReceipt.Total)
 				}
 			})
 
+			t.Run("when receipts is empty", func(t *testing.T) {
+				query := `query Me {
+          me {
+            username
+            id
+            receipts {
+              id
+              description
+              total
+            }
+          }
+        }`
+
+				var resp struct {
+					Me struct {
+						Username string
+						Id       string
+						Receipts []*model.Receipt
+					}
+				}
+
+				option := func(bd *client.Request) {
+					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
+				}
+
+				err = c.Post(query, &resp, option)
+
+				if assert.Nil(t, err) {
+					responseReceipt := resp.Me.Receipts
+
+					assert.Equal(t, user.ID, resp.Me.Id)
+					assert.Empty(t, responseReceipt)
+				}
+			})
 		})
 
 		t.Run("when jwt exists", func(t *testing.T) {
