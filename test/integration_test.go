@@ -1,8 +1,8 @@
 package integration_test
 
 import (
-	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -23,7 +23,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(internal.InjectSetCookieMiddleware(srv))
+	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 
 	t.Run("loginUser mutation", func(t *testing.T) {
 		t.Run("when password is correct", func(t *testing.T) {
@@ -169,8 +169,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-					bd.HTTP = bd.HTTP.WithContext(ctx)
+					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -212,8 +211,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-					bd.HTTP = bd.HTTP.WithContext(ctx)
+					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -257,8 +255,7 @@ func TestResolvers(t *testing.T) {
 			}
 
 			option := func(bd *client.Request) {
-				ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-				bd.HTTP = bd.HTTP.WithContext(ctx)
+				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 			}
 
 			err = c.Post(query, &resp, option)
@@ -284,12 +281,7 @@ func TestResolvers(t *testing.T) {
 				}
 			}
 
-			option := func(bd *client.Request) {
-				ctx := context.WithValue(context.Background(), auth.TokenKey, nil)
-				bd.HTTP = bd.HTTP.WithContext(ctx)
-			}
-
-			err = c.Post(query, &resp, option)
+			err = c.Post(query, &resp)
 
 			if assert.NotNil(t, err) {
 				// TODO: There should be a better way to check the error message
@@ -328,8 +320,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -391,8 +382,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -462,8 +452,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
