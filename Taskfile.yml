@@ -54,7 +54,7 @@ tasks:
   test:
     dotenv: [.env.test]
     cmds:
-      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
+      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test run --rm app
         ignore_error: true
       - defer: docker compose -f docker-compose.test.yml -p ezsplit_test down
 
