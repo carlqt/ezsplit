@@ -1,16 +1,15 @@
 package integration_test
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"log/slog"
+	"net/http"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
+	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -24,7 +23,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(internal.InjectSetCookieMiddleware(srv))
+	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 
 	t.Run("loginUser mutation", func(t *testing.T) {
 		t.Run("when password is correct", func(t *testing.T) {
@@ -80,14 +79,12 @@ func TestResolvers(t *testing.T) {
 
 			err = c.Post(query, &resp)
 
-			// if assert.Nil(t, err) {
-			// 	assert.Equal(t, "mutation_user160", resp.CreateUser.Username)
-			// }
 			if assert.NotNil(t, err) {
 				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
 			}
 		})
 	})
+
 	t.Run("createUser mutation", func(t *testing.T) {
 		defer truncateAllTables(app.DB)
 
@@ -140,6 +137,104 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		t.Run("with Receipts field", func(t *testing.T) {
+			userClaim := auth.UserClaim{
+				ID:       user.ID,
+				Username: user.Username,
+			}
+			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Run("when a receipt exists", func(t *testing.T) {
+				t.Cleanup(func() {
+					_, err := app.DB.Exec("DELETE FROM receipts")
+					if err != nil {
+						t.Fatal(err)
+					}
+				})
+
+				receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				query := `query Me {
+          me {
+            username
+            id
+            receipts {
+              id
+              description
+              total
+            }
+          }
+        }`
+
+				var resp struct {
+					Me struct {
+						Username string
+						Id       string
+						Receipts []*model.Receipt
+					}
+				}
+
+				option := func(bd *client.Request) {
+					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+				}
+
+				err = c.Post(query, &resp, option)
+
+				if assert.Nil(t, err) {
+					responseReceipt := resp.Me.Receipts[0]
+
+					assert.Equal(t, user.Username, resp.Me.Username)
+					assert.Equal(t, receipt.ID, responseReceipt.ID)
+					assert.Equal(t, receipt.Description, responseReceipt.Description)
+
+					// Formatted total
+					assert.Equal(t, "350.00", responseReceipt.Total)
+				}
+			})
+
+			t.Run("when receipts is empty", func(t *testing.T) {
+				query := `query Me {
+          me {
+            username
+            id
+            receipts {
+              id
+              description
+              total
+            }
+          }
+        }`
+
+				var resp struct {
+					Me struct {
+						Username string
+						Id       string
+						Receipts []*model.Receipt
+					}
+				}
+
+				option := func(bd *client.Request) {
+					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
+				}
+
+				err = c.Post(query, &resp, option)
+
+				if assert.Nil(t, err) {
+					responseReceipt := resp.Me.Receipts
+
+					assert.Equal(t, user.ID, resp.Me.Id)
+					assert.Empty(t, responseReceipt)
+				}
+			})
+		})
+
 		t.Run("when jwt exists", func(t *testing.T) {
 			userClaim := auth.UserClaim{
 				ID:       user.ID,
@@ -165,8 +260,7 @@ func TestResolvers(t *testing.T) {
 			}
 
 			option := func(bd *client.Request) {
-				ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-				bd.HTTP = bd.HTTP.WithContext(ctx)
+				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 			}
 
 			err = c.Post(query, &resp, option)
@@ -192,12 +286,7 @@ func TestResolvers(t *testing.T) {
 				}
 			}
 
-			option := func(bd *client.Request) {
-				ctx := context.WithValue(context.Background(), auth.TokenKey, nil)
-				bd.HTTP = bd.HTTP.WithContext(ctx)
-			}
-
-			err = c.Post(query, &resp, option)
+			err = c.Post(query, &resp)
 
 			if assert.NotNil(t, err) {
 				// TODO: There should be a better way to check the error message
@@ -236,8 +325,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -299,8 +387,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -370,8 +457,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			ctx := context.WithValue(context.Background(), auth.TokenKey, accessToken)
-			bd.HTTP = bd.HTTP.WithContext(ctx)
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -380,23 +466,4 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, "77.88", resp.Me.TotalPayables)
 		}
 	})
-}
-
-func truncateAllTables(db *sql.DB) {
-	query := `
-		DO $$ DECLARE
-			r RECORD;
-		BEGIN
-			FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname =current_schema()) LOOP
-				EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE';
-			END LOOP;
-		END $$;
-	`
-
-	slog.Debug("Clearing data")
-
-	_, err := db.Exec(query)
-	if err != nil {
-		slog.Error(err.Error())
-	}
 }

@@ -12,6 +12,25 @@ type User struct {
 	repository.User
 }
 
+func truncateAllTables(db *sql.DB) {
+	query := `
+		DO $$ DECLARE
+			r RECORD;
+		BEGIN
+			FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname =current_schema()) LOOP
+				EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE';
+			END LOOP;
+		END $$;
+	`
+
+	slog.Debug("Clearing data")
+
+	_, err := db.Exec(query)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+}
+
 func CreateUser(db *sql.DB, username string) (User, error) {
 	fakePassword := "password"
 	hashedPassword, _ := auth.HashPassword(fakePassword)

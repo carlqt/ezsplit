@@ -4,6 +4,7 @@ type Me {
   id: ID!
   username: String!
   totalPayables: String!
+  receipts: [Receipt!]!
 } 
 
 extend type Query {
