@@ -45,12 +45,32 @@ func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.Rec
 		UserID:      userClaim.ID,
 	}
 
+	// Need to create the receipt and the associated items
 	err := r.Repositories.ReceiptRepository.CreateForUser(receipt)
 	if err != nil {
 		return nil, err
 	}
 
-	return newModelReceipt(receipt), nil
+	var modelItems []*model.Item
+	for _, item := range input.Items {
+		price := toPriceCents(*item.Price)
+		item := repository.Item{
+			ReceiptID: receipt.ID,
+			Name:      item.Name,
+			Price:     price,
+		}
+
+		// On Error, skip converting struct to response struct
+		err := r.Repositories.ItemRepository.Create(&item)
+		if err == nil {
+			modelItems = append(modelItems, newModelItem(&item))
+		}
+	}
+
+	receiptModel := newModelReceipt(receipt)
+	receiptModel.Items = modelItems
+
+	return receiptModel, nil
 }
 
 // AddItemToReceipt is the resolver for the addItemToReceipt field.

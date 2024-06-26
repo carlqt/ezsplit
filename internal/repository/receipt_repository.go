@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"time"
 )
@@ -30,8 +31,7 @@ func (r *ReceiptRepository) Create(receipt *Receipt) error {
 func (r *ReceiptRepository) CreateForUser(receipt *Receipt) error {
 	err := r.DB.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
 	if err != nil {
-		slog.Error(err.Error())
-		return err
+		return fmt.Errorf("Creating the Receipt for the user failed %v:", err)
 	}
 	return nil
 }
