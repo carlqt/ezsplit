@@ -4557,7 +4557,7 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"description", "price"}
+	fieldsInOrder := [...]string{"description", "price", "items"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4578,6 +4578,13 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Price = data
+		case "items":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("items"))
+			data, err := ec.unmarshalNAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Items = data
 		}
 	}
 
@@ -5647,6 +5654,23 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) unmarshalNAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx context.Context, v interface{}) ([]*model.AddItemToReceiptInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.AddItemToReceiptInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOAddItemToReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
