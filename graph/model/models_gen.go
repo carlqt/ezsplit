@@ -34,9 +34,14 @@ type Query struct {
 }
 
 type ReceiptInput struct {
-	Description string                   `json:"description"`
-	Price       *float64                 `json:"price,omitempty"`
-	Items       []*AddItemToReceiptInput `json:"items,omitempty"`
+	Description string              `json:"description"`
+	Price       *float64            `json:"price,omitempty"`
+	Items       []*ReceiptItemInput `json:"items,omitempty"`
+}
+
+type ReceiptItemInput struct {
+	Name  string   `json:"name"`
+	Price *float64 `json:"price,omitempty"`
 }
 
 type User struct {

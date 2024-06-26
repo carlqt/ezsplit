@@ -38,7 +38,12 @@ type DeleteItemPayload {
 input ReceiptInput {
   description: String!
   price: Float
-  items: [AddItemToReceiptInput]
+  items: [ReceiptItemInput]
+}
+
+input ReceiptItemInput {
+  name: String!
+  price: Float
 }
 
 input UserInput {
