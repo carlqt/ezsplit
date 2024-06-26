@@ -165,6 +165,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 // LoginUser is the resolver for the loginUser field.
 func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
+	if input == nil {
+		return nil, errors.New("incorrect username or password")
+	}
+
 	user, err := r.Repositories.UserRepository.FindByUsername(input.Username)
 	if err != nil {
 		slog.Warn(err.Error())
