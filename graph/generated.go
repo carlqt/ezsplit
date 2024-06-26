@@ -4580,7 +4580,7 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 			it.Price = data
 		case "items":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("items"))
-			data, err := ec.unmarshalNAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, v)
+			data, err := ec.unmarshalOAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5655,23 +5655,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx context.Context, v interface{}) ([]*model.AddItemToReceiptInput, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*model.AddItemToReceiptInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOAddItemToReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6158,6 +6141,26 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalOAddItemToReceiptInput2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx context.Context, v interface{}) ([]*model.AddItemToReceiptInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.AddItemToReceiptInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOAddItemToReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalOAddItemToReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAddItemToReceiptInput(ctx context.Context, v interface{}) (*model.AddItemToReceiptInput, error) {
