@@ -26,6 +26,34 @@ func TestResolvers(t *testing.T) {
 	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 
 	t.Run("loginUser mutation", func(t *testing.T) {
+		t.Run("when there are no inputs", func(t *testing.T) {
+			defer truncateAllTables(app.DB)
+
+			_, err := CreateUser(app.DB, "mutation_user160")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := `mutation loginUser {
+				loginUser {
+					username
+					id
+				}
+			}`
+
+			var resp struct {
+				LoginUser struct {
+					Username string
+					Id       string
+				}
+			}
+
+			err = c.Post(query, &resp)
+
+			if assert.NotNil(t, err) {
+				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
+			}
+		})
 		t.Run("when password is correct", func(t *testing.T) {
 			defer truncateAllTables(app.DB)
 
