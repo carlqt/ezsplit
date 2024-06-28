@@ -40,7 +40,7 @@ func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.Rec
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	receipt := &repository.Receipt{
-		Total:       toPriceCents(*input.Price),
+		Total:       toPriceCents(*input.Total),
 		Description: input.Description,
 		UserID:      userClaim.ID,
 	}

@@ -4557,7 +4557,7 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"description", "price"}
+	fieldsInOrder := [...]string{"description", "total"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4571,13 +4571,13 @@ func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Description = data
-		case "price":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+		case "total":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("total"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Price = data
+			it.Total = data
 		}
 	}
 

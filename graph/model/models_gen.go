@@ -35,7 +35,7 @@ type Query struct {
 
 type ReceiptInput struct {
 	Description string   `json:"description"`
-	Price       *float64 `json:"price,omitempty"`
+	Total       *float64 `json:"total,omitempty"`
 }
 
 type User struct {
