@@ -337,7 +337,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		query := `mutation createMyReceipt {
-			createMyReceipt(input: {description: "test receipt", price: 350 }) {
+			createMyReceipt(input: {description: "test receipt", total: 350 }) {
 				description
 				total
 				id
