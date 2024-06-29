@@ -57,6 +57,9 @@ table "receipts" {
     on_update   = NO_ACTION
     on_delete   = NO_ACTION
   }
+  check "non_empty_description" {
+    expr = "description != ''"
+  }
 }
 
 table "items" {
