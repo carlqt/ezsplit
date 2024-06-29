@@ -117,7 +117,15 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 
 // DeleteMyReceipt is the resolver for the deleteMyReceipt field.
 func (r *mutationResolver) DeleteMyReceipt(ctx context.Context, input *model.DeleteMyReceiptInput) (string, error) {
-	panic(fmt.Errorf("not implemented: DeleteMyReceipt - deleteMyReceipt"))
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	err := r.Repositories.ReceiptRepository.Delete(userClaim.ID, input.ID)
+	if err != nil {
+		slog.Error(err.Error())
+		return "", errors.New("failed to delete receipt")
+	}
+
+	return userClaim.ID, nil
 }
 
 // CreateUser is the resolver for the createUser field.
