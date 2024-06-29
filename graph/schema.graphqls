@@ -66,12 +66,17 @@ input AssignOrDeleteMeToItemInput {
   itemId: ID!
 }
 
+input DeleteMyReceiptInput {
+  id: ID!
+}
+
 type Mutation {
   createMyReceipt(input: ReceiptInput): Receipt! @authenticated
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
+  deleteMyReceipt(input: DeleteMyReceiptInput): ID!
 
   createUser(input: UserInput): UserWithJwt!
   loginUser(input: LoginUserInput): UserWithJwt!

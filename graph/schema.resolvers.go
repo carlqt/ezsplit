@@ -115,6 +115,11 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 	}, nil
 }
 
+// DeleteMyReceipt is the resolver for the deleteMyReceipt field.
+func (r *mutationResolver) DeleteMyReceipt(ctx context.Context, input *model.DeleteMyReceiptInput) (string, error) {
+	panic(fmt.Errorf("not implemented: DeleteMyReceipt - deleteMyReceipt"))
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
 	if input.ConfirmPassword != input.Password {
