@@ -1,0 +1,8 @@
+run:
+  tests: false
+
+issues:
+  exclude-rules:
+    - path: 'test\/.+\.go'
+      linters:
+        - errcheck

@@ -50,7 +50,7 @@ func CreateUser(db *sql.DB, username string) (User, error) {
 	return user, nil
 }
 
-func (u User) getAuthToken(secret []byte) (string, error) {
+func (u User) GetAuthToken(secret []byte) (string, error) {
 	userClaim := auth.UserClaim{
 		ID:       u.ID,
 		Username: u.Username,
