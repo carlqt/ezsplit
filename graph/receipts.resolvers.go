@@ -16,6 +16,10 @@ import (
 
 // CreateMyReceipt is the resolver for the createMyReceipt field.
 func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
+	if input == nil {
+		return nil, errors.New("invalid input for CreateMyReceipt")
+	}
+
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	receipt := &repository.Receipt{
@@ -42,7 +46,7 @@ func (r *mutationResolver) DeleteMyReceipt(ctx context.Context, input *model.Del
 		return "", errors.New("failed to delete receipt")
 	}
 
-	return userClaim.ID, nil
+	return input.ID, nil
 }
 
 // Receipts is the resolver for the receipts field.

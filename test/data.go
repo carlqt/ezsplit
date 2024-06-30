@@ -82,14 +82,20 @@ func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, 
 		return receipt, err
 	}
 
-	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
+	defer tx.Rollback()
+
+	user, err := CreateUser(db, "fake_user")
+	if err != nil {
+		return receipt, err
+	}
+
+	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, user.ID).Scan(&receipt.ID)
 	if err != nil {
 		slog.Error(err.Error())
 		return receipt, err
 	}
 
-	user, err := CreateUser(db, "fake_user")
-	if err != nil {
+	if err = tx.Commit(); err != nil {
 		return receipt, err
 	}
 
