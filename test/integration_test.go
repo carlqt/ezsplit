@@ -24,6 +24,7 @@ func TestResolvers(t *testing.T) {
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
+	defer truncateAllTables(app.DB)
 
 	t.Run("loginUser mutation", func(t *testing.T) {
 		t.Run("when there are no inputs", func(t *testing.T) {
