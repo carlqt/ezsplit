@@ -332,7 +332,7 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		accessToken, err := user.getAuthToken(app.Config.JWTSecret)
+		accessToken, err := user.GetAuthToken(app.Config.JWTSecret)
 		if err != nil {
 			t.Fatal(err)
 		}
