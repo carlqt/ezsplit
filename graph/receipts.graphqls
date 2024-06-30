@@ -1,0 +1,26 @@
+type Receipt {
+  id: ID!
+  user: User
+  description: String!
+  total: String
+  items: [Item]!
+}
+
+input ReceiptInput {
+  description: String!
+  total: Float
+}
+
+input DeleteMyReceiptInput {
+  id: ID!
+}
+
+extend type Query {
+  receipts: [Receipt!]! @authenticated
+  receipt(id: ID!): Receipt!
+}
+
+extend type Mutation {
+  createMyReceipt(input: ReceiptInput): Receipt! @authenticated
+  deleteMyReceipt(input: DeleteMyReceiptInput): ID!
+}

@@ -26,6 +26,10 @@ func (r *meResolver) TotalPayables(ctx context.Context, obj *model.Me) (string, 
 
 // Receipts is the resolver for the receipts field.
 func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Receipt, error) {
+	if obj == nil {
+		return nil, errors.New("missing Me object")
+	}
+
 	receipts, err := r.Repositories.ReceiptRepository.SelectForUser(obj.ID)
 	if err != nil {
 		slog.Debug(err.Error())

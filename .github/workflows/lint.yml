@@ -16,6 +16,9 @@ jobs:
         with:
           version: v1.58
 
+      - name: Go Vet
+        run: go vet ./...
+
   test-gqlgen-generate:
     runs-on: ubuntu-latest
     steps:

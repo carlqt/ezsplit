@@ -35,24 +35,6 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 	return modelUsers, nil
 }
 
-// CreateMyReceipt is the resolver for the createMyReceipt field.
-func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
-	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
-
-	receipt := &repository.Receipt{
-		Total:       toPriceCents(*input.Total),
-		Description: input.Description,
-		UserID:      userClaim.ID,
-	}
-
-	err := r.Repositories.ReceiptRepository.CreateForUser(receipt)
-	if err != nil {
-		return nil, err
-	}
-
-	return newModelReceipt(receipt), nil
-}
-
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
 	price := toPriceCents(*input.Price)
@@ -232,33 +214,6 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 	return "ok", nil
 }
 
-// Receipts is the resolver for the receipts field.
-func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) {
-	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var modelReceipts []*model.Receipt
-
-	for _, receipt := range receipts {
-		modelReceipt := newModelReceipt(receipt)
-		modelReceipts = append(modelReceipts, modelReceipt)
-	}
-
-	return modelReceipts, nil
-}
-
-// Receipt is the resolver for the receipt field.
-func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt, error) {
-	receipt, err := r.Repositories.ReceiptRepository.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return newModelReceipt(receipt), nil
-}
-
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.Repositories.UserRepository.GetAllUsers()
@@ -278,36 +233,6 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return modelUsers, nil
 }
 
-// User is the resolver for the user field.
-func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.User, error) {
-	user, err := r.Repositories.UserRepository.FindByID(obj.UserID)
-	if err != nil {
-		// log.Println(err)
-		return nil, err
-	}
-
-	return &model.User{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
-}
-
-// Items is the resolver for the items field.
-func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*model.Item, error) {
-	items, err := r.Repositories.ItemRepository.SelectAllForReceipt(obj.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	var modelItems []*model.Item
-	for _, item := range items {
-		modelItem := newModelItem(item)
-		modelItems = append(modelItems, modelItem)
-	}
-
-	return modelItems, nil
-}
-
 // Item returns ItemResolver implementation.
 func (r *Resolver) Item() ItemResolver { return &itemResolver{r} }
 
@@ -317,10 +242,6 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-// Receipt returns ReceiptResolver implementation.
-func (r *Resolver) Receipt() ReceiptResolver { return &receiptResolver{r} }
-
 type itemResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type receiptResolver struct{ *Resolver }

@@ -12,7 +12,7 @@ type User struct {
 	repository.User
 }
 
-func truncateAllTables(db *sql.DB) {
+func TruncateAllTables(db *sql.DB) {
 	query := `
 		DO $$ DECLARE
 			r RECORD;
@@ -50,7 +50,7 @@ func CreateUser(db *sql.DB, username string) (User, error) {
 	return user, nil
 }
 
-func (u User) getAuthToken(secret []byte) (string, error) {
+func (u User) GetAuthToken(secret []byte) (string, error) {
 	userClaim := auth.UserClaim{
 		ID:       u.ID,
 		Username: u.Username,
@@ -82,14 +82,20 @@ func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, 
 		return receipt, err
 	}
 
-	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, receipt.UserID).Scan(&receipt.ID)
+	defer tx.Rollback()
+
+	user, err := CreateUser(db, "fake_user")
+	if err != nil {
+		return receipt, err
+	}
+
+	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, user.ID).Scan(&receipt.ID)
 	if err != nil {
 		slog.Error(err.Error())
 		return receipt, err
 	}
 
-	user, err := CreateUser(db, "fake_user")
-	if err != nil {
+	if err = tx.Commit(); err != nil {
 		return receipt, err
 	}
 

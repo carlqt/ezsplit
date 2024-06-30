@@ -91,7 +91,10 @@ table "items" {
     columns     = [column.receipt_id]
     ref_columns = [table.receipts.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
+  }
+  index "FK_items_receipt_id" {
+    columns = [column.receipt_id]
   }
 }
 
