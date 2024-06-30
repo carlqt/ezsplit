@@ -12,7 +12,7 @@ type User struct {
 	repository.User
 }
 
-func truncateAllTables(db *sql.DB) {
+func TruncateAllTables(db *sql.DB) {
 	query := `
 		DO $$ DECLARE
 			r RECORD;

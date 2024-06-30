@@ -24,11 +24,11 @@ func TestResolvers(t *testing.T) {
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
-	defer truncateAllTables(app.DB)
+	defer TruncateAllTables(app.DB)
 
 	t.Run("loginUser mutation", func(t *testing.T) {
 		t.Run("when there are no inputs", func(t *testing.T) {
-			defer truncateAllTables(app.DB)
+			defer TruncateAllTables(app.DB)
 
 			_, err := CreateUser(app.DB, "mutation_user160")
 			if err != nil {
@@ -56,7 +56,7 @@ func TestResolvers(t *testing.T) {
 			}
 		})
 		t.Run("when password is correct", func(t *testing.T) {
-			defer truncateAllTables(app.DB)
+			defer TruncateAllTables(app.DB)
 
 			_, err := CreateUser(app.DB, "mutation_user160")
 			if err != nil {
@@ -85,7 +85,7 @@ func TestResolvers(t *testing.T) {
 		})
 
 		t.Run("when password is wrong", func(t *testing.T) {
-			defer truncateAllTables(app.DB)
+			defer TruncateAllTables(app.DB)
 
 			_, err := CreateUser(app.DB, "mutation_user160")
 			if err != nil {
@@ -115,7 +115,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("createUser mutation", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		query := `mutation createUser {
 			createUser(input: {username: "mutation_user160", password: "password", confirmPassword: "password" }) {
@@ -141,7 +141,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("logoutUser mutation works", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		query := `mutation logoutUser {
 			logoutUser
@@ -159,7 +159,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("query Me", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		user, err := CreateUser(app.DB, "fake_user")
 		if err != nil {
@@ -325,7 +325,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("mutation createMyReceipt", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		user, err := CreateUser(app.DB, "fake_user")
 		if err != nil {
@@ -366,7 +366,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("mutation assignMeToItem", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		user, err := app.Repositories.UserRepository.Create("john_doe", "testing")
 		if err != nil {
@@ -429,7 +429,7 @@ func TestResolvers(t *testing.T) {
 	})
 
 	t.Run("totalPayables of Me", func(t *testing.T) {
-		defer truncateAllTables(app.DB)
+		defer TruncateAllTables(app.DB)
 
 		// Creating 2 users
 		user, err := app.Repositories.UserRepository.Create("john_doe", "password")

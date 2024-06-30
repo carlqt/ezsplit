@@ -6,26 +6,41 @@ import (
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
+	integration_test "github.com/carlqt/ezsplit/test"
 	"github.com/stretchr/testify/assert"
 )
 
-func newMeResolver() meResolver {
+func TestMeResolver(t *testing.T) {
 	app := internal.NewApp()
 	resolvers := Resolver{Repositories: app.Repositories, Config: app.Config}
+	testMeResolver := meResolver{&resolvers}
+	truncateTables := func() {
+		integration_test.TruncateAllTables(app.DB)
+	}
 
-	return meResolver{&resolvers}
-}
+	t.Run("TotalPayables", func(t *testing.T) {
+		t.Run("when there are no rows in user_orders", func(t *testing.T) {
+			defer truncateTables()
 
-func TestTotalPayables(t *testing.T) {
-	r := newMeResolver()
-	ctx := context.TODO()
-	meModel := &model.Me{ID: "1"}
+			ctx := context.TODO()
+			meModel := &model.Me{ID: "1"}
 
-	t.Run("when there are no rows in user_orders", func(t *testing.T) {
-		result, err := r.TotalPayables(ctx, meModel)
+			result, err := testMeResolver.TotalPayables(ctx, meModel)
 
-		if assert.Nil(t, err) {
-			assert.Equal(t, "0.00", result)
-		}
+			if assert.Nil(t, err) {
+				assert.Equal(t, "0.00", result)
+			}
+		})
+	})
+
+	t.Run("Receipts", func(t *testing.T) {
+		t.Run("when obj is nil", func(t *testing.T) {
+			defer truncateTables()
+
+			ctx := context.TODO()
+			_, err := testMeResolver.Receipts(ctx, nil)
+
+			assert.EqualError(t, err, "missing Me object")
+		})
 	})
 }
