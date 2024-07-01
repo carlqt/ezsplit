@@ -495,4 +495,49 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, "77.88", resp.Me.TotalPayables)
 		}
 	})
+
+	t.Run("mutation DeleteMyReceipt", func(t *testing.T) {
+		defer TruncateAllTables(app.DB)
+
+		user, err := app.Repositories.UserRepository.Create("john_doe", "testing")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		err = app.Repositories.ItemRepository.Create(&item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		userClaim := auth.UserClaim{
+			ID:       user.ID,
+			Username: user.Username,
+		}
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		query := fmt.Sprintf(`mutation DeleteMyReceipt {
+			deleteMyReceipt(input: { id: "%s" })
+		}`, receipt.ID)
+
+		var resp struct {
+			DeleteMyReceipt string
+		}
+
+		option := func(bd *client.Request) {
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+		}
+
+		err = c.Post(query, &resp, option)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, receipt.ID, resp.DeleteMyReceipt)
+		}
+	})
 }

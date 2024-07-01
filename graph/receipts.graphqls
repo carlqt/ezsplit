@@ -22,5 +22,5 @@ extend type Query {
 
 extend type Mutation {
   createMyReceipt(input: ReceiptInput): Receipt! @authenticated
-  deleteMyReceipt(input: DeleteMyReceiptInput): ID!
+  deleteMyReceipt(input: DeleteMyReceiptInput): ID! @authenticated
 }
