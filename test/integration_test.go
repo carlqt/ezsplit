@@ -537,7 +537,7 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, receipt.ID, resp)
+			assert.Equal(t, receipt.ID, resp.DeleteMyReceipt)
 		}
 	})
 }
