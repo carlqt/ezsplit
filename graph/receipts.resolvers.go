@@ -70,23 +70,6 @@ func (r *queryResolver) MyReceipts(ctx context.Context) ([]*model.Receipt, error
 	return modelReceipts, nil
 }
 
-// Receipts is the resolver for the receipts field.
-func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) {
-	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var modelReceipts []*model.Receipt
-
-	for _, receipt := range receipts {
-		modelReceipt := newModelReceipt(receipt)
-		modelReceipts = append(modelReceipts, modelReceipt)
-	}
-
-	return modelReceipts, nil
-}
-
 // Receipt is the resolver for the receipt field.
 func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt, error) {
 	receipt, err := r.Repositories.ReceiptRepository.FindByID(id)
