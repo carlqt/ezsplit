@@ -2,7 +2,9 @@ package integration_test
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
+	"math/rand/v2"
 
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -10,6 +12,10 @@ import (
 
 type User struct {
 	repository.User
+}
+
+type DbWriter interface {
+	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
 func TruncateAllTables(db *sql.DB) {
@@ -31,7 +37,7 @@ func TruncateAllTables(db *sql.DB) {
 	}
 }
 
-func CreateUser(db *sql.DB, username string) (User, error) {
+func CreateUser(db DbWriter, username string) (User, error) {
 	fakePassword := "password"
 	hashedPassword, _ := auth.HashPassword(fakePassword)
 
@@ -82,16 +88,17 @@ func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, 
 		return receipt, err
 	}
 
-	defer tx.Rollback()
-
-	user, err := CreateUser(db, "fake_user")
+	username := fmt.Sprintf("fake_user+%d", rand.IntN(100))
+	user, err := CreateUser(tx, username)
 	if err != nil {
+		tx.Rollback()
 		return receipt, err
 	}
 
 	err = tx.QueryRow("INSERT INTO receipts (total, description, user_id) VALUES ($1, $2, $3) RETURNING id", receipt.Total, receipt.Description, user.ID).Scan(&receipt.ID)
 	if err != nil {
 		slog.Error(err.Error())
+		tx.Rollback()
 		return receipt, err
 	}
 

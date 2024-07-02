@@ -2,6 +2,7 @@ package graph
 
 import (
 	"context"
+	"log/slog"
 	"testing"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -84,6 +85,45 @@ func TestReceiptsResolver(t *testing.T) {
 
 			if assert.Nil(t, err) {
 				assert.Equal(t, receipt1.ID, result)
+			}
+		})
+	})
+
+	t.Run("MyReceipts", func(t *testing.T) {
+		t.Run("returns all receipts of the user", func(t *testing.T) {
+			defer truncateTables()
+
+			myQueryResolver := queryResolver{&resolvers}
+
+			receipt1, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+			if err != nil {
+				slog.Error(err.Error())
+				t.Fatal(err)
+			}
+
+			// Creating a receipt for another user
+			_, err = integration_test.CreateReceiptWithUser(app.DB, 10000, "receipt 2")
+			if err != nil {
+				slog.Error(err.Error())
+				t.Fatal(err)
+			}
+
+			currentUserClaims := auth.UserClaim{
+				ID:       receipt1.User.ID,
+				Username: receipt1.User.Username,
+			}
+
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
+
+			result, err := myQueryResolver.MyReceipts(ctx)
+
+			if assert.Nil(t, err) {
+				if assert.Equal(t, 1, len(result)) {
+					r := result[0]
+					assert.Equal(t, "receipt 1", r.Description)
+					assert.Equal(t, "99.00", r.Total)
+				}
 			}
 		})
 	})
