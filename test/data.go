@@ -74,7 +74,50 @@ type Receipt struct {
 	User User
 }
 
+func CreateRandomUser(db DbWriter) string {
+	var id string
+
+	stmt := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
+
+	username := fmt.Sprintf("fake_user+%d", rand.IntN(100))
+	err := db.QueryRow(stmt, username, "password").Scan(&id)
+	if err != nil {
+		panic(err)
+	}
+
+	return id
+}
+
 func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		panic(err)
+	}
+
+	userID := CreateRandomUser(tx)
+	receipt := Receipt{
+		Receipt: repository.Receipt{
+			Description: description,
+			UserID:      userID,
+			Total:       total,
+		},
+	}
+
+	stmt := "INSERT INTO receipts (user_id, total, description) VALUES ($1, $2, $3) RETURNING ID"
+	err = tx.QueryRow(stmt, receipt.UserID, receipt.Total, receipt.Description).Scan(&receipt.ID)
+	if err != nil {
+		tx.Rollback()
+		panic(err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		panic(err)
+	}
+
+	return receipt, nil
+}
+
+func CreateReceiptWithUserxxxx(db *sql.DB, total int, description string) (Receipt, error) {
 	receipt := Receipt{
 		repository.Receipt{
 			Total:       total,
@@ -106,6 +149,7 @@ func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, 
 		return receipt, err
 	}
 
+	receipt.UserID = user.ID
 	receipt.User = user
 
 	return receipt, nil

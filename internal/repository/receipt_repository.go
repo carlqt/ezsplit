@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 )
 
@@ -59,7 +60,9 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 }
 
 func (r *ReceiptRepository) SelectForUser(userID string) ([]*Receipt, error) {
-	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", userID)
+	intUserID, _ := strconv.Atoi(userID)
+
+	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", intUserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve user receipts from DB: %w", err)
 	}
