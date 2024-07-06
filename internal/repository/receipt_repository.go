@@ -4,7 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
+
+	_ "github.com/lib/pq"
+
+	g "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
 )
 
 type ReceiptRepository struct {
@@ -59,20 +65,15 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 }
 
 func (r *ReceiptRepository) SelectForUser(userID string) ([]*Receipt, error) {
-	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", userID)
+	intUserID, _ := strconv.ParseInt(userID, 10, 64)
+	stmt := SELECT(
+		g.Receipts.ID, g.Receipts.Total, g.Receipts.Description, g.Receipts.CreatedAt,
+	).FROM(g.Receipts.Table).WHERE(g.Receipts.UserID.EQ(Int(intUserID)))
+
+	receipts := []*Receipt{}
+	err := stmt.Query(r.DB, &receipts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve user receipts from DB: %w", err)
-	}
-	defer rows.Close()
-
-	var receipts []*Receipt
-	for rows.Next() {
-		receipt := &Receipt{}
-		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("failed to Scan receipt to struct: %w", err)
-		}
-		receipts = append(receipts, receipt)
 	}
 
 	return receipts, nil
