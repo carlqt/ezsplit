@@ -61,8 +61,7 @@ func (r *ReceiptRepository) SelectAll() ([]*Receipt, error) {
 func (r *ReceiptRepository) SelectForUser(userID string) ([]*Receipt, error) {
 	rows, err := r.DB.Query("SELECT id, total, description, created_at FROM receipts WHERE user_id = $1", userID)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to retrieve user receipts from DB: %w", err)
 	}
 	defer rows.Close()
 
@@ -71,8 +70,7 @@ func (r *ReceiptRepository) SelectForUser(userID string) ([]*Receipt, error) {
 		receipt := &Receipt{}
 		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Description, &receipt.CreatedAt)
 		if err != nil {
-			slog.Error(err.Error())
-			return nil, err
+			return nil, fmt.Errorf("failed to Scan receipt to struct: %w", err)
 		}
 		receipts = append(receipts, receipt)
 	}

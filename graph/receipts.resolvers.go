@@ -49,14 +49,18 @@ func (r *mutationResolver) DeleteMyReceipt(ctx context.Context, input *model.Del
 	return input.ID, nil
 }
 
-// Receipts is the resolver for the receipts field.
-func (r *queryResolver) Receipts(ctx context.Context) ([]*model.Receipt, error) {
-	receipts, err := r.Repositories.ReceiptRepository.SelectAll()
+// MyReceipts is the resolver for the myReceipts field.
+func (r *queryResolver) MyReceipts(ctx context.Context) ([]*model.Receipt, error) {
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	receipts, err := r.Repositories.ReceiptRepository.SelectForUser(userClaim.ID)
+
 	if err != nil {
-		return nil, err
+		slog.Debug(err.Error())
+		return nil, errors.New("couldn't fetch receipts of user")
 	}
 
-	var modelReceipts []*model.Receipt
+	modelReceipts := make([]*model.Receipt, 0)
 
 	for _, receipt := range receipts {
 		modelReceipt := newModelReceipt(receipt)

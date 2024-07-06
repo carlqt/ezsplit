@@ -16,7 +16,7 @@ input DeleteMyReceiptInput {
 }
 
 extend type Query {
-  receipts: [Receipt!]! @authenticated
+  myReceipts: [Receipt!]! @authenticated
   receipt(id: ID!): Receipt!
 }
 
