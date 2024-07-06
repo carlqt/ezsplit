@@ -72,3 +72,9 @@ tasks:
     cmds:
       - task: db:schema:apply
       - task: db:seed:run
+
+  models:generate:
+    vars:
+      JET_COMMAND: 'jet -dsn=postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable -schema=public -path=./.gen'
+    cmds:
+      - docker compose run --rm dev-cli {{.JET_COMMAND}}

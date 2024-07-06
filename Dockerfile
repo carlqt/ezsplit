@@ -10,6 +10,8 @@ RUN apk add curl
 
 RUN curl -sSf https://atlasgo.sh | sh
 
+RUN go install github.com/go-jet/jet/v2/cmd/jet@latest
+
 COPY go.mod go.sum ./
 
 RUN go mod download
