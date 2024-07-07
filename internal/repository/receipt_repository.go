@@ -37,7 +37,7 @@ func NewReceipt(total int32, description string, userID string) (Receipt, error)
 	return receipt, nil
 }
 
-func (r *ReceiptRepository) Create(receipt Receipt) error {
+func (r *ReceiptRepository) Create(receipt *Receipt) error {
 	stmt := Receipts.INSERT(
 		Receipts.Total, Receipts.Description, Receipts.UserID,
 	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)

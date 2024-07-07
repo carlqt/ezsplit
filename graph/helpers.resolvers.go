@@ -2,6 +2,7 @@ package graph
 
 import (
 	"math/big"
+	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -26,11 +27,13 @@ func newModelItem(item *repository.Item) *model.Item {
 }
 
 func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
+	userID := strconv.Itoa(int(receipt.UserID))
+
 	return &model.Receipt{
 		ID:          string(receipt.ID),
 		Total:       toPriceDisplay(*receipt.Total),
 		Description: *receipt.Description,
-		UserID:      string(receipt.UserID),
+		UserID:      userID,
 	}
 }
 

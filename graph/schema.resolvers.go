@@ -41,7 +41,7 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 	item := repository.Item{
 		ReceiptID: input.ReceiptID,
 		Name:      input.Name,
-		Price:     price,
+		Price:     int(price),
 	}
 
 	err := r.Repositories.ItemRepository.Create(&item)

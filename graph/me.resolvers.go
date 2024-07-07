@@ -39,7 +39,7 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 	modelReceipts := make([]*model.Receipt, 0)
 
 	for _, receipt := range receipts {
-		modelReceipt := newModelReceipt(receipt)
+		modelReceipt := newModelReceipt(&receipt)
 		modelReceipts = append(modelReceipts, modelReceipt)
 	}
 

@@ -184,8 +184,8 @@ func TestResolvers(t *testing.T) {
 					}
 				})
 
-				receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
-				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+				receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
+				err = app.Repositories.ReceiptRepository.CreateForUser(receipt)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -373,13 +373,13 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
-		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
+		err = app.Repositories.ReceiptRepository.Create(receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -443,7 +443,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		// Receipt
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
 		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)

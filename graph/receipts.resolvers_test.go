@@ -78,7 +78,7 @@ func TestReceiptsResolver(t *testing.T) {
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
 
 			input := &model.DeleteMyReceiptInput{
-				ID: receipt1.ID,
+				ID: string(receipt1.ID),
 			}
 
 			result, err := testReceiptsResolver.DeleteMyReceipt(ctx, input)

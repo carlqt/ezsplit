@@ -69,19 +69,17 @@ func (u User) GetAuthToken(secret []byte) (string, error) {
 	return accessToken, err
 }
 
-type Receipt struct {
+type ReceiptWithUser struct {
 	repository.Receipt
 	User User
 }
 
-func CreateReceiptWithUser(db *sql.DB, total int, description string) (Receipt, error) {
-	receipt := Receipt{
-		repository.Receipt{
-			Total:       total,
-			Description: description,
-		},
-		User{},
-	}
+func CreateReceiptWithUser(db *sql.DB, total int, description string) (ReceiptWithUser, error) {
+	receipt := ReceiptWithUser{}
+	receipt.Receipt = repository.Receipt{}
+	receipt.Receipt.Description = &description
+	receiptTotal := int32(total)
+	receipt.Receipt.Total = &receiptTotal
 
 	tx, err := db.Begin()
 	if err != nil {

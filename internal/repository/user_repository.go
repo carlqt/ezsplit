@@ -28,11 +28,11 @@ func (r *UserRepository) Create(username string, password string) (User, error) 
 	return user, nil
 }
 
-func (r *UserRepository) FindByID(id int64) (*User, error) {
+func (r *UserRepository) FindByID(id string) (*User, error) {
 	user := &User{}
 	err := r.DB.QueryRow("SELECT id, username FROM users WHERE id = $1", id).Scan(&user.ID, &user.Username)
 	if err != nil {
-		return nil, fmt.Errorf("%w: DB Query failed for id=%d", err, id)
+		return nil, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
 	return user, nil
 }

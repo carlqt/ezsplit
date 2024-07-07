@@ -69,7 +69,7 @@ func (r *queryResolver) MyReceipts(ctx context.Context) ([]*model.Receipt, error
 	modelReceipts := make([]*model.Receipt, 0)
 
 	for _, receipt := range receipts {
-		modelReceipt := newModelReceipt(receipt)
+		modelReceipt := newModelReceipt(&receipt)
 		modelReceipts = append(modelReceipts, modelReceipt)
 	}
 
@@ -83,7 +83,7 @@ func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt,
 		return nil, err
 	}
 
-	return newModelReceipt(receipt), nil
+	return newModelReceipt(&receipt), nil
 }
 
 // User is the resolver for the user field.
