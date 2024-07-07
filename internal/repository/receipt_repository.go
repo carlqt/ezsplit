@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	_ "github.com/lib/pq"
@@ -42,10 +43,12 @@ func (r *ReceiptRepository) Create(receipt *Receipt) error {
 		Receipts.Total, Receipts.Description, Receipts.UserID,
 	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)
 
-	err := stmt.Query(r.DB, &receipt)
+	err := stmt.Query(r.DB, receipt)
 	if err != nil {
 		return fmt.Errorf("failed to create the user: %w", err)
 	}
+
+  slog.Debug("debugging", "statement", receipt)
 
 	return nil
 }
@@ -93,7 +96,9 @@ func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
 }
 
 func (r *ReceiptRepository) Delete(userID string, id string) error {
-	_, err := r.DB.Exec("DELETE FROM receipts WHERE id = $1 and user_id = $2", id, userID)
+  stmt := Receipts.DELETE().WHERE(Receipts.ID.EQ(RawInt(id)).AND(Receipts.UserID.EQ(RawInt(userID))))
+
+	_, err := stmt.Exec(r.DB)
 	if err != nil {
 		return fmt.Errorf("could not delete receipt with id %s: %w", id, err)
 	}

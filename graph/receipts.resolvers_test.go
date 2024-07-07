@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"log/slog"
+	"strconv"
 	"testing"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -77,14 +78,16 @@ func TestReceiptsResolver(t *testing.T) {
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
 
+			rID := strconv.Itoa(int(receipt1.ID))
+
 			input := &model.DeleteMyReceiptInput{
-				ID: string(receipt1.ID),
+				ID: rID,
 			}
 
 			result, err := testReceiptsResolver.DeleteMyReceipt(ctx, input)
 
 			if assert.Nil(t, err) {
-				assert.Equal(t, receipt1.ID, result)
+				assert.Equal(t, rID, result)
 			}
 		})
 	})

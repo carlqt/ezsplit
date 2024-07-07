@@ -3,6 +3,7 @@ package integration_test
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -374,12 +375,13 @@ func TestResolvers(t *testing.T) {
 		}
 
 		receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
-		err = app.Repositories.ReceiptRepository.Create(receipt)
+		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
+		itemReceiptID := strconv.Itoa(int(receipt.ID))
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -449,13 +451,13 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receipt.ID}
+		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: string(receipt.ID)}
 		err = app.Repositories.ItemRepository.Create(&item2)
 		if err != nil {
 			t.Fatal(err)
@@ -504,13 +506,13 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
 		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -523,7 +525,7 @@ func TestResolvers(t *testing.T) {
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation DeleteMyReceipt {
-			deleteMyReceipt(input: { id: "%s" })
+			deleteMyReceipt(input: { id: "%d" })
 		}`, receipt.ID)
 
 		var resp struct {
