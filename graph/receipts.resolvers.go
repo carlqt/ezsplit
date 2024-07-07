@@ -22,18 +22,24 @@ func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.Rec
 
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
-	receipt := &repository.Receipt{
-		Total:       toPriceCents(*input.Total),
-		Description: input.Description,
-		UserID:      userClaim.ID,
-	}
+	receipt, err := repository.NewReceipt(
+		toPriceCents(*input.Total),
+		input.Description,
+		userClaim.ID,
+	)
 
-	err := r.Repositories.ReceiptRepository.CreateForUser(receipt)
 	if err != nil {
-		return nil, err
+		slog.Error(err.Error(), "userID", userClaim.ID)
+		return nil, errors.New("failed to read input")
 	}
 
-	return newModelReceipt(receipt), nil
+	err = r.Repositories.ReceiptRepository.CreateForUser(receipt)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, errors.New("failed to create user")
+	}
+
+	return newModelReceipt(&receipt), nil
 }
 
 // DeleteMyReceipt is the resolver for the deleteMyReceipt field.

@@ -49,20 +49,20 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 }
 
 func createReceipt(repo *repository.ReceiptRepository, userID string) (string, error) {
-	receipt := repository.Receipt{
-		UserID:      userID,
-		Description: "Jollibee",
-		Total:       4000,
-	}
+	receipt, _ := repository.NewReceipt(
+		4000,
+		"Jollibee",
+		userID,
+	)
 
-	err := repo.Create(&receipt)
+	err := repo.Create(receipt)
 	if err != nil {
 		slog.Error(err.Error())
 		return "", err
 	}
 
 	slog.Info("Receipt created", "receiptID", receipt.ID)
-	return receipt.ID, nil
+	return string(receipt.ID), nil
 }
 
 func createItems(repo *repository.ItemRepository, receiptID string) error {

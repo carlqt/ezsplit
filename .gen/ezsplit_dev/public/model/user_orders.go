@@ -13,8 +13,8 @@ import (
 
 type UserOrders struct {
 	ID        int32 `sql:"primary_key"`
-	UserID    *int32
-	ItemID    *int32
+	UserID    *int64
+	ItemID    *int64
 	Status    *string
 	CreatedAt time.Time
 }

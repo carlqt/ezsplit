@@ -3,16 +3,7 @@ package repository
 import (
 	"database/sql"
 	"log/slog"
-	"time"
 )
-
-type UserOrders struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	ItemID    string    `json:"item_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Status    string    `json:"status"`
-}
 
 type UserOrdersRepository struct {
 	DB *sql.DB

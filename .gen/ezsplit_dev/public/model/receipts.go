@@ -13,7 +13,7 @@ import (
 
 type Receipts struct {
 	ID          int32 `sql:"primary_key"`
-	UserID      int32
+	UserID      int64
 	Description *string
 	Total       *int32
 	CreatedAt   time.Time

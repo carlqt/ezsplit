@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	_ "github.com/lib/pq"
 
@@ -11,11 +12,32 @@ import (
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
+type Receipt struct {
+	model.Receipts
+}
+
 type ReceiptRepository struct {
 	DB *sql.DB
 }
 
-func (r *ReceiptRepository) Create(receipt model.Receipts) error {
+func NewReceipt(total int32, description string, userID string) (Receipt, error) {
+	receipt := Receipt{}
+
+	receiptUserID, err := strconv.ParseInt(userID, 10, 64)
+	if err != nil {
+		return receipt, fmt.Errorf("failed to parse user id %s : %w", userID, err)
+	}
+
+	receiptTotal := total
+	receiptDescription := description
+	receipt.UserID = receiptUserID
+	receipt.Total = &receiptTotal
+	receipt.Description = &receiptDescription
+
+	return receipt, nil
+}
+
+func (r *ReceiptRepository) Create(receipt Receipt) error {
 	stmt := Receipts.INSERT(
 		Receipts.Total, Receipts.Description, Receipts.UserID,
 	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)
@@ -28,7 +50,7 @@ func (r *ReceiptRepository) Create(receipt model.Receipts) error {
 	return nil
 }
 
-func (r *ReceiptRepository) CreateForUser(receipt model.Receipts) error {
+func (r *ReceiptRepository) CreateForUser(receipt Receipt) error {
 	stmt := Receipts.INSERT(
 		Receipts.Total, Receipts.Description, Receipts.UserID,
 	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)
@@ -41,12 +63,12 @@ func (r *ReceiptRepository) CreateForUser(receipt model.Receipts) error {
 	return nil
 }
 
-func (r *ReceiptRepository) SelectForUser(userID string) ([]model.Receipts, error) {
+func (r *ReceiptRepository) SelectForUser(userID string) ([]Receipt, error) {
 	stmt := SELECT(
 		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt,
 	).FROM(Receipts.Table).WHERE(Receipts.UserID.EQ(RawInt(userID)))
 
-	receipts := []model.Receipts{}
+	receipts := []Receipt{}
 	err := stmt.Query(r.DB, &receipts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve user receipts from DB: %w", err)
@@ -55,8 +77,8 @@ func (r *ReceiptRepository) SelectForUser(userID string) ([]model.Receipts, erro
 	return receipts, nil
 }
 
-func (r *ReceiptRepository) FindByID(id string) (model.Receipts, error) {
-	receipt := model.Receipts{}
+func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
+	receipt := Receipt{}
 
 	stmt := SELECT(
 		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt,

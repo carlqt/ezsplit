@@ -15,7 +15,7 @@ const UserClaimKey AuthKey = "UserClaim"
 
 type UserClaim struct {
 	jwt.RegisteredClaims
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 }
 
