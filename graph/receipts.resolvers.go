@@ -33,7 +33,7 @@ func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.Rec
 		return nil, errors.New("failed to read input")
 	}
 
-	err = r.Repositories.ReceiptRepository.CreateForUser(receipt)
+	err = r.Repositories.ReceiptRepository.CreateForUser(&receipt)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, errors.New("failed to create user")
@@ -94,10 +94,7 @@ func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.
 		return nil, err
 	}
 
-	return &model.User{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
+	return newModelUser(user.ID, user.Username), nil
 }
 
 // Items is the resolver for the items field.

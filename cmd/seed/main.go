@@ -34,10 +34,7 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 		return "", err
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		slog.Error(err.Error())
@@ -45,7 +42,7 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 	}
 
 	slog.Info("User created", "accessToken", signedToken)
-	return user.ID, nil
+	return userClaim.ID, nil
 }
 
 func createReceipt(repo *repository.ReceiptRepository, userID string) (string, error) {

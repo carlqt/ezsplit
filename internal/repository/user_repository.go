@@ -1,17 +1,17 @@
 package repository
 
 import (
+	_ "github.com/lib/pq"
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"time"
+
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
 )
 
 type User struct {
-	ID        string    `db:"id"`
-	Username  string    `db:"username"`
-	CreatedAt time.Time `db:"created_at"`
-	Password  string    `db:"password"`
+	model.Users
 }
 
 type UserRepository struct {
@@ -19,9 +19,11 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(username string, password string) (User, error) {
-	user := User{Username: username}
+	user := User{}
 
-	err := r.DB.QueryRow("INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id", username, password).Scan(&user.ID)
+	stmt := Users.INSERT(Users.Username, Users.Password).VALUES(username, password).RETURNING(Users.Username, Users.ID, Users.Username)
+
+  err := stmt.Query(r.DB, &user)
 	if err != nil {
 		return user, fmt.Errorf("%w | failed to insert username %s", err, username)
 	}

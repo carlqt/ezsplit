@@ -186,7 +186,7 @@ func TestResolvers(t *testing.T) {
 				})
 
 				receipt, _ := repository.NewReceipt(35000, "test receipt", user.ID)
-				err = app.Repositories.ReceiptRepository.CreateForUser(receipt)
+				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -219,10 +219,12 @@ func TestResolvers(t *testing.T) {
 
 				if assert.Nil(t, err) {
 					responseReceipt := resp.Me.Receipts[0]
+					expectedReceiptID := strconv.Itoa(int(receipt.ID))
 
 					assert.Equal(t, user.Username, resp.Me.Username)
-					assert.Equal(t, receipt.ID, responseReceipt.ID)
-					assert.Equal(t, receipt.Description, responseReceipt.Description)
+					assert.Equal(t, expectedReceiptID, responseReceipt.ID)
+					assert.Equal(t, "test receipt", responseReceipt.Description)
+					assert.Equal(t, "350.00", responseReceipt.Total)
 
 					// Formatted total
 					assert.Equal(t, "350.00", responseReceipt.Total)
@@ -451,13 +453,14 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
+		receiptID := strconv.Itoa(int(receipt.ID))
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receiptID}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: string(receipt.ID)}
+		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receiptID}
 		err = app.Repositories.ItemRepository.Create(&item2)
 		if err != nil {
 			t.Fatal(err)
@@ -512,7 +515,8 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: string(receipt.ID)}
+		itemReceiptID := strconv.Itoa(int(receipt.ID))
+		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -539,7 +543,7 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, receipt.ID, resp.DeleteMyReceipt)
+			assert.Equal(t, itemReceiptID, resp.DeleteMyReceipt)
 		}
 	})
 }

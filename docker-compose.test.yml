@@ -26,7 +26,7 @@ services:
     <<: *app
     command: >
         sh -c "atlas schema apply --env local --auto-approve &&
-        go test -p=1 -v ./... "
+        go test -p=1 -v ./..."
     volumes:
       - .:/app
     environment:

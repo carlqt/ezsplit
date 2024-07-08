@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"strconv"
 
 	_ "github.com/lib/pq"
@@ -41,24 +40,22 @@ func NewReceipt(total int32, description string, userID string) (Receipt, error)
 func (r *ReceiptRepository) Create(receipt *Receipt) error {
 	stmt := Receipts.INSERT(
 		Receipts.Total, Receipts.Description, Receipts.UserID,
-	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)
+	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.AllColumns)
 
 	err := stmt.Query(r.DB, receipt)
 	if err != nil {
 		return fmt.Errorf("failed to create the user: %w", err)
 	}
 
-  slog.Debug("debugging", "statement", receipt)
-
 	return nil
 }
 
-func (r *ReceiptRepository) CreateForUser(receipt Receipt) error {
+func (r *ReceiptRepository) CreateForUser(receipt *Receipt) error {
 	stmt := Receipts.INSERT(
 		Receipts.Total, Receipts.Description, Receipts.UserID,
-	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.ID)
+	).VALUES(receipt.Total, receipt.Description, receipt.UserID).RETURNING(Receipts.AllColumns)
 
-	err := stmt.Query(r.DB, &receipt)
+	err := stmt.Query(r.DB, receipt)
 	if err != nil {
 		return fmt.Errorf("failed to create the user: %w", err)
 	}

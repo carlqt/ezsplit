@@ -28,7 +28,7 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := newModelUser(user)
+		modelUser := newModelUser(user.ID, user.Username)
 		modelUsers = append(modelUsers, modelUser)
 	}
 
@@ -113,10 +113,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
@@ -138,11 +135,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return &model.UserWithJwt{
-		ID:          user.ID,
-		Username:    user.Username,
-		AccessToken: signedToken,
-	}, nil
+	return newModelUserWithJwt(
+		user.ID,
+		user.Username,
+		signedToken,
+	), nil
 }
 
 // LoginUser is the resolver for the loginUser field.
@@ -161,10 +158,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		slog.Error(err.Error())
@@ -186,11 +180,11 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return &model.UserWithJwt{
-		ID:          user.ID,
-		Username:    user.Username,
-		AccessToken: signedToken,
-	}, nil
+	return newModelUserWithJwt(
+		user.ID,
+		user.Username,
+		signedToken,
+	), nil
 }
 
 // LogoutUser is the resolver for the logoutUser field.
@@ -223,10 +217,10 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := &model.User{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		modelUser := newModelUser(
+			user.ID,
+			user.Username,
+		)
 		modelUsers = append(modelUsers, modelUser)
 	}
 

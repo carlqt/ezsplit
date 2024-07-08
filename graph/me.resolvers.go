@@ -56,10 +56,7 @@ func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
 		return nil, errors.New("can't find current user")
 	}
 
-	return &model.Me{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
+	return newModelMe(user.ID, user.Username), nil
 }
 
 // Me returns MeResolver implementation.

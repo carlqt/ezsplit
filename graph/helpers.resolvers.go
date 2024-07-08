@@ -8,10 +8,31 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
-func newModelUser(user *repository.User) *model.User {
+func newModelUser(userID int32, username string) *model.User {
+	id := strconv.Itoa(int(userID))
+
 	return &model.User{
-		ID:       user.ID,
-		Username: user.Username,
+		ID:       id,
+		Username: username,
+	}
+}
+
+func newModelMe(userID int32, username string) *model.Me {
+	id := strconv.Itoa(int(userID))
+
+	return &model.Me{
+		ID:       id,
+		Username: username,
+	}
+}
+
+func newModelUserWithJwt(userID int32, username string, accessToken string) *model.UserWithJwt {
+	id := strconv.Itoa(int(userID))
+
+	return &model.UserWithJwt{
+		ID:          id,
+		Username:    username,
+		AccessToken: accessToken,
 	}
 }
 
