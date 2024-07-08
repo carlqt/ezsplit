@@ -162,12 +162,13 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		slog.Error(err.Error())
-		return nil, errors.New("error signing token")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		return nil, errors.New("error setting cookie")
+		slog.Error("cookie type assertion failed")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn(&http.Cookie{
@@ -212,6 +213,7 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 

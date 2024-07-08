@@ -41,11 +41,8 @@ func CreateUser(db DbWriter, username string) (User, error) {
 	fakePassword := "password"
 	hashedPassword, _ := auth.HashPassword(fakePassword)
 
-	user := User{
-		repository.User{
-			Username: username,
-		},
-	}
+	user := User{}
+	user.Username = username
 
 	sql := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
 	err := db.QueryRow(sql, username, hashedPassword).Scan(&user.ID)
@@ -57,10 +54,7 @@ func CreateUser(db DbWriter, username string) (User, error) {
 }
 
 func (u User) GetAuthToken(secret []byte) (string, error) {
-	userClaim := auth.UserClaim{
-		ID:       u.ID,
-		Username: u.Username,
-	}
+	userClaim := auth.NewUserClaim(u.ID, u.Username)
 	accessToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		return accessToken, nil
