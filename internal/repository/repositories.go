@@ -35,6 +35,8 @@ func BigInt[T string | int32](input T) int64 {
 	}
 }
 
+// Nullable helps with initializing structs that contains pointer fields
+// the pointer fields is because the column in the DB allows for NULL values
 func Nullable[T any](input T) *T {
 	return &input
 }
