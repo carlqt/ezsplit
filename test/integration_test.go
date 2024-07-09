@@ -469,12 +469,10 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		receiptID := strconv.Itoa(int(receipt.ID))
-
 		// Leaving this here for documentation on how to initialize a struct with embedded properties
 		item := repository.Item{
 			Items: g.Items{
-				Name: repository.Nullable("Dumplings"), Price: repository.Nullable(int32(10000)), ReceiptID: repository.BigInt(receiptID),
+				Name: repository.Nullable("Dumplings"), Price: repository.Nullable(int32(10001)), ReceiptID: repository.BigInt(receipt.ID),
 			},
 		}
 
@@ -486,7 +484,7 @@ func TestResolvers(t *testing.T) {
 
 		item2 := repository.Item{}
 		item2.Name = repository.Nullable("Chicken")
-		item2.ReceiptID = repository.BigInt(receiptID)
+		item2.ReceiptID = repository.BigInt(receipt.ID)
 		item2.Price = repository.Nullable(int32(2788))
 
 		err = app.Repositories.ItemRepository.Create(&item2)

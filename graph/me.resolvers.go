@@ -18,7 +18,8 @@ func (r *meResolver) TotalPayables(ctx context.Context, obj *model.Me) (string, 
 	// panic(fmt.Errorf("not implemented: TotalPayables - totalPayables"))
 	totalPayables, err := r.Repositories.UserOrdersRepository.GetTotalPayables(obj.ID)
 	if err != nil {
-		return "", err
+		slog.Error(err.Error())
+		return "", errors.New("failed to get the total payables")
 	}
 
 	return toPriceDisplay(totalPayables), nil

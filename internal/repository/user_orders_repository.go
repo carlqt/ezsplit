@@ -61,35 +61,54 @@ func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]User, er
 
 func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
 	var totalPayables int
-  var itemIDs []Expression
-  var items []Item
+  var itemIDExpression []Expression
+  var userOrders []UserOrder
 
-  // Get all UserOrders where user_id = userID
-  userOrders := []UserOrder{}
-  userOrdersStmt := UserOrders.SELECT(UserOrders.UserID, UserOrders.ItemID).WHERE(UserOrders.UserID.EQ(RawInt(userID)))
+  // Fetch all the user_orders of the user with ID $user_id
+  userOrdersStmt := UserOrders.SELECT(UserOrders.ItemID).WHERE(UserOrders.UserID.EQ(RawInt(userID)))
   err := userOrdersStmt.Query(r.DB, &userOrders)
   if err != nil {
-    return 0, fmt.Errorf("failed to get the user's total payables")
+    return 0, fmt.Errorf("failed to get the user orders: %w", err)
+  } else if len(userOrders) == 0 {
+    return 0, nil
   }
 
-  // Get All Items from the UserOrders fetched
+  // Initializing itemIDExpression from the userOrders.ItemID
   for _, userOrder := range userOrders {
-    itemIDs = append(itemIDs, Int(*userOrder.ItemID))
+    itemID := userOrder.ItemID
+    itemIDExpression = append(itemIDExpression, Int(*itemID))
   }
 
-  itemsStmt := Items.SELECT(Items.ID, Items.Price).WHERE(Items.ID.IN(itemIDs...))
-  err = itemsStmt.Query(r.DB, &items)
+  // Fetch all items and all userOrders associated
+  // This is needed to calculate the "shared_price" of the item
+  var itemsWithOrders []struct {
+    model.Items
+    UserOrders []struct {
+      model.UserOrders
+    }
+  }
+
+  itemsStmt := SELECT(
+    Items.ID,
+    Items.Price,
+    UserOrders.AllColumns,
+  ).FROM(
+    Items.INNER_JOIN(
+      UserOrders,
+      UserOrders.ItemID.EQ(Items.ID),
+    ),
+  ).WHERE(Items.ID.IN(itemIDExpression...))
+
+  err = itemsStmt.Query(r.DB, &itemsWithOrders)
   if err != nil {
-    return 0, fmt.Errorf("failed to get the user's total payables")
+    return 0, fmt.Errorf("failed to get the user items: %w", err)
   }
 
   // Calculate the TotalPayables
-  sumOfItemPrice := 0
-  for _, item := range items {
-    sumOfItemPrice += int(*item.Price)
+  for _, item := range itemsWithOrders {
+    share := len(item.UserOrders)
+    totalPayables = totalPayables + (int(*item.Price) / share)
   }
-
-  totalPayables = sumOfItemPrice / len(userOrders)
 
 	return totalPayables, err
 }
