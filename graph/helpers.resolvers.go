@@ -37,12 +37,13 @@ func newModelUserWithJwt(userID int32, username string, accessToken string) *mod
 }
 
 // newModelItem is a constructor that converts a repository.Item to a model.Item
-func newModelItem(item *repository.Item) *model.Item {
-	price := toPriceDisplay(item.Price)
+func newModelItem(item repository.Item) *model.Item {
+	price := toPriceDisplay(*item.Price)
+	id := strconv.Itoa(int(item.ID))
 
 	return &model.Item{
-		ID:    item.ID,
-		Name:  item.Name,
+		ID:    id,
+		Name:  *item.Name,
 		Price: price,
 	}
 }

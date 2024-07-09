@@ -2,12 +2,14 @@ package integration_test
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
+	g "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/graph/model"
@@ -389,8 +391,14 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		itemReceiptID := strconv.Itoa(int(receipt.ID))
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
+		itemName := "Dumplings"
+		itemPrice := int32(10000)
+
+		item := repository.Item{} //{model.Items{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
+		item.Name = &itemName
+		item.Price = &itemPrice
+		item.ReceiptID = repository.BigInt(receipt.ID)
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -403,7 +411,7 @@ func TestResolvers(t *testing.T) {
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation assignMeToItem{
-			assignMeToItem(input: { itemId: "%s" }) {
+			assignMeToItem(input: { itemId: "%d" }) {
 				name
 				price
 				id
@@ -433,7 +441,7 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, item.Name, resp.AssignMeToItem.Name)
+			assert.Equal(t, *item.Name, resp.AssignMeToItem.Name)
 			assert.Equal(t, userClaim.ID, resp.AssignMeToItem.SharedBy[0].Id)
 			assert.Equal(t, user.Username, resp.AssignMeToItem.SharedBy[0].Username)
 		}
@@ -462,13 +470,25 @@ func TestResolvers(t *testing.T) {
 		}
 
 		receiptID := strconv.Itoa(int(receipt.ID))
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receiptID}
+
+		// Leaving this here for documentation on how to initialize a struct with embedded properties
+		item := repository.Item{
+			Items: g.Items{
+				Name: repository.Nullable("Dumplings"), Price: repository.Nullable(int32(10000)), ReceiptID: repository.BigInt(receiptID),
+			},
+		}
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
+			slog.Error(err.Error())
 			t.Fatal(err)
 		}
 
-		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receiptID}
+		item2 := repository.Item{}
+		item2.Name = repository.Nullable("Chicken")
+		item2.ReceiptID = repository.BigInt(receiptID)
+		item2.Price = repository.Nullable(int32(2788))
+
 		err = app.Repositories.ItemRepository.Create(&item2)
 		if err != nil {
 			t.Fatal(err)
@@ -476,9 +496,9 @@ func TestResolvers(t *testing.T) {
 
 		// Create user_orders
 		// repository.UserOrdersRepository.
-		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), item.ID)
-		_ = app.Repositories.UserOrdersRepository.Create(toString(user2.ID), item.ID)
-		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), item2.ID)
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), toString(item.ID))
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user2.ID), toString(item.ID))
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), toString(item2.ID))
 
 		userClaim := auth.NewUserClaim(
 			user.ID,
@@ -523,8 +543,11 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		itemReceiptID := strconv.Itoa(int(receipt.ID))
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
+		item := repository.Item{} //{Items: model.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}}
+		item.Name = repository.Nullable("Dumplings")
+		item.Price = repository.Nullable(int32(10000))
+		item.ReceiptID = repository.BigInt(receipt.ID)
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
@@ -551,7 +574,7 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, itemReceiptID, resp.DeleteMyReceipt)
+			assert.Equal(t, fmt.Sprintf("%d", receipt.ID), resp.DeleteMyReceipt)
 		}
 	})
 }

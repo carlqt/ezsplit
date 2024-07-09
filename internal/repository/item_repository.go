@@ -2,8 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
-	"time"
+
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
 )
 
 type ItemRepository struct {
@@ -11,19 +14,17 @@ type ItemRepository struct {
 }
 
 type Item struct {
-	ID        string    `db:"id"`
-	Name      string    `db:"name"`
-	Price     int       `db:"price"`
-	ReceiptID string    `db:"receipt_id"`
-	CreatedAt time.Time `db:"created_at"`
+	model.Items
 }
 
 func (i *ItemRepository) Create(item *Item) error {
-	err := i.DB.QueryRow("INSERT INTO items (name, price, receipt_id) VALUES ($1, $2, $3) RETURNING id", item.Name, item.Price, item.ReceiptID).Scan(&item.ID)
+  stmt := Items.INSERT(Items.Name, Items.Price, Items.ReceiptID).VALUES(item.Name, item.Price, item.ReceiptID).RETURNING(Items.Name, Items.Price, Items.ReceiptID, Items.ID)
+
+	err := stmt.Query(i.DB, item)
 	if err != nil {
-		slog.Error(err.Error())
-		return err
+    return fmt.Errorf("failed to create item in db: %w", err)
 	}
+
 	return nil
 }
 

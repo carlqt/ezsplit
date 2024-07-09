@@ -38,22 +38,18 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
 	price := toPriceCents(*input.Price)
-	item := repository.Item{
-		ReceiptID: input.ReceiptID,
-		Name:      input.Name,
-		Price:     int(price),
-	}
+
+	item := repository.Item{}
+	item.Name = &input.Name
+	item.ReceiptID = repository.BigInt(input.ReceiptID)
+	item.Price = &price
 
 	err := r.Repositories.ItemRepository.Create(&item)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to add the item")
 	}
 
-	return &model.Item{
-		ID:    item.ID,
-		Name:  item.Name,
-		Price: toPriceDisplay(price),
-	}, nil
+	return newModelItem(item), nil
 }
 
 // AssignUserToItem is the resolver for the assignUserToItem field.
@@ -69,6 +65,7 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 	// Need to return an item or user object?
 	err := r.Repositories.UserOrdersRepository.Create(userClaim.ID, input.ItemID)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 
@@ -78,7 +75,7 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 		return nil, err
 	}
 
-	return newModelItem(item), nil
+	return newModelItem(*item), nil
 }
 
 // RemoveMeFromItem is the resolver for the removeMeFromItem field.

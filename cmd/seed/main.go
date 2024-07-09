@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -63,11 +64,13 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 }
 
 func createItems(repo *repository.ItemRepository, receiptID string) error {
+	price := int32(4000)
+	name := "Chickenjoy"
 	items := []repository.Item{
-		{
-			ReceiptID: receiptID,
-			Name:      "Chickenjoy",
-			Price:     4000,
+		repository.Item{
+			model.Items{
+				Name: &name, Price: &price, ReceiptID: repository.BigInt(receiptID),
+			},
 		},
 	}
 

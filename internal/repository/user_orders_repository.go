@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
 )
 
@@ -13,7 +14,7 @@ func (r *UserOrdersRepository) Create(userID string, itemID string) error {
 	query := `INSERT INTO user_orders (user_id, item_id) VALUES ($1, $2)`
 	_, err := r.DB.Exec(query, userID, itemID)
 	if err != nil {
-		slog.Error(err.Error())
+		return fmt.Errorf("failed to insert user_orders with user_id=%s and item_id=%s: %w", userID, itemID, err)
 	}
 
 	return err
