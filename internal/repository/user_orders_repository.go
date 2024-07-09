@@ -3,16 +3,24 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log/slog"
+
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
 )
 
 type UserOrdersRepository struct {
 	DB *sql.DB
 }
 
+type UserOrder struct {
+	model.UserOrders
+}
+
 func (r *UserOrdersRepository) Create(userID string, itemID string) error {
-	query := `INSERT INTO user_orders (user_id, item_id) VALUES ($1, $2)`
-	_, err := r.DB.Exec(query, userID, itemID)
+  stmt := UserOrders.INSERT(UserOrders.UserID, UserOrders.ItemID).VALUES(userID, itemID)
+
+	_, err := stmt.Exec(r.DB)
 	if err != nil {
 		return fmt.Errorf("failed to insert user_orders with user_id=%s and item_id=%s: %w", userID, itemID, err)
 	}
@@ -21,41 +29,31 @@ func (r *UserOrdersRepository) Create(userID string, itemID string) error {
 }
 
 func (r *UserOrdersRepository) Delete(userID string, itemID string) error {
-	query := `DELETE FROM user_orders WHERE user_id = $1 AND item_id = $2`
-	sqlResult, err := r.DB.Exec(query, userID, itemID)
-	if err != nil {
-		slog.Error(err.Error())
-	}
+  stmt := UserOrders.DELETE().WHERE(UserOrders.UserID.EQ(RawInt(userID)).AND(UserOrders.ItemID.EQ(RawInt(itemID))))
 
-	rowsAffected, err := sqlResult.RowsAffected()
+	_, err := stmt.Exec(r.DB)
 	if err != nil {
-		slog.Error(err.Error())
-	} else if rowsAffected == 0 {
-		slog.Warn("No rows affected")
+    return fmt.Errorf("failed to delete user_order from DB: %w", err)
 	}
 
 	return err
 }
 
-func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, error) {
-	query := "select users.id, users.username from users inner join user_orders on users.id = user_orders.user_id where user_orders.item_id = $1"
+func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]User, error) {
+  users := []User{}
 
-	rows, err := r.DB.Query(query, itemID)
+  stmt := SELECT(
+    Users.ID, Users.Username,
+  ).FROM(
+    Users.
+      INNER_JOIN(UserOrders,Users.ID.EQ(UserOrders.UserID)),
+  ).WHERE(
+    UserOrders.ItemID.EQ(RawInt(itemID)),
+  )
+
+	err := stmt.Query(r.DB, &users)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	var users []*User
-	for rows.Next() {
-		user := &User{}
-		err := rows.Scan(&user.ID, &user.Username)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-		users = append(users, user)
+    return nil, fmt.Errorf("failed to fetch associated users of item_id=%s: %w", itemID, err)
 	}
 
 	return users, nil
@@ -63,32 +61,35 @@ func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, e
 
 func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
 	var totalPayables int
+  var itemIDs []Expression
+  var items []Item
 
-	query := `SELECT div(items.price, item_count.shared_by_count) as total_payables
-	FROM items
-	JOIN user_orders as uo ON items.id = uo.item_id
-	JOIN (
-		SELECT count(*) as shared_by_count, item_id FROM user_orders GROUP BY item_id
-	) AS item_count on item_count.item_id = uo.item_id
-	WHERE uo.user_id = $1`
+  // Get all UserOrders where user_id = userID
+  userOrders := []UserOrder{}
+  userOrdersStmt := UserOrders.SELECT(UserOrders.UserID, UserOrders.ItemID).WHERE(UserOrders.UserID.EQ(RawInt(userID)))
+  err := userOrdersStmt.Query(r.DB, &userOrders)
+  if err != nil {
+    return 0, fmt.Errorf("failed to get the user's total payables")
+  }
 
-	rows, err := r.DB.Query(query, userID)
-	if err != nil {
-		slog.Error(err.Error())
-		return 0, err
-	}
+  // Get All Items from the UserOrders fetched
+  for _, userOrder := range userOrders {
+    itemIDs = append(itemIDs, Int(*userOrder.ItemID))
+  }
 
-	for rows.Next() {
-		var p int
+  itemsStmt := Items.SELECT(Items.ID, Items.Price).WHERE(Items.ID.IN(itemIDs...))
+  err = itemsStmt.Query(r.DB, &items)
+  if err != nil {
+    return 0, fmt.Errorf("failed to get the user's total payables")
+  }
 
-		err := rows.Scan(&p)
-		if err != nil {
-			slog.Error(err.Error())
-			return 0, err
-		}
+  // Calculate the TotalPayables
+  sumOfItemPrice := 0
+  for _, item := range items {
+    sumOfItemPrice += int(*item.Price)
+  }
 
-		totalPayables += p
-	}
+  totalPayables = sumOfItemPrice / len(userOrders)
 
 	return totalPayables, err
 }
