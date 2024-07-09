@@ -75,7 +75,7 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 		return nil, err
 	}
 
-	return newModelItem(*item), nil
+	return newModelItem(item), nil
 }
 
 // RemoveMeFromItem is the resolver for the removeMeFromItem field.

@@ -3,10 +3,10 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
 )
 
 type ItemRepository struct {
@@ -28,34 +28,26 @@ func (i *ItemRepository) Create(item *Item) error {
 	return nil
 }
 
-func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]*Item, error) {
-	rows, err := i.DB.Query("SELECT id, name, price, created_at FROM items WHERE receipt_id = $1", receiptID)
-	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
+func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]Item, error) {
+  items := []Item{}
+  stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.CreatedAt).WHERE(Items.ReceiptID.EQ(RawInt(receiptID)))
 
-	var items []*Item
-	for rows.Next() {
-		item := &Item{}
-		err := rows.Scan(&item.ID, &item.Name, &item.Price, &item.CreatedAt)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-		items = append(items, item)
+  err := stmt.Query(i.DB, &items)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch items")
 	}
 
 	return items, nil
 }
 
-func (i *ItemRepository) FindByID(id string) (*Item, error) {
-	item := &Item{}
-	err := i.DB.QueryRow("SELECT id, name, price, receipt_id, created_at FROM items WHERE id = $1", id).Scan(&item.ID, &item.Name, &item.Price, &item.ReceiptID, &item.CreatedAt)
+func (i *ItemRepository) FindByID(id string) (Item, error) {
+	item := Item{}
+  stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id)))
+
+	err := stmt.Query(i.DB, &item)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
+    return item, fmt.Errorf("failed to find item with id=%s: %w", id, err)
 	}
+
 	return item, nil
 }

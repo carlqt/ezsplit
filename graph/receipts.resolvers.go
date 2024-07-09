@@ -106,7 +106,7 @@ func (r *receiptResolver) Items(ctx context.Context, obj *model.Receipt) ([]*mod
 
 	var modelItems []*model.Item
 	for _, item := range items {
-		modelItem := newModelItem(*item)
+		modelItem := newModelItem(item)
 		modelItems = append(modelItems, modelItem)
 	}
 
