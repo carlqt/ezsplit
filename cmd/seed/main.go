@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"strconv"
 
 	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	"github.com/carlqt/ezsplit/internal"
@@ -14,12 +15,12 @@ func main() {
 
 	userID, err := createUser(app.Repositories.UserRepository, app.Config.JWTSecret)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	receiptID, err := createReceipt(app.Repositories.ReceiptRepository, userID)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	_ = createItems(app.Repositories.ItemRepository, receiptID)
@@ -60,19 +61,23 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 	}
 
 	slog.Info("Receipt created", "receiptID", receipt.ID)
-	return string(receipt.ID), nil
+
+	receiptID := strconv.Itoa(int(receipt.ID))
+	return receiptID, nil
 }
 
 func createItems(repo *repository.ItemRepository, receiptID string) error {
 	price := int32(4000)
 	name := "Chickenjoy"
-	items := []repository.Item{
+	items := make([]repository.Item, 0)
+
+	items = append(items,
 		repository.Item{
-			model.Items{
+			Items: model.Items{
 				Name: &name, Price: &price, ReceiptID: repository.BigInt(receiptID),
 			},
 		},
-	}
+	)
 
 	for _, item := range items {
 		err := repo.Create(&item)
