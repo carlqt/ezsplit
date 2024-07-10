@@ -36,7 +36,8 @@ table "receipts" {
     type = bigint
   }
   column "description" {
-    null = true
+    null = false
+    default = ""
     type = text
   }
   column "total" {
@@ -72,8 +73,9 @@ table "items" {
     type = bigint
   }
   column "price" {
-    null = true
+    null = false
     type = int
+    default = 0
   }
   column "name" {
     null = true
