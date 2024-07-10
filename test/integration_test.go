@@ -63,6 +63,7 @@ func TestResolvers(t *testing.T) {
 				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
 			}
 		})
+
 		t.Run("when password is correct", func(t *testing.T) {
 			defer TruncateAllTables(app.DB)
 

@@ -15,14 +15,17 @@ import (
 )
 
 type App struct {
-	// repositories
-	// configs
 	Repositories *repository.Repository
 	Config       *EnvConfig
 	DB           *sql.DB
 }
 
-func init() {
+func InitializeEnvVariables() {
+	// During test mode, the tests aren't looking for .env in the root of the project but relative to where
+	// the tests are run (./internal)
+
+	slog.Debug("initializing environment variables")
+
 	if os.Getenv("GO_ENV") == "test" {
 		_, file, _, ok := runtime.Caller(0)
 		if !ok {
@@ -44,20 +47,30 @@ func init() {
 	}
 }
 
-func NewApp() *App {
-	// log.SetFlags(log.LstdFlags | log.Lshortfile)
+func InitializeLogger() {
 	opts := &slog.HandlerOptions{
 		Level:     slog.LevelDebug,
 		AddSource: true,
 	}
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
+}
+
+// Initializes Config, DB and Repositories that will be used by the server
+func NewApp() *App {
+	InitializeLogger()
+	InitializeEnvVariables()
 
 	config := NewConfig()
 	db := newDB(config)
 	repositories := repository.NewRepository(db)
 
-	return &App{Config: config, DB: db, Repositories: repositories}
+	return &App{
+		Config:       config,
+		DB:           db,
+		Repositories: repositories,
+	}
 }
 
 func newDB(config *EnvConfig) *sql.DB {
