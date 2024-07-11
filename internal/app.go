@@ -20,6 +20,8 @@ type App struct {
 	DB           *sql.DB
 }
 
+// InitializeEnvVariables uses godot export the Env variables from .env files
+// In production, this could be optimized by presuming the env variables are already available and avoid calling this function
 func InitializeEnvVariables() {
 	// During test mode, the tests aren't looking for .env in the root of the project but relative to where
 	// the tests are run (./internal)
