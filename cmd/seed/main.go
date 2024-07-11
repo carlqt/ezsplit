@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	"github.com/carlqt/ezsplit/.gen/public/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"

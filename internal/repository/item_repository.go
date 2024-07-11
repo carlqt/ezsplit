@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
-	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	"github.com/carlqt/ezsplit/.gen/public/model"
+	. "github.com/carlqt/ezsplit/.gen/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
