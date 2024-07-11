@@ -2,11 +2,14 @@ package integration_test
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
+	g "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/graph/model"
@@ -24,6 +27,11 @@ func TestResolvers(t *testing.T) {
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
+
+	toString := func(i int32) string {
+		return strconv.Itoa(int(i))
+	}
+
 	defer TruncateAllTables(app.DB)
 
 	t.Run("loginUser mutation", func(t *testing.T) {
@@ -55,6 +63,7 @@ func TestResolvers(t *testing.T) {
 				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
 			}
 		})
+
 		t.Run("when password is correct", func(t *testing.T) {
 			defer TruncateAllTables(app.DB)
 
@@ -79,7 +88,7 @@ func TestResolvers(t *testing.T) {
 
 			err = c.Post(query, &resp)
 
-			if assert.Nil(t, err) {
+			if assert.Nil(t, err, resp.LoginUser) {
 				assert.Equal(t, "mutation_user160", resp.LoginUser.Username)
 			}
 		})
@@ -167,10 +176,10 @@ func TestResolvers(t *testing.T) {
 		}
 
 		t.Run("with Receipts field", func(t *testing.T) {
-			userClaim := auth.UserClaim{
-				ID:       user.ID,
-				Username: user.Username,
-			}
+			userClaim := auth.NewUserClaim(
+				user.ID,
+				user.Username,
+			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
 				t.Fatal(err)
@@ -184,7 +193,8 @@ func TestResolvers(t *testing.T) {
 					}
 				})
 
-				receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+				userID := strconv.Itoa(int(user.ID))
+				receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
 				err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
 				if err != nil {
 					t.Fatal(err)
@@ -218,10 +228,12 @@ func TestResolvers(t *testing.T) {
 
 				if assert.Nil(t, err) {
 					responseReceipt := resp.Me.Receipts[0]
+					expectedReceiptID := strconv.Itoa(int(receipt.ID))
 
 					assert.Equal(t, user.Username, resp.Me.Username)
-					assert.Equal(t, receipt.ID, responseReceipt.ID)
-					assert.Equal(t, receipt.Description, responseReceipt.Description)
+					assert.Equal(t, expectedReceiptID, responseReceipt.ID)
+					assert.Equal(t, "test receipt", responseReceipt.Description)
+					assert.Equal(t, "350.00", responseReceipt.Total)
 
 					// Formatted total
 					assert.Equal(t, "350.00", responseReceipt.Total)
@@ -258,17 +270,17 @@ func TestResolvers(t *testing.T) {
 				if assert.Nil(t, err) {
 					responseReceipt := resp.Me.Receipts
 
-					assert.Equal(t, user.ID, resp.Me.Id)
+					assert.Equal(t, userClaim.ID, resp.Me.Id)
 					assert.Empty(t, responseReceipt)
 				}
 			})
 		})
 
 		t.Run("when jwt exists", func(t *testing.T) {
-			userClaim := auth.UserClaim{
-				ID:       user.ID,
-				Username: user.Username,
-			}
+			userClaim := auth.NewUserClaim(
+				user.ID,
+				user.Username,
+			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
 				t.Fatal(err)
@@ -296,7 +308,7 @@ func TestResolvers(t *testing.T) {
 
 			if assert.Nil(t, err) {
 				assert.Equal(t, user.Username, resp.Me.Username)
-				assert.Equal(t, user.ID, resp.Me.Id)
+				assert.Equal(t, userClaim.ID, resp.Me.Id)
 			}
 		})
 
@@ -373,26 +385,34 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		userID := strconv.Itoa(int(user.ID))
+		receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
 		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		itemName := "Dumplings"
+		itemPrice := int32(10000)
+
+		item := repository.Item{} //{model.Items{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
+		item.Name = &itemName
+		item.Price = itemPrice
+		item.ReceiptID = repository.BigInt(receipt.ID)
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		userClaim := auth.UserClaim{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		userClaim := auth.NewUserClaim(
+			user.ID,
+			user.Username,
+		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation assignMeToItem{
-			assignMeToItem(input: { itemId: "%s" }) {
+			assignMeToItem(input: { itemId: "%d" }) {
 				name
 				price
 				id
@@ -422,8 +442,8 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, item.Name, resp.AssignMeToItem.Name)
-			assert.Equal(t, user.ID, resp.AssignMeToItem.SharedBy[0].Id)
+			assert.Equal(t, *item.Name, resp.AssignMeToItem.Name)
+			assert.Equal(t, userClaim.ID, resp.AssignMeToItem.SharedBy[0].Id)
 			assert.Equal(t, user.Username, resp.AssignMeToItem.SharedBy[0].Username)
 		}
 	})
@@ -443,19 +463,31 @@ func TestResolvers(t *testing.T) {
 		}
 
 		// Receipt
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		userID := strconv.Itoa(int(user.ID))
+		receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
 		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		// Leaving this here for documentation on how to initialize a struct with embedded properties
+		item := repository.Item{
+			Items: g.Items{
+				Name: repository.Nullable("Dumplings"), Price: int32(10001), ReceiptID: repository.BigInt(receipt.ID),
+			},
+		}
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
+			slog.Error(err.Error())
 			t.Fatal(err)
 		}
 
-		item2 := repository.Item{Name: "Chicken", Price: 2788, ReceiptID: receipt.ID}
+		item2 := repository.Item{}
+		item2.Name = repository.Nullable("Chicken")
+		item2.ReceiptID = repository.BigInt(receipt.ID)
+		item2.Price = int32(2788)
+
 		err = app.Repositories.ItemRepository.Create(&item2)
 		if err != nil {
 			t.Fatal(err)
@@ -463,14 +495,14 @@ func TestResolvers(t *testing.T) {
 
 		// Create user_orders
 		// repository.UserOrdersRepository.
-		_ = app.Repositories.UserOrdersRepository.Create(user.ID, item.ID)
-		_ = app.Repositories.UserOrdersRepository.Create(user2.ID, item.ID)
-		_ = app.Repositories.UserOrdersRepository.Create(user.ID, item2.ID)
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), toString(item.ID))
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user2.ID), toString(item.ID))
+		_ = app.Repositories.UserOrdersRepository.Create(toString(user.ID), toString(item2.ID))
 
-		userClaim := auth.UserClaim{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		userClaim := auth.NewUserClaim(
+			user.ID,
+			user.Username,
+		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := `query Me {
@@ -504,26 +536,30 @@ func TestResolvers(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		receipt := repository.Receipt{Description: "test receipt", Total: 35000, UserID: user.ID}
+		receipt, _ := repository.NewReceipt(35000, "test receipt", toString(user.ID))
 		err = app.Repositories.ReceiptRepository.Create(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		item := repository.Item{Name: "Dumplings", Price: 10000, ReceiptID: receipt.ID}
+		item := repository.Item{} //{Items: model.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}}
+		item.Name = repository.Nullable("Dumplings")
+		item.Price = int32(10000)
+		item.ReceiptID = repository.BigInt(receipt.ID)
+
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		userClaim := auth.UserClaim{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		userClaim := auth.NewUserClaim(
+			user.ID,
+			user.Username,
+		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
 		query := fmt.Sprintf(`mutation DeleteMyReceipt {
-			deleteMyReceipt(input: { id: "%s" })
+			deleteMyReceipt(input: { id: "%d" })
 		}`, receipt.ID)
 
 		var resp struct {
@@ -537,7 +573,7 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, receipt.ID, resp.DeleteMyReceipt)
+			assert.Equal(t, fmt.Sprintf("%d", receipt.ID), resp.DeleteMyReceipt)
 		}
 	})
 }

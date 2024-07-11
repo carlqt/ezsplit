@@ -18,7 +18,8 @@ func (r *meResolver) TotalPayables(ctx context.Context, obj *model.Me) (string, 
 	// panic(fmt.Errorf("not implemented: TotalPayables - totalPayables"))
 	totalPayables, err := r.Repositories.UserOrdersRepository.GetTotalPayables(obj.ID)
 	if err != nil {
-		return "", err
+		slog.Error(err.Error())
+		return "", errors.New("failed to get the total payables")
 	}
 
 	return toPriceDisplay(totalPayables), nil
@@ -39,7 +40,7 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 	modelReceipts := make([]*model.Receipt, 0)
 
 	for _, receipt := range receipts {
-		modelReceipt := newModelReceipt(receipt)
+		modelReceipt := newModelReceipt(&receipt)
 		modelReceipts = append(modelReceipts, modelReceipt)
 	}
 
@@ -56,10 +57,7 @@ func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
 		return nil, errors.New("can't find current user")
 	}
 
-	return &model.Me{
-		ID:       user.ID,
-		Username: user.Username,
-	}, nil
+	return newModelMe(user.ID, user.Username), nil
 }
 
 // Me returns MeResolver implementation.

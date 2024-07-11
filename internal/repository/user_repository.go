@@ -1,17 +1,17 @@
 package repository
 
 import (
+	_ "github.com/lib/pq"
 	"database/sql"
 	"fmt"
-	"log/slog"
-	"time"
+
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
 )
 
 type User struct {
-	ID        string    `db:"id"`
-	Username  string    `db:"username"`
-	CreatedAt time.Time `db:"created_at"`
-	Password  string    `db:"password"`
+	model.Users
 }
 
 type UserRepository struct {
@@ -19,52 +19,49 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(username string, password string) (User, error) {
-	user := User{Username: username}
+	user := User{}
 
-	err := r.DB.QueryRow("INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id", username, password).Scan(&user.ID)
+	stmt := Users.INSERT(Users.Username, Users.Password).VALUES(username, password).RETURNING(Users.Username, Users.ID, Users.Username)
+
+  err := stmt.Query(r.DB, &user)
 	if err != nil {
 		return user, fmt.Errorf("%w | failed to insert username %s", err, username)
 	}
 	return user, nil
 }
 
-func (r *UserRepository) FindByID(id string) (*User, error) {
-	user := &User{}
-	err := r.DB.QueryRow("SELECT id, username FROM users WHERE id = $1", id).Scan(&user.ID, &user.Username)
+func (r *UserRepository) FindByID(id string) (User, error) {
+  user := User{}
+  stmt := SELECT(Users.ID, Users.Username).FROM(Users.Table).WHERE(Users.ID.EQ(RawInt(id)))
+
+  err := stmt.Query(r.DB, &user)
 	if err != nil {
-		return nil, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
+		return user, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
 	return user, nil
 }
 
 func (r *UserRepository) FindByUsername(username string) (User, error) {
 	user := User{}
-	err := r.DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Password)
+
+  stmt := Users.SELECT(Users.ID, Users.Username, Users.Password).WHERE(Users.Username.EQ(String(username)))
+
+  err := stmt.Query(r.DB, &user)
 	if err != nil {
-		slog.Error(err.Error())
-		return user, err
+    return user, fmt.Errorf("failed to find user: %w", err)
 	}
 
 	return user, nil
 }
 
-func (r *UserRepository) GetAllUsers() ([]*User, error) {
-	rows, err := r.DB.Query("SELECT id, username FROM users")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+func (r *UserRepository) GetAllUsers() ([]User, error) {
+  users := []User{}
+  stmt := Users.SELECT(Users.ID, Users.Username)
 
-	users := make([]*User, 0)
-	for rows.Next() {
-		user := &User{}
-		err := rows.Scan(&user.ID, &user.Username)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-		users = append(users, user)
-	}
+	err := stmt.Query(r.DB, &users)
+  if err != nil {
+    return users, fmt.Errorf("failed to get users: %w", err)
+  }
 
 	return users, nil
 }

@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"log/slog"
+	"strconv"
 	"testing"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -25,10 +26,10 @@ func TestReceiptsResolver(t *testing.T) {
 			defer truncateTables()
 
 			user, _ := integration_test.CreateUser(app.DB, "sample_username")
-			claims := auth.UserClaim{
-				ID:       user.ID,
-				Username: user.Username,
-			}
+			claims := auth.NewUserClaim(
+				user.ID,
+				user.Username,
+			)
 
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
@@ -69,22 +70,24 @@ func TestReceiptsResolver(t *testing.T) {
 
 			integration_test.CreateReceiptWithUser(app.DB, 10000, "receipt 2")
 
-			currentUserClaims := auth.UserClaim{
-				ID:       receipt1.User.ID,
-				Username: receipt1.User.Username,
-			}
+			currentUserClaims := auth.NewUserClaim(
+				receipt1.User.ID,
+				receipt1.User.Username,
+			)
 
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
 
+			rID := strconv.Itoa(int(receipt1.ID))
+
 			input := &model.DeleteMyReceiptInput{
-				ID: receipt1.ID,
+				ID: rID,
 			}
 
 			result, err := testReceiptsResolver.DeleteMyReceipt(ctx, input)
 
 			if assert.Nil(t, err) {
-				assert.Equal(t, receipt1.ID, result)
+				assert.Equal(t, rID, result)
 			}
 		})
 	})
@@ -108,10 +111,10 @@ func TestReceiptsResolver(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			currentUserClaims := auth.UserClaim{
-				ID:       receipt1.User.ID,
-				Username: receipt1.User.Username,
-			}
+			currentUserClaims := auth.NewUserClaim(
+				receipt1.User.ID,
+				receipt1.User.Username,
+			)
 
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)

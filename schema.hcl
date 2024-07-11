@@ -33,10 +33,11 @@ table "receipts" {
     type = serial
   }
   column "user_id" {
-    type = int
+    type = bigint
   }
   column "description" {
-    null = true
+    null = false
+    default = ""
     type = text
   }
   column "total" {
@@ -69,11 +70,12 @@ table "items" {
     type = serial
   }
   column "receipt_id" {
-    type = int
+    type = bigint
   }
   column "price" {
-    null = true
+    null = false
     type = int
+    default = 0
   }
   column "name" {
     null = true
@@ -106,11 +108,11 @@ table "user_orders" {
   }
   column "user_id" {
     null = true
-    type = int
+    type = bigint
   }
   column "item_id" {
     null = true
-    type = int
+    type = bigint
   }
   column "status" {
     null = true

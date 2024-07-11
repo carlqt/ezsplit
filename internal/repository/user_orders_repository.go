@@ -2,68 +2,58 @@ package repository
 
 import (
 	"database/sql"
-	"log/slog"
-	"time"
-)
+	"fmt"
 
-type UserOrders struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	ItemID    string    `json:"item_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Status    string    `json:"status"`
-}
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	. "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
+)
 
 type UserOrdersRepository struct {
 	DB *sql.DB
 }
 
+type UserOrder struct {
+	model.UserOrders
+}
+
 func (r *UserOrdersRepository) Create(userID string, itemID string) error {
-	query := `INSERT INTO user_orders (user_id, item_id) VALUES ($1, $2)`
-	_, err := r.DB.Exec(query, userID, itemID)
+  stmt := UserOrders.INSERT(UserOrders.UserID, UserOrders.ItemID).VALUES(userID, itemID)
+
+	_, err := stmt.Exec(r.DB)
 	if err != nil {
-		slog.Error(err.Error())
+		return fmt.Errorf("failed to insert user_orders with user_id=%s and item_id=%s: %w", userID, itemID, err)
 	}
 
 	return err
 }
 
 func (r *UserOrdersRepository) Delete(userID string, itemID string) error {
-	query := `DELETE FROM user_orders WHERE user_id = $1 AND item_id = $2`
-	sqlResult, err := r.DB.Exec(query, userID, itemID)
-	if err != nil {
-		slog.Error(err.Error())
-	}
+  stmt := UserOrders.DELETE().WHERE(UserOrders.UserID.EQ(RawInt(userID)).AND(UserOrders.ItemID.EQ(RawInt(itemID))))
 
-	rowsAffected, err := sqlResult.RowsAffected()
+	_, err := stmt.Exec(r.DB)
 	if err != nil {
-		slog.Error(err.Error())
-	} else if rowsAffected == 0 {
-		slog.Warn("No rows affected")
+    return fmt.Errorf("failed to delete user_order from DB: %w", err)
 	}
 
 	return err
 }
 
-func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, error) {
-	query := "select users.id, users.username from users inner join user_orders on users.id = user_orders.user_id where user_orders.item_id = $1"
+func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]User, error) {
+  users := []User{}
 
-	rows, err := r.DB.Query(query, itemID)
+  stmt := SELECT(
+    Users.ID, Users.Username,
+  ).FROM(
+    Users.
+      INNER_JOIN(UserOrders,Users.ID.EQ(UserOrders.UserID)),
+  ).WHERE(
+    UserOrders.ItemID.EQ(RawInt(itemID)),
+  )
+
+	err := stmt.Query(r.DB, &users)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-
-	var users []*User
-	for rows.Next() {
-		user := &User{}
-		err := rows.Scan(&user.ID, &user.Username)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, err
-		}
-		users = append(users, user)
+    return nil, fmt.Errorf("failed to fetch associated users of item_id=%s: %w", itemID, err)
 	}
 
 	return users, nil
@@ -71,32 +61,54 @@ func (r *UserOrdersRepository) SelectAllUsersFromItem(itemID string) ([]*User, e
 
 func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
 	var totalPayables int
+  var itemIDExpression []Expression
+  var userOrders []UserOrder
 
-	query := `SELECT div(items.price, item_count.shared_by_count) as total_payables
-	FROM items
-	JOIN user_orders as uo ON items.id = uo.item_id
-	JOIN (
-		SELECT count(*) as shared_by_count, item_id FROM user_orders GROUP BY item_id
-	) AS item_count on item_count.item_id = uo.item_id
-	WHERE uo.user_id = $1`
+  // Fetch all the user_orders of the user with ID $user_id
+  userOrdersStmt := UserOrders.SELECT(UserOrders.ItemID).WHERE(UserOrders.UserID.EQ(RawInt(userID)))
+  err := userOrdersStmt.Query(r.DB, &userOrders)
+  if err != nil {
+    return 0, fmt.Errorf("failed to get the user orders: %w", err)
+  } else if len(userOrders) == 0 {
+    return 0, nil
+  }
 
-	rows, err := r.DB.Query(query, userID)
-	if err != nil {
-		slog.Error(err.Error())
-		return 0, err
-	}
+  // Initializing itemIDExpression from the userOrders.ItemID
+  for _, userOrder := range userOrders {
+    itemID := userOrder.ItemID
+    itemIDExpression = append(itemIDExpression, Int(*itemID))
+  }
 
-	for rows.Next() {
-		var p int
+  // Fetch all items and all userOrders associated
+  // This is needed to calculate the "shared_price" of the item
+  var itemsWithOrders []struct {
+    model.Items
+    UserOrders []struct {
+      model.UserOrders
+    }
+  }
 
-		err := rows.Scan(&p)
-		if err != nil {
-			slog.Error(err.Error())
-			return 0, err
-		}
+  itemsStmt := SELECT(
+    Items.ID,
+    Items.Price,
+    UserOrders.AllColumns,
+  ).FROM(
+    Items.INNER_JOIN(
+      UserOrders,
+      UserOrders.ItemID.EQ(Items.ID),
+    ),
+  ).WHERE(Items.ID.IN(itemIDExpression...))
 
-		totalPayables += p
-	}
+  err = itemsStmt.Query(r.DB, &itemsWithOrders)
+  if err != nil {
+    return 0, fmt.Errorf("failed to get the user items: %w", err)
+  }
+
+  // Calculate the TotalPayables
+  for _, item := range itemsWithOrders {
+    share := len(item.UserOrders)
+    totalPayables = totalPayables + (int(item.Price) / share)
+  }
 
 	return totalPayables, err
 }

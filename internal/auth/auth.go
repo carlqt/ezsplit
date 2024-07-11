@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -17,6 +18,15 @@ type UserClaim struct {
 	jwt.RegisteredClaims
 	ID       string `json:"id"`
 	Username string `json:"username"`
+}
+
+func NewUserClaim(id int32, username string) UserClaim {
+	userID := strconv.Itoa(int(id))
+
+	return UserClaim{
+		ID:       userID,
+		Username: username,
+	}
 }
 
 func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {

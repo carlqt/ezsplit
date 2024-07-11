@@ -28,7 +28,7 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := newModelUser(user)
+		modelUser := newModelUser(user.ID, user.Username)
 		modelUsers = append(modelUsers, modelUser)
 	}
 
@@ -38,22 +38,18 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 // AddItemToReceipt is the resolver for the addItemToReceipt field.
 func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error) {
 	price := toPriceCents(*input.Price)
-	item := repository.Item{
-		ReceiptID: input.ReceiptID,
-		Name:      input.Name,
-		Price:     price,
-	}
+
+	item := repository.Item{}
+	item.Name = &input.Name
+	item.ReceiptID = repository.BigInt(input.ReceiptID)
+	item.Price = price
 
 	err := r.Repositories.ItemRepository.Create(&item)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to add the item")
 	}
 
-	return &model.Item{
-		ID:    item.ID,
-		Name:  item.Name,
-		Price: toPriceDisplay(price),
-	}, nil
+	return newModelItem(item), nil
 }
 
 // AssignUserToItem is the resolver for the assignUserToItem field.
@@ -69,6 +65,7 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 	// Need to return an item or user object?
 	err := r.Repositories.UserOrdersRepository.Create(userClaim.ID, input.ItemID)
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 
@@ -113,10 +110,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
@@ -138,11 +132,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return &model.UserWithJwt{
-		ID:          user.ID,
-		Username:    user.Username,
-		AccessToken: signedToken,
-	}, nil
+	return newModelUserWithJwt(
+		user.ID,
+		user.Username,
+		signedToken,
+	), nil
 }
 
 // LoginUser is the resolver for the loginUser field.
@@ -161,19 +155,17 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		slog.Error(err.Error())
-		return nil, errors.New("error signing token")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		return nil, errors.New("error setting cookie")
+		slog.Error("cookie type assertion failed")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn(&http.Cookie{
@@ -186,11 +178,11 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return &model.UserWithJwt{
-		ID:          user.ID,
-		Username:    user.Username,
-		AccessToken: signedToken,
-	}, nil
+	return newModelUserWithJwt(
+		user.ID,
+		user.Username,
+		signedToken,
+	), nil
 }
 
 // LogoutUser is the resolver for the logoutUser field.
@@ -218,15 +210,16 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, err := r.Repositories.UserRepository.GetAllUsers()
 	if err != nil {
+		slog.Error(err.Error())
 		return nil, err
 	}
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := &model.User{
-			ID:       user.ID,
-			Username: user.Username,
-		}
+		modelUser := newModelUser(
+			user.ID,
+			user.Username,
+		)
 		modelUsers = append(modelUsers, modelUser)
 	}
 

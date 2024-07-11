@@ -2,7 +2,9 @@ package main
 
 import (
 	"log/slog"
+	"strconv"
 
+	"github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
@@ -13,12 +15,12 @@ func main() {
 
 	userID, err := createUser(app.Repositories.UserRepository, app.Config.JWTSecret)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	receiptID, err := createReceipt(app.Repositories.ReceiptRepository, userID)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	_ = createItems(app.Repositories.ItemRepository, receiptID)
@@ -34,10 +36,7 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 		return "", err
 	}
 
-	userClaim := auth.UserClaim{
-		ID:       user.ID,
-		Username: user.Username,
-	}
+	userClaim := auth.NewUserClaim(user.ID, user.Username)
 	signedToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		slog.Error(err.Error())
@@ -45,15 +44,15 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 	}
 
 	slog.Info("User created", "accessToken", signedToken)
-	return user.ID, nil
+	return userClaim.ID, nil
 }
 
 func createReceipt(repo *repository.ReceiptRepository, userID string) (string, error) {
-	receipt := repository.Receipt{
-		UserID:      userID,
-		Description: "Jollibee",
-		Total:       4000,
-	}
+	receipt, _ := repository.NewReceipt(
+		4000,
+		"Jollibee",
+		userID,
+	)
 
 	err := repo.Create(&receipt)
 	if err != nil {
@@ -62,17 +61,23 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 	}
 
 	slog.Info("Receipt created", "receiptID", receipt.ID)
-	return receipt.ID, nil
+
+	receiptID := strconv.Itoa(int(receipt.ID))
+	return receiptID, nil
 }
 
 func createItems(repo *repository.ItemRepository, receiptID string) error {
-	items := []repository.Item{
-		{
-			ReceiptID: receiptID,
-			Name:      "Chickenjoy",
-			Price:     4000,
+	price := int32(4000)
+	name := "Chickenjoy"
+	items := make([]repository.Item, 0)
+
+	items = append(items,
+		repository.Item{
+			Items: model.Items{
+				Name: &name, Price: price, ReceiptID: repository.BigInt(receiptID),
+			},
 		},
-	}
+	)
 
 	for _, item := range items {
 		err := repo.Create(&item)

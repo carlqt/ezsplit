@@ -10,6 +10,7 @@ tasks:
     desc: Applies schema to the database which will take care of creating the tables
     cmds:
       - docker compose run --rm dev-cli atlas schema apply --env local --auto-approve
+      - task: models:generate
   
   down:
     cmds:
@@ -54,7 +55,7 @@ tasks:
   test:
     dotenv: [.env.test]
     cmds:
-      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test run --rm app
+      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test run --rm app | sed ''/PASS/s//$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$(printf "\033[31mFAIL\033[0m")/''  | sed ''/ERROR/s//$(printf "\033[31mERROR\033[0m")/''
         ignore_error: true
       - defer: docker compose -f docker-compose.test.yml -p ezsplit_test down
 
@@ -65,10 +66,18 @@ tasks:
   lint:
     desc: Runs linter
     cmds:
+      - task: models:generate
       - docker compose run --rm dev-cli go vet ./...
       - docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.59.1 golangci-lint run -v
 
   db:setup:
     cmds:
       - task: db:schema:apply
+      - task: models:generate
       - task: db:seed:run
+
+  models:generate:
+    vars:
+      JET_COMMAND: 'jet -source=postgresql -user=$DB_USER -password=$DB_PASSWORD -host=$DB_HOST -port=$DB_PORT -dbname=$DB_NAME -schema=public -sslmode=disable -path=./.gen'
+    cmds:
+      - docker compose run --rm dev-cli {{.JET_COMMAND}}
