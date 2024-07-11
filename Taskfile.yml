@@ -78,7 +78,7 @@ tasks:
 
   models:generate:
     cmds:
-      - docker compose run --rm dev-cli ./bin/ezsplitjet
+      - docker compose run --rm dev-cli ezsplitjet
 
   jet:models:generate:
     vars:
