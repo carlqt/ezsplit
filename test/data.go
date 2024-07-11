@@ -71,7 +71,7 @@ type ReceiptWithUser struct {
 func CreateReceiptWithUser(db *sql.DB, total int, description string) (ReceiptWithUser, error) {
 	receipt := ReceiptWithUser{}
 	receipt.Receipt = repository.Receipt{}
-	receipt.Receipt.Description = &description
+	receipt.Receipt.Description = description
 	receiptTotal := int32(total)
 	receipt.Receipt.Total = &receiptTotal
 

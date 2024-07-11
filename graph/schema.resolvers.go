@@ -42,7 +42,7 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 	item := repository.Item{}
 	item.Name = &input.Name
 	item.ReceiptID = repository.BigInt(input.ReceiptID)
-	item.Price = &price
+	item.Price = price
 
 	err := r.Repositories.ItemRepository.Create(&item)
 	if err != nil {

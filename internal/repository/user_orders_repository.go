@@ -107,7 +107,7 @@ func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
   // Calculate the TotalPayables
   for _, item := range itemsWithOrders {
     share := len(item.UserOrders)
-    totalPayables = totalPayables + (int(*item.Price) / share)
+    totalPayables = totalPayables + (int(item.Price) / share)
   }
 
 	return totalPayables, err

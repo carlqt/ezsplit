@@ -74,7 +74,7 @@ func createItems(repo *repository.ItemRepository, receiptID string) error {
 	items = append(items,
 		repository.Item{
 			Items: model.Items{
-				Name: &name, Price: &price, ReceiptID: repository.BigInt(receiptID),
+				Name: &name, Price: price, ReceiptID: repository.BigInt(receiptID),
 			},
 		},
 	)

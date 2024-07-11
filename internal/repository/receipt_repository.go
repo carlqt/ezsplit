@@ -29,10 +29,9 @@ func NewReceipt(total int32, description string, userID string) (Receipt, error)
 	}
 
 	receiptTotal := total
-	receiptDescription := description
 	receipt.UserID = receiptUserID
 	receipt.Total = &receiptTotal
-	receipt.Description = &receiptDescription
+	receipt.Description = description
 
 	return receipt, nil
 }
