@@ -16,10 +16,6 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o ezsplitjet ./cmd/ezsplit_jet/main.go
-
-RUN mv ezsplitjet $GOPATH/bin/
-
 # Add a script to be executed every time the container starts.
 # COPY entrypoint.sh /usr/bin/
 # RUN chmod +x /usr/bin/entrypoint.sh

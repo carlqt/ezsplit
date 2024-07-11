@@ -7,63 +7,68 @@ import (
 	"log"
 	"os"
 	"path"
-	"strconv"
 
-	"github.com/carlqt/ezsplit/internal"
 	"github.com/go-jet/jet/v2/generator/postgres"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	internal.InitializeEnvVariables()
+	InitializeEnvVariables()
 
+	config := NewConfig()
 	genDir := ".gen"
-	config := internal.NewConfig()
 
-	dbPort, err := strconv.Atoi(config.DBPort)
+	jetDestinationPath := path.Join(genDir, config.DBName, config.DBSchema)
+	expectedPath := path.Join(genDir, config.DBSchema)
+
+	err := jetGenerate(config, genDir)
 	if err != nil {
-		log.Printf("failed to convert port (%s) to int\n", config.DBPort)
-		panic(err)
-	}
-
-	dbSchema := "public"
-
-	dbConnection := postgres.DBConnection{
-		Host:     config.DBHost,
-		Port:     dbPort,
-		User:     config.DBUser,
-		Password: config.DBPassword,
-		SslMode:  "disable",
-
-		DBName:     config.DBName,
-		SchemaName: dbSchema,
-	}
-
-	err = postgres.Generate(
-		genDir,
-		dbConnection,
-	)
-
-	if err != nil {
-		log.Println("failed to generate models")
 		panic(err)
 	}
 
 	// After successful generation
 	// find the <schema> folder under .gen directory
-	srcDir := path.Join(genDir, config.DBName, dbSchema)
-	destDir := path.Join(genDir, dbSchema)
-
-	err = moveDir(srcDir, destDir)
+	err = moveDir(jetDestinationPath, expectedPath)
 	if err != nil {
 		panic(err)
 	}
 
+	// Cleanup
 	dbNameDir := path.Join(genDir, config.DBName)
 	os.RemoveAll(dbNameDir)
-	fmt.Printf("Generated models in %s\n", destDir)
+	fmt.Printf("Generated models in %s\n", expectedPath)
+}
+
+func jetGenerate(dbConfig *EnvConfig, destinationPath string) error {
+	dbConnection := postgres.DBConnection{
+		Host:     dbConfig.DBHost,
+		Port:     dbConfig.DBPort,
+		User:     dbConfig.DBUser,
+		Password: dbConfig.DBPassword,
+		SslMode:  "disable",
+
+		DBName:     dbConfig.DBName,
+		SchemaName: dbConfig.DBSchema,
+	}
+
+	err := postgres.Generate(
+		destinationPath,
+		dbConnection,
+	)
+
+	if err != nil {
+		log.Println("failed to generate models")
+		return fmt.Errorf("failed to generate postgres models: %w", err)
+	}
+
+	return nil
 }
 
 func moveDir(src string, dest string) error {
+	if !dirExists(src) {
+		return nil
+	}
+
 	err := os.RemoveAll(dest)
 	if err != nil {
 		return fmt.Errorf("failed to delete destination folder when moving: %w", err)
@@ -71,8 +76,14 @@ func moveDir(src string, dest string) error {
 
 	err = os.Rename(src, dest)
 	if err != nil {
-		return fmt.Errorf("failed to move %s to %s\n: %w", src, dest, err)
+		return fmt.Errorf("failed to move %s to %s: %w\n", src, dest, err)
 	}
 
 	return nil
+}
+
+func dirExists(path string) bool {
+	_, err := os.Stat(path)
+
+	return err == nil
 }

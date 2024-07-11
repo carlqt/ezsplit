@@ -73,12 +73,12 @@ tasks:
   db:setup:
     cmds:
       - task: db:schema:apply
-      - task: models:generate
       - task: db:seed:run
 
   models:generate:
+    desc: Generate DB models
     cmds:
-      - docker compose run --rm dev-cli ezsplitjet
+      - docker compose run --rm dev-cli go run cmd/ezsplit_jet/*.go
 
   jet:models:generate:
     vars:
