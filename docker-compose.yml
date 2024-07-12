@@ -34,7 +34,7 @@ services:
 
   web:
     <<: *app
-    restart: alwasy
+    restart: always
     command: go run ./cmd/ezsplit/main.go
     develop:
       watch:
