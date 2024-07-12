@@ -9,7 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
-	g "github.com/carlqt/ezsplit/.gen/ezsplit_dev/public/model"
+	g "github.com/carlqt/ezsplit/.gen/public/model"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/graph/model"

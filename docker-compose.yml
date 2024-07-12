@@ -34,6 +34,7 @@ services:
 
   web:
     <<: *app
+    restart: always
     command: go run ./cmd/ezsplit/main.go
     develop:
       watch:

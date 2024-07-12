@@ -73,10 +73,14 @@ tasks:
   db:setup:
     cmds:
       - task: db:schema:apply
-      - task: models:generate
       - task: db:seed:run
 
   models:generate:
+    desc: Generate DB models
+    cmds:
+      - docker compose run --rm dev-cli go run cmd/ezsplit_jet/*.go
+
+  jet:models:generate:
     vars:
       JET_COMMAND: 'jet -source=postgresql -user=$DB_USER -password=$DB_PASSWORD -host=$DB_HOST -port=$DB_PORT -dbname=$DB_NAME -schema=public -sslmode=disable -path=./.gen'
     cmds:

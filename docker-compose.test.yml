@@ -9,13 +9,13 @@ services:
     restart: always
     image: postgres:16.1
     user: postgres
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      PG_USER: ${DB_USER}
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_HOST_AUTH_METHOD: trust
     env_file:
       - .env.test
+    environment:
+      POSTGRES_PASSWORD: password
+      PG_USER: postgres
+      POSTGRES_DB: ezsplit_test
+      POSTGRES_HOST_AUTH_METHOD: trust
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 2s
@@ -24,7 +24,6 @@ services:
 
   app:
     <<: *app
-    entrypoint: ./bin/test.sh
     command: >
         sh -c "atlas schema apply --env local --auto-approve &&
         go test -p=1 -v ./..."
