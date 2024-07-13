@@ -24,6 +24,7 @@ services:
 
   app:
     <<: *app
+    entrypoint: ./entrypoint_test.sh
     command: >
         sh -c "atlas schema apply --env local --auto-approve &&
         gotestsum -- -p=1 ./..."
