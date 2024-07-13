@@ -72,7 +72,8 @@ func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.Assi
 	// fetch item by ID
 	item, err := r.Repositories.ItemRepository.FindByID(input.ItemID)
 	if err != nil {
-		return nil, err
+		slog.Error(err.Error())
+		return nil, errors.New("failed to you to item")
 	}
 
 	return newModelItem(item), nil
