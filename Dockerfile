@@ -10,6 +10,9 @@ RUN apk add curl
 
 RUN curl -sSf https://atlasgo.sh | sh
 
+# This is only for tests
+RUN go install gotest.tools/gotestsum@latest
+
 COPY go.mod go.sum ./
 
 RUN go mod download
