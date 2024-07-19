@@ -3,7 +3,7 @@ type Receipt {
   user: User
   description: String!
   total: String
-  items: [Item]!
+  items: [Item!]!
 }
 
 input ReceiptInput {
