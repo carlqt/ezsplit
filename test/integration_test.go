@@ -26,7 +26,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
+	c := client.New(internal.AuthMiddleware(internal.InjectSetCookieMiddleware(srv)))
 
 	toString := func(i int32) string {
 		return strconv.Itoa(int(i))
@@ -221,7 +221,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -262,7 +262,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
+					bd.HTTP.AddCookie(&http.Cookie{Name: internal.AuthTokenKey, Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -301,7 +301,7 @@ func TestResolvers(t *testing.T) {
 			}
 
 			option := func(bd *client.Request) {
-				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 			}
 
 			err = c.Post(query, &resp, option)
@@ -366,7 +366,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -436,7 +436,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -518,7 +518,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -567,7 +567,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.AuthTokenKey), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
