@@ -19,7 +19,7 @@ const AuthTokenKey = "authToken"
 // The error is ignored because the token is optional and the resolver will handle the error.
 func AuthMiddleware(next http.Handler, config *EnvConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authToken, err := getAuthToken(r)
+		authToken, err := getAuthToken(r, config.GoEnv)
 
 		if authToken == "" && err == nil {
 			next.ServeHTTP(w, r)
@@ -53,7 +53,18 @@ func InjectSetCookieMiddleware(next http.Handler) http.Handler {
 // getAuthToken extracts the token from the source.
 // The source can be a Header, if in dev mode, or a Cookie
 // An error is returned if Authorization header is missing or the format is invalid.
-func getAuthToken(r *http.Request) (string, error) {
+func getAuthToken(r *http.Request, env string) (string, error) {
+	if env == "development" {
+		token, err := fromHeader(r)
+		if err != nil {
+			return "", err
+		} else if token != "" {
+			return token, nil
+		} else {
+			return fromCookie(r, AuthTokenKey)
+		}
+	}
+
 	return fromCookie(r, AuthTokenKey)
 }
 
@@ -72,4 +83,14 @@ func fromCookie(r *http.Request, key string) (string, error) {
 	}
 
 	return cookie.Value, nil
+}
+
+func fromHeader(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+
+	if authHeader == "" {
+		return "", errors.New("missing Authorization header")
+	}
+
+	return authHeader, nil
 }
