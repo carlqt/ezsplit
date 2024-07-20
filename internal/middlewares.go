@@ -17,7 +17,7 @@ const AuthTokenKey = "authToken"
 // BearerTokenMiddleware extracts the bearer token from the Authorization header
 // and stores it in the context.
 // The error is ignored because the token is optional and the resolver will handle the error.
-func AuthMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler, config *EnvConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authToken, err := getAuthToken(r)
 

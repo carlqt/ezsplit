@@ -26,7 +26,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(internal.AuthMiddleware(internal.InjectSetCookieMiddleware(srv)))
+	c := client.New(internal.AuthMiddleware(internal.InjectSetCookieMiddleware(srv), app.Config))
 
 	toString := func(i int32) string {
 		return strconv.Itoa(int(i))
