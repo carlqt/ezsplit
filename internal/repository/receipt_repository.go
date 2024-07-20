@@ -81,7 +81,7 @@ func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
 
 	stmt := SELECT(
 		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt,
-	).FROM(Receipts.Table).WHERE(Receipts.UserID.EQ(RawInt(id)))
+	).FROM(Receipts.Table).WHERE(Receipts.ID.EQ(RawInt(id)))
 
 	err := stmt.Query(r.DB, &receipt)
 	if err != nil {
