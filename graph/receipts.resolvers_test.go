@@ -9,6 +9,7 @@ import (
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
+	"github.com/carlqt/ezsplit/internal/repository"
 	integration_test "github.com/carlqt/ezsplit/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -127,6 +128,39 @@ func TestReceiptsResolver(t *testing.T) {
 					assert.Equal(t, "receipt 1", r.Description)
 					assert.Equal(t, "99.00", r.Total)
 				}
+			}
+		})
+	})
+
+	t.Run("Receipt", func(t *testing.T) {
+		t.Run("returns a receipt of the user", func(t *testing.T) {
+			defer truncateTables()
+
+			myQueryResolver := queryResolver{&resolvers}
+
+			// Create user
+			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
+
+			// Create 2 receipts
+			receipt1 := repository.Receipt{}
+			receipt1.Total = repository.Nullable(int32(8900))
+			receipt1.Description = "receipt 1"
+			receipt1.UserID = repository.BigInt(user.ID)
+			app.Repositories.ReceiptRepository.CreateForUser(&receipt1)
+
+			// Creating a receipt for another user
+			receipt2 := repository.Receipt{}
+			receipt2.Total = repository.Nullable(int32(10788))
+			receipt2.Description = "receipt 2"
+			receipt2.UserID = repository.BigInt(user.ID)
+			app.Repositories.ReceiptRepository.CreateForUser(&receipt2)
+
+			id := strconv.Itoa(int(receipt2.ID))
+			result, err := myQueryResolver.Receipt(context.TODO(), id)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, "receipt 2", result.Description)
+				assert.Equal(t, "107.88", result.Total)
 			}
 		})
 	})
