@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -80,7 +81,8 @@ func (r *queryResolver) MyReceipts(ctx context.Context) ([]*model.Receipt, error
 func (r *queryResolver) Receipt(ctx context.Context, id string) (*model.Receipt, error) {
 	receipt, err := r.Repositories.ReceiptRepository.FindByID(id)
 	if err != nil {
-		return nil, err
+		slog.Error(err.Error())
+		return nil, fmt.Errorf("failed to fetch receipt with id=%s", id)
 	}
 
 	return newModelReceipt(&receipt), nil
