@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
@@ -18,6 +17,10 @@ func pong(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error(err.Error())
 	}
+}
+
+func playgroundHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./cmd/ezsplit/graphiql.html")
 }
 
 func main() {
@@ -40,7 +43,7 @@ func main() {
 	// })
 
 	// TODO: Remove the playground handler in production.
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	http.HandleFunc("/", playgroundHandler)
 
 	http.Handle("/query", internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 	http.Handle("/ping", http.HandlerFunc(pong))
