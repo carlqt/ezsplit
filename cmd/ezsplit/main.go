@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
 	"github.com/carlqt/ezsplit/internal"
+	"github.com/carlqt/ezsplit/playground"
 )
 
 const defaultPort = "8080"
@@ -17,10 +19,6 @@ func pong(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-}
-
-func playgroundHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./cmd/ezsplit/graphiql.html")
 }
 
 func main() {
@@ -43,11 +41,11 @@ func main() {
 	// })
 
 	// TODO: Remove the playground handler in production.
-	http.HandleFunc("/", playgroundHandler)
+	http.HandleFunc("/", playground.Handler)
 
 	http.Handle("/query", internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
 	http.Handle("/ping", http.HandlerFunc(pong))
 
-	slog.Debug("connect to http://localhost:%s/ for GraphQL playground", "port", port)
+	fmt.Printf("connect to http://localhost:%s/ for GraphQL playground\n", port)
 	slog.Error(http.ListenAndServe(":"+port, nil).Error())
 }
