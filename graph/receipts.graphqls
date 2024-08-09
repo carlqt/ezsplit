@@ -1,8 +1,9 @@
 type Receipt {
   id: ID!
+  userId: ID!
   user: User
   description: String!
-  total: String
+  total: String!
   items: [Item!]!
 }
 
