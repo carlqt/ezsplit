@@ -23,6 +23,7 @@ extend type Query {
 }
 
 extend type Mutation {
+  generatePublicUrl(id: ID!): Receipt! @authenticated
   createMyReceipt(input: ReceiptInput): Receipt! @authenticated
   deleteMyReceipt(input: DeleteMyReceiptInput): ID! @authenticated
 }

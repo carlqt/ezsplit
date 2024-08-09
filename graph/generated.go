@@ -71,15 +71,16 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddItemToReceipt func(childComplexity int, input *model.AddItemToReceiptInput) int
-		AssignMeToItem   func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
-		AssignUserToItem func(childComplexity int, input *model.AssignUserToItemInput) int
-		CreateMyReceipt  func(childComplexity int, input *model.ReceiptInput) int
-		CreateUser       func(childComplexity int, input *model.UserInput) int
-		DeleteMyReceipt  func(childComplexity int, input *model.DeleteMyReceiptInput) int
-		LoginUser        func(childComplexity int, input *model.LoginUserInput) int
-		LogoutUser       func(childComplexity int) int
-		RemoveMeFromItem func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
+		AddItemToReceipt  func(childComplexity int, input *model.AddItemToReceiptInput) int
+		AssignMeToItem    func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
+		AssignUserToItem  func(childComplexity int, input *model.AssignUserToItemInput) int
+		CreateMyReceipt   func(childComplexity int, input *model.ReceiptInput) int
+		CreateUser        func(childComplexity int, input *model.UserInput) int
+		DeleteMyReceipt   func(childComplexity int, input *model.DeleteMyReceiptInput) int
+		GeneratePublicURL func(childComplexity int, id string) int
+		LoginUser         func(childComplexity int, input *model.LoginUserInput) int
+		LogoutUser        func(childComplexity int) int
+		RemoveMeFromItem  func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 	}
 
 	Query struct {
@@ -126,6 +127,7 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
 	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
 	LogoutUser(ctx context.Context) (string, error)
+	GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error)
 	CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error)
 	DeleteMyReceipt(ctx context.Context, input *model.DeleteMyReceiptInput) (string, error)
 }
@@ -301,6 +303,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteMyReceipt(childComplexity, args["input"].(*model.DeleteMyReceiptInput)), true
+
+	case "Mutation.generatePublicUrl":
+		if e.complexity.Mutation.GeneratePublicURL == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_generatePublicUrl_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.GeneratePublicURL(childComplexity, args["id"].(string)), true
 
 	case "Mutation.loginUser":
 		if e.complexity.Mutation.LoginUser == nil {
@@ -670,6 +684,21 @@ func (ec *executionContext) field_Mutation_deleteMyReceipt_args(ctx context.Cont
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_generatePublicUrl_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1735,6 +1764,97 @@ func (ec *executionContext) fieldContext_Mutation_logoutUser(_ context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_generatePublicUrl(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_generatePublicUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().GeneratePublicURL(rctx, fc.Args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Receipt); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/carlqt/ezsplit/graph/model.Receipt`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Receipt)
+	fc.Result = res
+	return ec.marshalNReceipt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_generatePublicUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Receipt_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Receipt_userId(ctx, field)
+			case "user":
+				return ec.fieldContext_Receipt_user(ctx, field)
+			case "description":
+				return ec.fieldContext_Receipt_description(ctx, field)
+			case "total":
+				return ec.fieldContext_Receipt_total(ctx, field)
+			case "publicUrlPath":
+				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "items":
+				return ec.fieldContext_Receipt_items(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Receipt", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_generatePublicUrl_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -5198,6 +5318,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "logoutUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_logoutUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "generatePublicUrl":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_generatePublicUrl(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

@@ -15,6 +15,11 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
+// GeneratePublicURL is the resolver for the generatePublicUrl field.
+func (r *mutationResolver) GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error) {
+	panic(fmt.Errorf("not implemented: GeneratePublicURL - generatePublicUrl"))
+}
+
 // CreateMyReceipt is the resolver for the createMyReceipt field.
 func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
 	if input == nil {
