@@ -1,5 +1,6 @@
 type Receipt {
   id: ID!
+  userId: ID!
   user: User
   description: String!
   total: String
