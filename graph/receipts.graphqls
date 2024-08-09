@@ -4,6 +4,7 @@ type Receipt {
   user: User
   description: String!
   total: String!
+  publicUrlPath: String!
   items: [Item!]!
 }
 

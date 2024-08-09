@@ -53,10 +53,11 @@ func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
 	receiptID := strconv.Itoa(int(receipt.ID))
 
 	return &model.Receipt{
-		ID:          receiptID,
-		Total:       toPriceDisplay(*receipt.Total),
-		Description: receipt.Description,
-		UserID:      userID,
+		ID:            receiptID,
+		Total:         toPriceDisplay(*receipt.Total),
+		Description:   receipt.Description,
+		PublicURLPath: receipt.PublicURLPath,
+		UserID:        userID,
 	}
 }
 
