@@ -40,6 +40,10 @@ table "receipts" {
     default = ""
     type = text
   }
+  column "public_url_path" {
+    default = ""
+    type = varchar(255)
+  }
   column "total" {
     null = true
     type = int
