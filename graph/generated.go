@@ -95,6 +95,7 @@ type ComplexityRoot struct {
 		Items       func(childComplexity int) int
 		Total       func(childComplexity int) int
 		User        func(childComplexity int) int
+		UserID      func(childComplexity int) int
 	}
 
 	User struct {
@@ -398,6 +399,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Receipt.User(childComplexity), true
+
+	case "Receipt.userId":
+		if e.complexity.Receipt.UserID == nil {
+			break
+		}
+
+		return e.complexity.Receipt.UserID(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -1198,6 +1206,8 @@ func (ec *executionContext) fieldContext_Me_receipts(_ context.Context, field gr
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Receipt_userId(ctx, field)
 			case "user":
 				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
@@ -1780,6 +1790,8 @@ func (ec *executionContext) fieldContext_Mutation_createMyReceipt(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Receipt_userId(ctx, field)
 			case "user":
 				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
@@ -2086,6 +2098,8 @@ func (ec *executionContext) fieldContext_Query_myReceipts(_ context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Receipt_userId(ctx, field)
 			case "user":
 				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
@@ -2142,6 +2156,8 @@ func (ec *executionContext) fieldContext_Query_receipt(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Receipt_id(ctx, field)
+			case "userId":
+				return ec.fieldContext_Receipt_userId(ctx, field)
 			case "user":
 				return ec.fieldContext_Receipt_user(ctx, field)
 			case "description":
@@ -2341,6 +2357,50 @@ func (ec *executionContext) fieldContext_Receipt_id(_ context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Receipt_userId(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receipt_userId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Receipt_userId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Receipt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Receipt_user(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receipt_user(ctx, field)
 	if err != nil {
@@ -2453,11 +2513,14 @@ func (ec *executionContext) _Receipt_total(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receipt_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5270,6 +5333,11 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "userId":
+			out.Values[i] = ec._Receipt_userId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "user":
 			field := field
 
@@ -5310,6 +5378,9 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "total":
 			out.Values[i] = ec._Receipt_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "items":
 			field := field
 
@@ -6370,16 +6441,6 @@ func (ec *executionContext) unmarshalOReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋez
 	}
 	res, err := ec.unmarshalInputReceiptInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

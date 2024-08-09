@@ -26,15 +26,38 @@ type DeleteMyReceiptInput struct {
 	ID string `json:"id"`
 }
 
+type Item struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Price    string  `json:"price"`
+	SharedBy []*User `json:"sharedBy"`
+}
+
 type LoginUserInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type Me struct {
+	ID            string     `json:"id"`
+	Username      string     `json:"username"`
+	TotalPayables string     `json:"totalPayables"`
+	Receipts      []*Receipt `json:"receipts"`
 }
 
 type Mutation struct {
 }
 
 type Query struct {
+}
+
+type Receipt struct {
+	ID          string  `json:"id"`
+	UserID      string  `json:"userId"`
+	User        *User   `json:"user,omitempty"`
+	Description string  `json:"description"`
+	Total       string  `json:"total"`
+	Items       []*Item `json:"items"`
 }
 
 type ReceiptInput struct {
