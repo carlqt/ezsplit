@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"strconv"
 
@@ -92,11 +94,48 @@ func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
 }
 
 func (r *ReceiptRepository) Delete(userID string, id string) error {
-  stmt := Receipts.DELETE().WHERE(Receipts.ID.EQ(RawInt(id)).AND(Receipts.UserID.EQ(RawInt(userID))))
+	stmt := Receipts.DELETE().WHERE(Receipts.ID.EQ(RawInt(id)).AND(Receipts.UserID.EQ(RawInt(userID))))
 
 	_, err := stmt.Exec(r.DB)
 	if err != nil {
 		return fmt.Errorf("could not delete receipt with id %s: %w", id, err)
+	}
+
+	return nil
+}
+
+func (r *ReceiptRepository) GeneratePublicUrlPath(userID, receiptID string) (Receipt, error) {
+	var receipt Receipt
+
+	hash := md5.Sum([]byte(receiptID))
+	publicUrlPath := hex.EncodeToString(hash[:])
+	receipt.PublicURLPath = publicUrlPath
+
+	stmt := Receipts.UPDATE(
+		Receipts.PublicURLPath,
+	).MODEL(receipt).WHERE(
+		Receipts.UserID.EQ(RawInt(userID)).AND(Receipts.ID.EQ(RawInt(receiptID))),
+	).RETURNING(Receipts.AllColumns)
+
+	err := stmt.Query(r.DB, &receipt)
+	if err != nil {
+		return receipt, fmt.Errorf("failed to update receipt with id=%s: %w", receiptID, err)
+	}
+
+	return receipt, nil
+}
+
+// Update method is mainly used to easily create data for tests
+func (r *ReceiptRepository) Update(receipt *Receipt) error {
+	stmt := Receipts.UPDATE(
+		Receipts.MutableColumns,
+	).MODEL(receipt).WHERE(
+		Receipts.ID.EQ(Int32(receipt.ID)),
+	).RETURNING(Receipts.AllColumns)
+
+	err := stmt.Query(r.DB, &receipt)
+	if err != nil {
+		return fmt.Errorf("failed to update receipt %v: %w", receipt, err)
 	}
 
 	return nil

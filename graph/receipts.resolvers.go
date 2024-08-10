@@ -17,7 +17,15 @@ import (
 
 // GeneratePublicURL is the resolver for the generatePublicUrl field.
 func (r *mutationResolver) GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error) {
-	panic(fmt.Errorf("not implemented: GeneratePublicURL - generatePublicUrl"))
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	receipt, err := r.Repositories.ReceiptRepository.GeneratePublicUrlPath(userClaim.ID, id)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, fmt.Errorf("failed to create a public URL")
+	}
+
+	return newModelReceipt(&receipt), nil
 }
 
 // CreateMyReceipt is the resolver for the createMyReceipt field.

@@ -2,6 +2,8 @@ package graph
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"log/slog"
 	"strconv"
 	"testing"
@@ -163,5 +165,33 @@ func TestReceiptsResolver(t *testing.T) {
 				assert.Equal(t, "107.88", result.Total)
 			}
 		})
+	})
+
+	t.Run("GeneratePublicURL", func(t *testing.T) {
+		defer truncateTables()
+
+		// create receipt and user
+		receipt, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		currentUserClaims := auth.NewUserClaim(
+			receipt.User.ID,
+			receipt.User.Username,
+		)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
+
+		id := strconv.Itoa(int(receipt.ID))
+		result, err := testReceiptsResolver.GeneratePublicURL(ctx, id)
+
+		hash := md5.Sum([]byte(id))
+		expected := hex.EncodeToString(hash[:])
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, expected, result.PublicURLPath)
+		}
 	})
 }
