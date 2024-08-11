@@ -56,7 +56,7 @@ func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
 		ID:            receiptID,
 		Total:         toPriceDisplay(*receipt.Total),
 		Description:   receipt.Description,
-		PublicURLPath: receipt.PublicURLPath,
+		PublicURLPath: receipt.URLSlug,
 		UserID:        userID,
 	}
 }

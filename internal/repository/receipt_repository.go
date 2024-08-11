@@ -110,11 +110,11 @@ func (r *ReceiptRepository) GeneratePublicUrlPath(userID, receiptID string) (Rec
 	var receipt Receipt
 
 	hash := md5.Sum([]byte(receiptID))
-	publicUrlPath := hex.EncodeToString(hash[:])
-	receipt.PublicURLPath = publicUrlPath
+	slug := hex.EncodeToString(hash[:])
+	receipt.URLSlug = slug
 
 	stmt := Receipts.UPDATE(
-		Receipts.PublicURLPath,
+		Receipts.URLSlug,
 	).MODEL(receipt).WHERE(
 		Receipts.UserID.EQ(RawInt(userID)).AND(Receipts.ID.EQ(RawInt(receiptID))),
 	).RETURNING(Receipts.AllColumns)

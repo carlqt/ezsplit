@@ -17,12 +17,12 @@ type receiptsTable struct {
 	postgres.Table
 
 	// Columns
-	ID            postgres.ColumnInteger
-	UserID        postgres.ColumnInteger
-	Description   postgres.ColumnString
-	PublicURLPath postgres.ColumnString
-	Total         postgres.ColumnInteger
-	CreatedAt     postgres.ColumnTimestamp
+	ID          postgres.ColumnInteger
+	UserID      postgres.ColumnInteger
+	Description postgres.ColumnString
+	URLSlug     postgres.ColumnString
+	Total       postgres.ColumnInteger
+	CreatedAt   postgres.ColumnTimestamp
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -63,26 +63,26 @@ func newReceiptsTable(schemaName, tableName, alias string) *ReceiptsTable {
 
 func newReceiptsTableImpl(schemaName, tableName, alias string) receiptsTable {
 	var (
-		IDColumn            = postgres.IntegerColumn("id")
-		UserIDColumn        = postgres.IntegerColumn("user_id")
-		DescriptionColumn   = postgres.StringColumn("description")
-		PublicURLPathColumn = postgres.StringColumn("public_url_path")
-		TotalColumn         = postgres.IntegerColumn("total")
-		CreatedAtColumn     = postgres.TimestampColumn("created_at")
-		allColumns          = postgres.ColumnList{IDColumn, UserIDColumn, DescriptionColumn, PublicURLPathColumn, TotalColumn, CreatedAtColumn}
-		mutableColumns      = postgres.ColumnList{UserIDColumn, DescriptionColumn, PublicURLPathColumn, TotalColumn, CreatedAtColumn}
+		IDColumn          = postgres.IntegerColumn("id")
+		UserIDColumn      = postgres.IntegerColumn("user_id")
+		DescriptionColumn = postgres.StringColumn("description")
+		URLSlugColumn     = postgres.StringColumn("url_slug")
+		TotalColumn       = postgres.IntegerColumn("total")
+		CreatedAtColumn   = postgres.TimestampColumn("created_at")
+		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
+		mutableColumns    = postgres.ColumnList{UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
 	)
 
 	return receiptsTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:            IDColumn,
-		UserID:        UserIDColumn,
-		Description:   DescriptionColumn,
-		PublicURLPath: PublicURLPathColumn,
-		Total:         TotalColumn,
-		CreatedAt:     CreatedAtColumn,
+		ID:          IDColumn,
+		UserID:      UserIDColumn,
+		Description: DescriptionColumn,
+		URLSlug:     URLSlugColumn,
+		Total:       TotalColumn,
+		CreatedAt:   CreatedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

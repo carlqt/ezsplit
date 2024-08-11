@@ -40,7 +40,7 @@ table "receipts" {
     default = ""
     type = text
   }
-  column "public_url_path" {
+  column "url_slug" {
     default = ""
     type = varchar(255)
   }
