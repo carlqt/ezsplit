@@ -387,7 +387,7 @@ func TestResolvers(t *testing.T) {
 
 		userID := strconv.Itoa(int(user.ID))
 		receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
-		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -442,6 +442,10 @@ func TestResolvers(t *testing.T) {
 		err = c.Post(query, &resp, option)
 
 		if assert.Nil(t, err) {
+			itemID := strconv.Itoa(int(item.ID))
+
+			assert.Equal(t, itemID, resp.AssignMeToItem.Id)
+			assert.Equal(t, "100.00", resp.AssignMeToItem.Price)
 			assert.Equal(t, *item.Name, resp.AssignMeToItem.Name)
 			assert.Equal(t, userClaim.ID, resp.AssignMeToItem.SharedBy[0].Id)
 			assert.Equal(t, user.Username, resp.AssignMeToItem.SharedBy[0].Username)
@@ -465,7 +469,7 @@ func TestResolvers(t *testing.T) {
 		// Receipt
 		userID := strconv.Itoa(int(user.ID))
 		receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
-		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -537,7 +541,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		receipt, _ := repository.NewReceipt(35000, "test receipt", toString(user.ID))
-		err = app.Repositories.ReceiptRepository.Create(&receipt)
+		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -574,6 +578,55 @@ func TestResolvers(t *testing.T) {
 
 		if assert.Nil(t, err) {
 			assert.Equal(t, fmt.Sprintf("%d", receipt.ID), resp.DeleteMyReceipt)
+		}
+	})
+
+	t.Run("query MyReceipts", func(t *testing.T) {
+		defer TruncateAllTables(app.DB)
+
+		receipt, err := CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+		if err != nil {
+			slog.Error(err.Error())
+			t.Fatal(err)
+		}
+
+		userClaim := auth.NewUserClaim(
+			receipt.User.ID,
+			receipt.User.Username,
+		)
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		query := fmt.Sprintf(`query MyReceipts {
+			myReceipts {
+        description
+        id
+        userId
+        total
+        slug
+      }
+		}`)
+
+		var resp struct {
+			MyReceipts []*model.Receipt
+		}
+
+		option := func(bd *client.Request) {
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+		}
+
+		err = c.Post(query, &resp, option)
+
+		if assert.Nil(t, err) {
+			if assert.Equal(t, 1, len(resp.MyReceipts)) {
+				r := resp.MyReceipts[0]
+				expectedID := strconv.Itoa(int(receipt.ID))
+				expectedUserID := strconv.Itoa(int(receipt.User.ID))
+
+				assert.Equal(t, "receipt 1", r.Description)
+				assert.Equal(t, "99.00", r.Total)
+				assert.Equal(t, expectedID, r.ID)
+				assert.Equal(t, expectedUserID, r.UserID)
+			}
 		}
 	})
 }

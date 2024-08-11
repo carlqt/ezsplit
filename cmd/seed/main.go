@@ -54,7 +54,7 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 		userID,
 	)
 
-	err := repo.Create(&receipt)
+	err := repo.UnsafeCreate(&receipt)
 	if err != nil {
 		slog.Error(err.Error())
 		return "", err

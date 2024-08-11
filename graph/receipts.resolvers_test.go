@@ -123,12 +123,16 @@ func TestReceiptsResolver(t *testing.T) {
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
 
 			result, err := myQueryResolver.MyReceipts(ctx)
+			expectedID := strconv.Itoa(int(receipt1.ID))
+			expectedUserID := strconv.Itoa(int(receipt1.User.ID))
 
 			if assert.Nil(t, err) {
 				if assert.Equal(t, 1, len(result)) {
 					r := result[0]
 					assert.Equal(t, "receipt 1", r.Description)
 					assert.Equal(t, "99.00", r.Total)
+					assert.Equal(t, expectedID, r.ID)
+					assert.Equal(t, expectedUserID, r.UserID)
 				}
 			}
 		})
