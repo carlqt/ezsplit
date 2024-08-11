@@ -91,13 +91,13 @@ type ComplexityRoot struct {
 	}
 
 	Receipt struct {
-		Description   func(childComplexity int) int
-		ID            func(childComplexity int) int
-		Items         func(childComplexity int) int
-		PublicURLPath func(childComplexity int) int
-		Total         func(childComplexity int) int
-		User          func(childComplexity int) int
-		UserID        func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Items       func(childComplexity int) int
+		Slug        func(childComplexity int) int
+		Total       func(childComplexity int) int
+		User        func(childComplexity int) int
+		UserID      func(childComplexity int) int
 	}
 
 	User struct {
@@ -401,12 +401,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Receipt.Items(childComplexity), true
 
-	case "Receipt.publicUrlPath":
-		if e.complexity.Receipt.PublicURLPath == nil {
+	case "Receipt.slug":
+		if e.complexity.Receipt.Slug == nil {
 			break
 		}
 
-		return e.complexity.Receipt.PublicURLPath(childComplexity), true
+		return e.complexity.Receipt.Slug(childComplexity), true
 
 	case "Receipt.total":
 		if e.complexity.Receipt.Total == nil {
@@ -1251,8 +1251,8 @@ func (ec *executionContext) fieldContext_Me_receipts(_ context.Context, field gr
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
-			case "publicUrlPath":
-				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "slug":
+				return ec.fieldContext_Receipt_slug(ctx, field)
 			case "items":
 				return ec.fieldContext_Receipt_items(ctx, field)
 			}
@@ -1837,8 +1837,8 @@ func (ec *executionContext) fieldContext_Mutation_generatePublicUrl(ctx context.
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
-			case "publicUrlPath":
-				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "slug":
+				return ec.fieldContext_Receipt_slug(ctx, field)
 			case "items":
 				return ec.fieldContext_Receipt_items(ctx, field)
 			}
@@ -1928,8 +1928,8 @@ func (ec *executionContext) fieldContext_Mutation_createMyReceipt(ctx context.Co
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
-			case "publicUrlPath":
-				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "slug":
+				return ec.fieldContext_Receipt_slug(ctx, field)
 			case "items":
 				return ec.fieldContext_Receipt_items(ctx, field)
 			}
@@ -2238,8 +2238,8 @@ func (ec *executionContext) fieldContext_Query_myReceipts(_ context.Context, fie
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
-			case "publicUrlPath":
-				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "slug":
+				return ec.fieldContext_Receipt_slug(ctx, field)
 			case "items":
 				return ec.fieldContext_Receipt_items(ctx, field)
 			}
@@ -2298,8 +2298,8 @@ func (ec *executionContext) fieldContext_Query_receipt(ctx context.Context, fiel
 				return ec.fieldContext_Receipt_description(ctx, field)
 			case "total":
 				return ec.fieldContext_Receipt_total(ctx, field)
-			case "publicUrlPath":
-				return ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+			case "slug":
+				return ec.fieldContext_Receipt_slug(ctx, field)
 			case "items":
 				return ec.fieldContext_Receipt_items(ctx, field)
 			}
@@ -2672,8 +2672,8 @@ func (ec *executionContext) fieldContext_Receipt_total(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Receipt_publicUrlPath(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Receipt_publicUrlPath(ctx, field)
+func (ec *executionContext) _Receipt_slug(ctx context.Context, field graphql.CollectedField, obj *model.Receipt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receipt_slug(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2686,7 +2686,7 @@ func (ec *executionContext) _Receipt_publicUrlPath(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.PublicURLPath, nil
+		return obj.Slug, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2703,7 +2703,7 @@ func (ec *executionContext) _Receipt_publicUrlPath(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Receipt_publicUrlPath(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Receipt_slug(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Receipt",
 		Field:      field,
@@ -5568,8 +5568,8 @@ func (ec *executionContext) _Receipt(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "publicUrlPath":
-			out.Values[i] = ec._Receipt_publicUrlPath(ctx, field, obj)
+		case "slug":
+			out.Values[i] = ec._Receipt_slug(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

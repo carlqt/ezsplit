@@ -193,7 +193,7 @@ func TestReceiptsResolver(t *testing.T) {
 		expected := hex.EncodeToString(hash[:])
 
 		if assert.Nil(t, err) {
-			assert.Equal(t, expected, result.PublicURLPath)
+			assert.Equal(t, expected, result.Slug)
 		}
 	})
 }

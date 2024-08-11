@@ -52,13 +52,13 @@ type Query struct {
 }
 
 type Receipt struct {
-	ID            string  `json:"id"`
-	UserID        string  `json:"userId"`
-	User          *User   `json:"user,omitempty"`
-	Description   string  `json:"description"`
-	Total         string  `json:"total"`
-	PublicURLPath string  `json:"publicUrlPath"`
-	Items         []*Item `json:"items"`
+	ID          string  `json:"id"`
+	UserID      string  `json:"userId"`
+	User        *User   `json:"user,omitempty"`
+	Description string  `json:"description"`
+	Total       string  `json:"total"`
+	Slug        string  `json:"slug"`
+	Items       []*Item `json:"items"`
 }
 
 type ReceiptInput struct {
