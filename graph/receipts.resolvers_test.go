@@ -144,17 +144,19 @@ func TestReceiptsResolver(t *testing.T) {
 			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
 
 			// Create 2 receipts
-			receipt1 := repository.Receipt{}
-			receipt1.Total = repository.Nullable(int32(8900))
-			receipt1.Description = "receipt 1"
-			receipt1.UserID = repository.BigInt(user.ID)
+			receipt1, _ := repository.NewReceipt(
+				8900,
+				"receipt 1",
+				strconv.Itoa(int(user.ID)),
+			)
 			app.Repositories.ReceiptRepository.CreateForUser(&receipt1)
 
 			// Creating a receipt for another user
-			receipt2 := repository.Receipt{}
-			receipt2.Total = repository.Nullable(int32(10788))
-			receipt2.Description = "receipt 2"
-			receipt2.UserID = repository.BigInt(user.ID)
+			receipt2, _ := repository.NewReceipt(
+				10788,
+				"receipt 2",
+				strconv.Itoa(int(user.ID)),
+			)
 			app.Repositories.ReceiptRepository.CreateForUser(&receipt2)
 
 			id := strconv.Itoa(int(receipt2.ID))
