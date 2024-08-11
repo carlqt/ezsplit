@@ -127,6 +127,23 @@ func (r *ReceiptRepository) GeneratePublicUrlPath(userID, receiptID string) (Rec
 	return receipt, nil
 }
 
+func (r *ReceiptRepository) RemovePublicUrlPath(userID, receiptID string) (Receipt, error) {
+	var receipt Receipt
+
+	stmt := Receipts.UPDATE(
+		Receipts.URLSlug,
+	).MODEL(receipt).WHERE(
+		Receipts.UserID.EQ(RawInt(userID)).AND(Receipts.ID.EQ(RawInt(receiptID))),
+	).RETURNING(Receipts.AllColumns)
+
+	err := stmt.Query(r.DB, &receipt)
+	if err != nil {
+		return receipt, fmt.Errorf("failed to remove slug from receipt with id=%s: %w", receiptID, err)
+	}
+
+	return receipt, nil
+}
+
 // Update method is mainly used to easily create data for tests
 func (r *ReceiptRepository) Update(receipt *Receipt) error {
 	stmt := Receipts.UPDATE(

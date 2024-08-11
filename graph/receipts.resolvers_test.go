@@ -194,6 +194,35 @@ func TestReceiptsResolver(t *testing.T) {
 
 		if assert.Nil(t, err) {
 			assert.Equal(t, expected, result.Slug)
+			assert.Equal(t, "receipt 1", result.Description)
+			assert.Equal(t, "99.00", result.Total)
+		}
+	})
+
+	t.Run("RemovePublicURL", func(t *testing.T) {
+		defer truncateTables()
+
+		// create receipt and user
+		receipt, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		currentUserClaims := auth.NewUserClaim(
+			receipt.User.ID,
+			receipt.User.Username,
+		)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
+
+		id := strconv.Itoa(int(receipt.ID))
+		result, err := testReceiptsResolver.RemovePublicURL(ctx, id)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "", result.Slug)
+			assert.Equal(t, "receipt 1", result.Description)
+			assert.Equal(t, "99.00", result.Total)
 		}
 	})
 }
