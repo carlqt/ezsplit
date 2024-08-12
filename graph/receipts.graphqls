@@ -4,6 +4,7 @@ type Receipt {
   user: User
   description: String!
   total: String!
+  slug: String!
   items: [Item!]!
 }
 
@@ -22,6 +23,8 @@ extend type Query {
 }
 
 extend type Mutation {
+  generatePublicUrl(id: ID!): Receipt! @authenticated
+  removePublicUrl(id: ID!): Receipt! @authenticated
   createMyReceipt(input: ReceiptInput): Receipt! @authenticated
   deleteMyReceipt(input: DeleteMyReceiptInput): ID! @authenticated
 }

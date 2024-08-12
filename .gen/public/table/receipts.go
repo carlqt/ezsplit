@@ -20,6 +20,7 @@ type receiptsTable struct {
 	ID          postgres.ColumnInteger
 	UserID      postgres.ColumnInteger
 	Description postgres.ColumnString
+	URLSlug     postgres.ColumnString
 	Total       postgres.ColumnInteger
 	CreatedAt   postgres.ColumnTimestamp
 
@@ -65,10 +66,11 @@ func newReceiptsTableImpl(schemaName, tableName, alias string) receiptsTable {
 		IDColumn          = postgres.IntegerColumn("id")
 		UserIDColumn      = postgres.IntegerColumn("user_id")
 		DescriptionColumn = postgres.StringColumn("description")
+		URLSlugColumn     = postgres.StringColumn("url_slug")
 		TotalColumn       = postgres.IntegerColumn("total")
 		CreatedAtColumn   = postgres.TimestampColumn("created_at")
-		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, DescriptionColumn, TotalColumn, CreatedAtColumn}
-		mutableColumns    = postgres.ColumnList{UserIDColumn, DescriptionColumn, TotalColumn, CreatedAtColumn}
+		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
+		mutableColumns    = postgres.ColumnList{UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
 	)
 
 	return receiptsTable{
@@ -78,6 +80,7 @@ func newReceiptsTableImpl(schemaName, tableName, alias string) receiptsTable {
 		ID:          IDColumn,
 		UserID:      UserIDColumn,
 		Description: DescriptionColumn,
+		URLSlug:     URLSlugColumn,
 		Total:       TotalColumn,
 		CreatedAt:   CreatedAtColumn,
 

@@ -15,6 +15,7 @@ type Receipts struct {
 	ID          int32 `sql:"primary_key"`
 	UserID      int64
 	Description string
+	URLSlug     string
 	Total       *int32
 	CreatedAt   time.Time
 }

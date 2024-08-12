@@ -15,6 +15,32 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
+// GeneratePublicURL is the resolver for the generatePublicUrl field.
+func (r *mutationResolver) GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error) {
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	receipt, err := r.Repositories.ReceiptRepository.GeneratePublicUrlPath(userClaim.ID, id)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, fmt.Errorf("failed to create a public URL")
+	}
+
+	return newModelReceipt(&receipt), nil
+}
+
+// RemovePublicURL is the resolver for the removePublicUrl field.
+func (r *mutationResolver) RemovePublicURL(ctx context.Context, id string) (*model.Receipt, error) {
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	receipt, err := r.Repositories.ReceiptRepository.RemovePublicUrlPath(userClaim.ID, id)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, fmt.Errorf("failed to remove shared URL")
+	}
+
+	return newModelReceipt(&receipt), nil
+}
+
 // CreateMyReceipt is the resolver for the createMyReceipt field.
 func (r *mutationResolver) CreateMyReceipt(ctx context.Context, input *model.ReceiptInput) (*model.Receipt, error) {
 	if input == nil {

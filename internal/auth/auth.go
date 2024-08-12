@@ -46,11 +46,13 @@ func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
 	})
 
 	if err != nil {
-		return UserClaim{}, err
-	} else if claims, ok := token.Claims.(*UserClaim); ok && token.Valid {
+		return UserClaim{}, fmt.Errorf("failed to parse bearerToken: %w", err)
+	}
+
+	if claims, ok := token.Claims.(*UserClaim); ok && token.Valid {
 		return *claims, nil
 	} else {
-		return *claims, fmt.Errorf("unknown claims type")
+		return UserClaim{}, fmt.Errorf("unknown claims type")
 	}
 }
 

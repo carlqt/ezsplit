@@ -2,6 +2,8 @@ package graph
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"log/slog"
 	"strconv"
 	"testing"
@@ -121,12 +123,16 @@ func TestReceiptsResolver(t *testing.T) {
 			ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
 
 			result, err := myQueryResolver.MyReceipts(ctx)
+			expectedID := strconv.Itoa(int(receipt1.ID))
+			expectedUserID := strconv.Itoa(int(receipt1.User.ID))
 
 			if assert.Nil(t, err) {
 				if assert.Equal(t, 1, len(result)) {
 					r := result[0]
 					assert.Equal(t, "receipt 1", r.Description)
 					assert.Equal(t, "99.00", r.Total)
+					assert.Equal(t, expectedID, r.ID)
+					assert.Equal(t, expectedUserID, r.UserID)
 				}
 			}
 		})
@@ -142,17 +148,19 @@ func TestReceiptsResolver(t *testing.T) {
 			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
 
 			// Create 2 receipts
-			receipt1 := repository.Receipt{}
-			receipt1.Total = repository.Nullable(int32(8900))
-			receipt1.Description = "receipt 1"
-			receipt1.UserID = repository.BigInt(user.ID)
+			receipt1, _ := repository.NewReceipt(
+				8900,
+				"receipt 1",
+				strconv.Itoa(int(user.ID)),
+			)
 			app.Repositories.ReceiptRepository.CreateForUser(&receipt1)
 
 			// Creating a receipt for another user
-			receipt2 := repository.Receipt{}
-			receipt2.Total = repository.Nullable(int32(10788))
-			receipt2.Description = "receipt 2"
-			receipt2.UserID = repository.BigInt(user.ID)
+			receipt2, _ := repository.NewReceipt(
+				10788,
+				"receipt 2",
+				strconv.Itoa(int(user.ID)),
+			)
 			app.Repositories.ReceiptRepository.CreateForUser(&receipt2)
 
 			id := strconv.Itoa(int(receipt2.ID))
@@ -163,5 +171,62 @@ func TestReceiptsResolver(t *testing.T) {
 				assert.Equal(t, "107.88", result.Total)
 			}
 		})
+	})
+
+	t.Run("GeneratePublicURL", func(t *testing.T) {
+		defer truncateTables()
+
+		// create receipt and user
+		receipt, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		currentUserClaims := auth.NewUserClaim(
+			receipt.User.ID,
+			receipt.User.Username,
+		)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
+
+		id := strconv.Itoa(int(receipt.ID))
+		result, err := testReceiptsResolver.GeneratePublicURL(ctx, id)
+
+		hash := md5.Sum([]byte(id))
+		expected := hex.EncodeToString(hash[:])
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, expected, result.Slug)
+			assert.Equal(t, "receipt 1", result.Description)
+			assert.Equal(t, "99.00", result.Total)
+		}
+	})
+
+	t.Run("RemovePublicURL", func(t *testing.T) {
+		defer truncateTables()
+
+		// create receipt and user
+		receipt, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		currentUserClaims := auth.NewUserClaim(
+			receipt.User.ID,
+			receipt.User.Username,
+		)
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, currentUserClaims)
+
+		id := strconv.Itoa(int(receipt.ID))
+		result, err := testReceiptsResolver.RemovePublicURL(ctx, id)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, "", result.Slug)
+			assert.Equal(t, "receipt 1", result.Description)
+			assert.Equal(t, "99.00", result.Total)
+		}
 	})
 }

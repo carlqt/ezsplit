@@ -18,21 +18,21 @@ type Item struct {
 }
 
 func (i *ItemRepository) Create(item *Item) error {
-  stmt := Items.INSERT(Items.Name, Items.Price, Items.ReceiptID).VALUES(item.Name, item.Price, item.ReceiptID).RETURNING(Items.Name, Items.Price, Items.ReceiptID, Items.ID)
+	stmt := Items.INSERT(Items.Name, Items.Price, Items.ReceiptID).MODEL(item).RETURNING(Items.Name, Items.Price, Items.ReceiptID, Items.ID)
 
 	err := stmt.Query(i.DB, item)
 	if err != nil {
-    return fmt.Errorf("failed to create item in db: %w", err)
+		return fmt.Errorf("failed to create item in db: %w", err)
 	}
 
 	return nil
 }
 
 func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]Item, error) {
-  items := []Item{}
-  stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.CreatedAt).WHERE(Items.ReceiptID.EQ(RawInt(receiptID)))
+	items := []Item{}
+	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.CreatedAt).WHERE(Items.ReceiptID.EQ(RawInt(receiptID)))
 
-  err := stmt.Query(i.DB, &items)
+	err := stmt.Query(i.DB, &items)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch items")
 	}
@@ -42,11 +42,11 @@ func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]Item, error) {
 
 func (i *ItemRepository) FindByID(id string) (Item, error) {
 	item := Item{}
-  stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id)))
+	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id)))
 
 	err := stmt.Query(i.DB, &item)
 	if err != nil {
-    return item, fmt.Errorf("failed to find item with id=%s: %w", id, err)
+		return item, fmt.Errorf("failed to find item with id=%s: %w", id, err)
 	}
 
 	return item, nil

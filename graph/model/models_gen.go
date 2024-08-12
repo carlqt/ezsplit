@@ -57,6 +57,7 @@ type Receipt struct {
 	User        *User   `json:"user,omitempty"`
 	Description string  `json:"description"`
 	Total       string  `json:"total"`
+	Slug        string  `json:"slug"`
 	Items       []*Item `json:"items"`
 }
 
