@@ -32,6 +32,17 @@ tasks:
     cmds:
       - docker compose logs -f
 
+  rebuild:
+    desc: Rebuilds images
+    cmds:
+      - docker compose build
+      - docker compose build dev-cli
+
+  test:rebuild:
+    desc: Rebuilds test images
+    cmds:
+      - docker compose -f docker-compose.test.yml -p ezsplit_test build
+
   compose:
     desc: Acts as a proxy for `docker compose` command
     cmds:
@@ -81,6 +92,7 @@ tasks:
       - docker compose run --rm dev-cli go run cmd/ezsplit_jet/*.go
 
   jet:models:generate:
+    internal: true
     desc: Do not use this. Please use models:generate command instead
     vars:
       JET_COMMAND: 'jet -source=postgresql -user=$DB_USER -password=$DB_PASSWORD -host=$DB_HOST -port=$DB_PORT -dbname=$DB_NAME -schema=public -sslmode=disable -path=./.gen'
