@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"log/slog"
 	"strconv"
 	"testing"
 
@@ -101,22 +100,21 @@ func TestReceiptsResolver(t *testing.T) {
 
 			myQueryResolver := queryResolver{&resolvers}
 
-			receipt1, err := integration_test.CreateReceiptWithUser(app.DB, 9900, "receipt 1")
-			if err != nil {
-				slog.Error(err.Error())
-				t.Fatal(err)
-			}
+			user, _ := app.Repositories.UserRepository.Create("jamesjames", "password")
+
+			userID := strconv.Itoa(int(user.ID))
+			receipt1, _ := repository.NewReceipt(9900, "receipt 1", userID)
+			receipt1.ID = 999 // To avoid ID conflict
+			receipt1.URLSlug = "abcd"
+			app.Repositories.ReceiptRepository.UnsafeCreate(&receipt1)
 
 			// Creating a receipt for another user
-			_, err = integration_test.CreateReceiptWithUser(app.DB, 10000, "receipt 2")
-			if err != nil {
-				slog.Error(err.Error())
-				t.Fatal(err)
-			}
+			// asserting that the returned response doesn't contain this receipt
+			integration_test.CreateReceiptWithUser(app.DB, 9900, "extra receipt")
 
 			currentUserClaims := auth.NewUserClaim(
-				receipt1.User.ID,
-				receipt1.User.Username,
+				user.ID,
+				user.Username,
 			)
 
 			ctx := context.Background()
@@ -124,13 +122,15 @@ func TestReceiptsResolver(t *testing.T) {
 
 			result, err := myQueryResolver.MyReceipts(ctx)
 			expectedID := strconv.Itoa(int(receipt1.ID))
-			expectedUserID := strconv.Itoa(int(receipt1.User.ID))
+			expectedUserID := strconv.Itoa(int(user.ID))
 
 			if assert.Nil(t, err) {
 				if assert.Equal(t, 1, len(result)) {
 					r := result[0]
 					assert.Equal(t, "receipt 1", r.Description)
 					assert.Equal(t, "99.00", r.Total)
+					assert.Equal(t, "abcd", r.Slug)
+					assert.Equal(t, "999", r.ID)
 					assert.Equal(t, expectedID, r.ID)
 					assert.Equal(t, expectedUserID, r.UserID)
 				}
@@ -147,28 +147,22 @@ func TestReceiptsResolver(t *testing.T) {
 			// Create user
 			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
 
-			// Create 2 receipts
-			receipt1, _ := repository.NewReceipt(
-				8900,
-				"receipt 1",
-				strconv.Itoa(int(user.ID)),
-			)
-			app.Repositories.ReceiptRepository.CreateForUser(&receipt1)
-
-			// Creating a receipt for another user
-			receipt2, _ := repository.NewReceipt(
+			// Creating a receipt
+			receipt, _ := repository.NewReceipt(
 				10788,
-				"receipt 2",
+				"receipt sample",
 				strconv.Itoa(int(user.ID)),
 			)
-			app.Repositories.ReceiptRepository.CreateForUser(&receipt2)
+			receipt.URLSlug = "abcd"
+			app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
 
-			id := strconv.Itoa(int(receipt2.ID))
+			id := strconv.Itoa(int(receipt.ID))
 			result, err := myQueryResolver.Receipt(context.TODO(), id)
 
 			if assert.Nil(t, err) {
-				assert.Equal(t, "receipt 2", result.Description)
+				assert.Equal(t, "receipt sample", result.Description)
 				assert.Equal(t, "107.88", result.Total)
+				assert.Equal(t, "abcd", result.Slug)
 			}
 		})
 	})

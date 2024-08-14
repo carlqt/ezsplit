@@ -68,7 +68,7 @@ func (r *ReceiptRepository) CreateForUser(receipt *Receipt) error {
 
 func (r *ReceiptRepository) SelectForUser(userID string) ([]Receipt, error) {
 	stmt := SELECT(
-		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.UserID,
+		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.UserID, Receipts.URLSlug,
 	).FROM(Receipts.Table).WHERE(Receipts.UserID.EQ(RawInt(userID)))
 
 	receipts := []Receipt{}
@@ -85,7 +85,7 @@ func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
 	receipt := Receipt{}
 
 	stmt := SELECT(
-		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt,
+		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.URLSlug,
 	).FROM(Receipts.Table).WHERE(Receipts.ID.EQ(RawInt(id)))
 
 	err := stmt.Query(r.DB, &receipt)
