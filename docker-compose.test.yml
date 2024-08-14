@@ -7,7 +7,7 @@ x-app: &app
 services:
   db:
     restart: always
-    image: postgres:16.1
+    image: postgres:16.4
     user: postgres
     env_file:
       - .env.test

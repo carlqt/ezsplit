@@ -7,7 +7,7 @@ x-app: &app
 services:
   database:
     restart: always
-    image: postgres:16.1
+    image: postgres:16.4
     user: postgres
     environment:
       POSTGRES_PASSWORD: "postgres"
