@@ -105,7 +105,14 @@ func (r *queryResolver) MyReceipts(ctx context.Context) ([]*model.Receipt, error
 
 // PublicReceipt is the resolver for the publicReceipt field.
 func (r *queryResolver) PublicReceipt(ctx context.Context, slug string) (*model.Receipt, error) {
-	panic(fmt.Errorf("not implemented: PublicReceipt - publicReceipt"))
+	receipt, err := r.Repositories.ReceiptRepository.FindBySlug(slug)
+
+	if err != nil {
+		slog.Debug(err.Error())
+		return nil, errors.New("couldn't fetch public receipt")
+	}
+
+	return newModelReceipt(&receipt), nil
 }
 
 // Receipt is the resolver for the receipt field.
