@@ -109,7 +109,7 @@ func (r *queryResolver) PublicReceipt(ctx context.Context, slug string) (*model.
 
 	if err != nil {
 		slog.Debug(err.Error())
-		return nil, errors.New("couldn't fetch public receipt")
+		return nil, errors.New("failed to fetch public receipt")
 	}
 
 	return newModelReceipt(&receipt), nil

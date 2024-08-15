@@ -250,5 +250,15 @@ func TestReceiptsResolver(t *testing.T) {
 				assert.Equal(t, "abcd", result.Slug)
 			}
 		})
+
+		t.Run("when receipt does not exist", func(t *testing.T) {
+			defer truncateTables()
+
+			myQueryResolver := queryResolver{&resolvers}
+
+			_, err := myQueryResolver.PublicReceipt(context.TODO(), "abcd")
+
+			assert.ErrorContains(t, err, "failed to fetch public receipt")
+		})
 	})
 }
