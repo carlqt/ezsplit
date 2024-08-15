@@ -160,3 +160,18 @@ func (r *ReceiptRepository) Update(receipt *Receipt) error {
 
 	return nil
 }
+
+func (r *ReceiptRepository) FindBySlug(slug string) (Receipt, error) {
+	receipt := Receipt{}
+
+	stmt := SELECT(
+		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.URLSlug,
+	).FROM(Receipts.Table).WHERE(Receipts.URLSlug.EQ(String(slug)))
+
+	err := stmt.Query(r.DB, &receipt)
+	if err != nil {
+		return receipt, fmt.Errorf("could not find receipt with slug %s: %w", slug, err)
+	}
+
+	return receipt, nil
+}
