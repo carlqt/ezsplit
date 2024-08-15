@@ -223,4 +223,32 @@ func TestReceiptsResolver(t *testing.T) {
 			assert.Equal(t, "99.00", result.Total)
 		}
 	})
+
+	t.Run("PublicReceipt", func(t *testing.T) {
+		t.Run("when receipt exists", func(t *testing.T) {
+			defer truncateTables()
+
+			myQueryResolver := queryResolver{&resolvers}
+
+			// Create user
+			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
+
+			// Creating a receipt
+			receipt, _ := repository.NewReceipt(
+				10788,
+				"receipt sample",
+				strconv.Itoa(int(user.ID)),
+			)
+			receipt.URLSlug = "abcd"
+			app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
+
+			result, err := myQueryResolver.PublicReceipt(context.TODO(), "abcd")
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, "receipt sample", result.Description)
+				assert.Equal(t, "107.88", result.Total)
+				assert.Equal(t, "abcd", result.Slug)
+			}
+		})
+	})
 }
