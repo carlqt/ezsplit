@@ -19,7 +19,7 @@ type Item {
   id: ID!
   name: String!
   price: String!
-  sharedBy: [User]!
+  sharedBy: [User!]!
 }
 
 type DeleteItemPayload {
