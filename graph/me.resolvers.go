@@ -49,6 +49,12 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 
 // Me is the resolver for the Me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
+	// Nil context may mean the request didn't have a cookie or
+	// The cookie didn't have a bearerToken field
+	if ctx == nil {
+		return nil, nil
+	}
+
 	claims := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	user, err := r.Repositories.UserRepository.FindByID(claims.ID)

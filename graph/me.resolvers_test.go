@@ -22,10 +22,8 @@ func TestMeResolver(t *testing.T) {
 		t.Run("when there are no rows in user_orders", func(t *testing.T) {
 			defer truncateTables()
 
-			ctx := context.TODO()
 			meModel := &model.Me{ID: "1"}
-
-			result, err := testMeResolver.TotalPayables(ctx, meModel)
+			result, err := testMeResolver.TotalPayables(context.TODO(), meModel)
 
 			if assert.Nil(t, err) {
 				assert.Equal(t, "0.00", result)
@@ -41,6 +39,16 @@ func TestMeResolver(t *testing.T) {
 			_, err := testMeResolver.Receipts(ctx, nil)
 
 			assert.EqualError(t, err, "missing Me object")
+		})
+	})
+
+	t.Run("Me", func(t *testing.T) {
+		t.Run("when context is empty", func(t *testing.T) {
+			queryResolver := queryResolver{&resolvers}
+
+			_, err := queryResolver.Me(nil)
+
+			assert.Nil(t, err)
 		})
 	})
 }
