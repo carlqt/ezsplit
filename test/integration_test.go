@@ -629,4 +629,69 @@ func TestResolvers(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("mutation addItemToReceipt", func(t *testing.T) {
+		defer TruncateAllTables(app.DB)
+
+		// Creat User and their receipt
+		user, _ := app.Repositories.UserRepository.Create("john_doe", "testing")
+		userID := strconv.Itoa(int(user.ID))
+		receipt, err := repository.NewReceipt(35000, "test receipt", userID)
+		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		userClaim := auth.NewUserClaim(
+			user.ID,
+			user.Username,
+		)
+		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
+
+		inputItem := struct {
+			Name  string
+			Price float32
+		}{
+			Name:  "Dumplings",
+			Price: 18.00,
+		}
+
+		query := fmt.Sprintf(`mutation addItemToReceipt{
+      addItemToReceipt(input: { receiptId: "%d", name: "%s", price: %f }) {
+				name
+				price
+				id
+				sharedBy {
+					id
+					username
+				}
+			}
+		}`, receipt.ID, inputItem.Name, inputItem.Price)
+
+		var resp struct {
+			AddItemToReceipt struct {
+				Price    string
+				Name     string
+				Id       string
+				SharedBy []struct {
+					Id       string
+					Username string
+				}
+			}
+		}
+
+		option := func(bd *client.Request) {
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+		}
+
+		err = c.Post(query, &resp, option)
+
+		if assert.Nil(t, err) {
+			assert.NotNil(t, resp.AddItemToReceipt.Id)
+			assert.Equal(t, "18.00", resp.AddItemToReceipt.Price)
+			assert.Equal(t, inputItem.Name, resp.AddItemToReceipt.Name)
+
+			assert.Empty(t, resp.AddItemToReceipt.SharedBy)
+		}
+	})
 }

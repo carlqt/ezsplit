@@ -25,7 +25,7 @@ func TestSchemaResolver(t *testing.T) {
 			modelItem := model.Item{ID: "888"}
 			result, _ := testItemResolver.SharedBy(context.TODO(), &modelItem)
 
-			assert.NotNil(t, result, result)
+			assert.Empty(t, result, result)
 			assert.Zero(t, len(result))
 		})
 	})
