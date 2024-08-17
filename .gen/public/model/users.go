@@ -16,4 +16,5 @@ type Users struct {
 	Username  string
 	Password  string
 	CreatedAt time.Time
+	State     string
 }

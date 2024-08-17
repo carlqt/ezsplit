@@ -17,6 +17,11 @@ table "users" {
     type    = timestamp
     default = sql("now()")
   }
+  column "state" {
+    null = false
+    type = varchar(50)
+    default = "guest"
+  }
   primary_key {
     columns = [column.id]
   }
