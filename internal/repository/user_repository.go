@@ -94,6 +94,21 @@ func (r *UserRepository) FindByUsername(username string) (User, error) {
 	return user, nil
 }
 
+func (r *UserRepository) FindByAuthenticatedUsername(username string) (User, error) {
+	user := User{}
+
+	stmt := Users.SELECT(
+		Users.ID, Users.Username, Users.Password,
+	).WHERE(Users.Username.EQ(String(username)).AND(Users.State.EQ(String(Authenticated.String()))))
+
+	err := stmt.Query(r.DB, &user)
+	if err != nil {
+		return user, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	return user, nil
+}
+
 func (r *UserRepository) GetAllUsers() ([]User, error) {
 	users := []User{}
 	stmt := Users.SELECT(Users.ID, Users.Username)
