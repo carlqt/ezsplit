@@ -66,6 +66,7 @@ type ComplexityRoot struct {
 	Me struct {
 		ID            func(childComplexity int) int
 		Receipts      func(childComplexity int) int
+		State         func(childComplexity int) int
 		TotalPayables func(childComplexity int) int
 		Username      func(childComplexity int) int
 	}
@@ -221,6 +222,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Me.Receipts(childComplexity), true
+
+	case "Me.state":
+		if e.complexity.Me.State == nil {
+			break
+		}
+
+		return e.complexity.Me.State(childComplexity), true
 
 	case "Me.totalPayables":
 		if e.complexity.Me.TotalPayables == nil {
@@ -1320,6 +1328,50 @@ func (ec *executionContext) fieldContext_Me_receipts(_ context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Me_state(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Me_state(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.State, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.UserState)
+	fc.Result = res
+	return ec.marshalNUserState2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserState(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Me_state(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Me",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserState does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_addItemToReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_addItemToReceipt(ctx, field)
 	if err != nil {
@@ -2311,6 +2363,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_Me_totalPayables(ctx, field)
 			case "receipts":
 				return ec.fieldContext_Me_receipts(ctx, field)
+			case "state":
+				return ec.fieldContext_Me_state(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
@@ -5451,6 +5505,11 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "state":
+			out.Values[i] = ec._Me_state(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6579,6 +6638,16 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgr
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUserState2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserState(ctx context.Context, v interface{}) (model.UserState, error) {
+	var res model.UserState
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUserState2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserState(ctx context.Context, sel ast.SelectionSet, v model.UserState) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNUserWithJwt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v model.UserWithJwt) graphql.Marshaler {

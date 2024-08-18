@@ -2,6 +2,12 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type AddItemToReceiptInput struct {
 	ReceiptID string   `json:"receiptId"`
 	Name      string   `json:"name"`
@@ -43,6 +49,7 @@ type Me struct {
 	Username      string     `json:"username"`
 	TotalPayables string     `json:"totalPayables"`
 	Receipts      []*Receipt `json:"receipts"`
+	State         UserState  `json:"state"`
 }
 
 type Mutation struct {
@@ -81,4 +88,45 @@ type UserWithJwt struct {
 	ID          string `json:"id"`
 	Username    string `json:"username"`
 	AccessToken string `json:"accessToken"`
+}
+
+type UserState string
+
+const (
+	UserStateGuest         UserState = "GUEST"
+	UserStateAuthenticated UserState = "AUTHENTICATED"
+)
+
+var AllUserState = []UserState{
+	UserStateGuest,
+	UserStateAuthenticated,
+}
+
+func (e UserState) IsValid() bool {
+	switch e {
+	case UserStateGuest, UserStateAuthenticated:
+		return true
+	}
+	return false
+}
+
+func (e UserState) String() string {
+	return string(e)
+}
+
+func (e *UserState) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserState", str)
+	}
+	return nil
+}
+
+func (e UserState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
