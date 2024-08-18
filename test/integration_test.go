@@ -38,7 +38,7 @@ func TestResolvers(t *testing.T) {
 		t.Run("when there are no inputs", func(t *testing.T) {
 			defer TruncateAllTables(app.DB)
 
-			_, err := CreateUser(app.DB, "mutation_user160")
+			_, err := CreateVerifiedUser(app.DB, "mutation_user160")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -67,7 +67,7 @@ func TestResolvers(t *testing.T) {
 		t.Run("when password is correct", func(t *testing.T) {
 			defer TruncateAllTables(app.DB)
 
-			_, err := CreateUser(app.DB, "mutation_user160")
+			_, err := CreateVerifiedUser(app.DB, "mutation_user160")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -96,7 +96,7 @@ func TestResolvers(t *testing.T) {
 		t.Run("when password is wrong", func(t *testing.T) {
 			defer TruncateAllTables(app.DB)
 
-			_, err := CreateUser(app.DB, "mutation_user160")
+			_, err := CreateVerifiedUser(app.DB, "mutation_user160")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -170,7 +170,7 @@ func TestResolvers(t *testing.T) {
 	t.Run("query Me", func(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
-		user, err := CreateUser(app.DB, "fake_user")
+		user, err := CreateVerifiedUser(app.DB, "fake_user")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -339,7 +339,7 @@ func TestResolvers(t *testing.T) {
 	t.Run("mutation createMyReceipt", func(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
-		user, err := CreateUser(app.DB, "fake_user")
+		user, err := CreateVerifiedUser(app.DB, "fake_user")
 		if err != nil {
 			t.Fatal(err)
 		}

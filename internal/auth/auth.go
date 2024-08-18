@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/carlqt/ezsplit/internal/repository"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,12 +22,13 @@ type UserClaim struct {
 	State    string `json:"state"`
 }
 
-func NewUserClaim(id int32, username string) UserClaim {
+func NewUserClaim(id int32, username string, userState repository.UserState) UserClaim {
 	userID := strconv.Itoa(int(id))
 
 	return UserClaim{
 		ID:       userID,
 		Username: username,
+		State:    userState.String(),
 	}
 }
 

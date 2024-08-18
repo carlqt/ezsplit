@@ -27,7 +27,7 @@ func TestReceiptsResolver(t *testing.T) {
 		t.Run("when userclaim exists it returns the model.Receipt struct", func(t *testing.T) {
 			defer truncateTables()
 
-			user, _ := integration_test.CreateUser(app.DB, "sample_username")
+			user, _ := integration_test.CreateVerifiedUser(app.DB, "sample_username")
 			claims := auth.NewUserClaim(
 				user.ID,
 				user.Username,

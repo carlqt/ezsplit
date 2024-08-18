@@ -37,15 +37,15 @@ func TruncateAllTables(db *sql.DB) {
 	}
 }
 
-func CreateUser(db DbWriter, username string) (User, error) {
+func CreateVerifiedUser(db DbWriter, username string) (User, error) {
 	fakePassword := "password"
 	hashedPassword, _ := auth.HashPassword(fakePassword)
 
 	user := User{}
 	user.Username = username
 
-	sql := "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id"
-	err := db.QueryRow(sql, username, hashedPassword).Scan(&user.ID)
+	sql := "INSERT INTO users (username, password, state) VALUES ($1, $2, $3) RETURNING id"
+	err := db.QueryRow(sql, username, hashedPassword, repository.Verified.String()).Scan(&user.ID)
 	if err != nil {
 		return user, err
 	}
@@ -81,7 +81,7 @@ func CreateReceiptWithUser(db *sql.DB, total int, description string) (ReceiptWi
 	}
 
 	username := fmt.Sprintf("fake_user+%d", rand.IntN(100))
-	user, err := CreateUser(tx, username)
+	user, err := CreateVerifiedUser(tx, username)
 	if err != nil {
 		tx.Rollback()
 		return receipt, err
