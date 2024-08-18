@@ -28,6 +28,7 @@ table "users" {
   index "idx_username" {
     unique = true
     columns = [column.username]
+    where = "state = 'authenticated'"
   }
 }
 
