@@ -15,15 +15,15 @@ type UserState int
 
 const (
 	Guest UserState = iota
-	Authenticated
+	Verified
 )
 
 func (u UserState) String() string {
 	switch u {
 	case Guest:
 		return "guest"
-	case Authenticated:
-		return "authenticated"
+	case Verified:
+		return "verified"
 	}
 
 	return "unknown"
@@ -41,7 +41,7 @@ func (r *UserRepository) Create(username string, password string) (User, error) 
 	user := User{}
 	user.Username = username
 	user.Password = password
-	user.State = Authenticated.String()
+	user.State = Verified.String()
 
 	stmt := Users.INSERT(
 		Users.Username, Users.Password, Users.State,
@@ -94,12 +94,12 @@ func (r *UserRepository) FindByUsername(username string) (User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) FindByAuthenticatedUsername(username string) (User, error) {
+func (r *UserRepository) FindVerifiedByUsername(username string) (User, error) {
 	user := User{}
 
 	stmt := Users.SELECT(
 		Users.ID, Users.Username, Users.Password,
-	).WHERE(Users.Username.EQ(String(username)).AND(Users.State.EQ(String(Authenticated.String()))))
+	).WHERE(Users.Username.EQ(String(username)).AND(Users.State.EQ(String(Verified.String()))))
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {

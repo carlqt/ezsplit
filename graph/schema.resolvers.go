@@ -146,7 +146,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	user, err := r.Repositories.UserRepository.FindByAuthenticatedUsername(input.Username)
+	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username)
 	if err != nil {
 		slog.Warn(err.Error())
 	}
