@@ -11,12 +11,23 @@ import (
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
-type userState string
+type UserState int
 
 const (
-	authenticated userState = "authenticated"
-	guest         userState = "guest"
+	Guest UserState = iota
+	Authenticated
 )
+
+func (u UserState) String() string {
+	switch u {
+	case Guest:
+		return "guest"
+	case Authenticated:
+		return "authenticated"
+	}
+
+	return "unknown"
+}
 
 type User struct {
 	model.Users
@@ -28,12 +39,13 @@ type UserRepository struct {
 
 func (r *UserRepository) Create(username string, password string) (User, error) {
 	user := User{}
+	user.Username = username
+	user.Password = password
+	user.State = Authenticated.String()
 
 	stmt := Users.INSERT(
 		Users.Username, Users.Password, Users.State,
-	).VALUES(
-		username, password, authenticated,
-	).RETURNING(Users.Username, Users.ID)
+	).MODEL(user).RETURNING(Users.Username, Users.ID)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
@@ -44,12 +56,12 @@ func (r *UserRepository) Create(username string, password string) (User, error) 
 
 func (r *UserRepository) CreateGuest(username string) (User, error) {
 	user := User{}
+	user.Username = username
+	user.State = Guest.String()
 
 	stmt := Users.INSERT(
 		Users.Username, Users.Password, Users.State,
-	).VALUES(
-		username, "", guest,
-	).RETURNING(Users.Username, Users.ID)
+	).MODEL(user).RETURNING(Users.Username, Users.ID)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
