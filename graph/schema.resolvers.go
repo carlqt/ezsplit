@@ -111,7 +111,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username)
+	userClaim := auth.NewUserClaim(user.ID, user.Username, user.State)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
@@ -156,7 +156,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username)
+	userClaim := auth.NewUserClaim(user.ID, user.Username, user.State)
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		slog.Error(err.Error())

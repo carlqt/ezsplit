@@ -31,6 +31,7 @@ func TestReceiptsResolver(t *testing.T) {
 			claims := auth.NewUserClaim(
 				user.ID,
 				user.Username,
+				user.State,
 			)
 
 			ctx := context.Background()
@@ -75,6 +76,7 @@ func TestReceiptsResolver(t *testing.T) {
 			currentUserClaims := auth.NewUserClaim(
 				receipt1.User.ID,
 				receipt1.User.Username,
+				receipt1.User.State,
 			)
 
 			ctx := context.Background()
@@ -115,6 +117,7 @@ func TestReceiptsResolver(t *testing.T) {
 			currentUserClaims := auth.NewUserClaim(
 				user.ID,
 				user.Username,
+				user.State,
 			)
 
 			ctx := context.Background()
@@ -179,6 +182,7 @@ func TestReceiptsResolver(t *testing.T) {
 		currentUserClaims := auth.NewUserClaim(
 			receipt.User.ID,
 			receipt.User.Username,
+			receipt.User.State,
 		)
 
 		ctx := context.Background()
@@ -209,6 +213,7 @@ func TestReceiptsResolver(t *testing.T) {
 		currentUserClaims := auth.NewUserClaim(
 			receipt.User.ID,
 			receipt.User.Username,
+			receipt.User.State,
 		)
 
 		ctx := context.Background()

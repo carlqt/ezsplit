@@ -54,7 +54,7 @@ func CreateVerifiedUser(db DbWriter, username string) (User, error) {
 }
 
 func (u User) GetAuthToken(secret []byte) (string, error) {
-	userClaim := auth.NewUserClaim(u.ID, u.Username)
+	userClaim := auth.NewUserClaim(u.ID, u.Username, u.State)
 	accessToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		return accessToken, nil

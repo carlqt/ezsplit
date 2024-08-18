@@ -1,6 +1,6 @@
 enum UserState {
   GUEST
-  AUTHENTICATED
+  VERIFIED
 }
 
 # Gets the current user

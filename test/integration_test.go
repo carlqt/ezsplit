@@ -179,6 +179,7 @@ func TestResolvers(t *testing.T) {
 			userClaim := auth.NewUserClaim(
 				user.ID,
 				user.Username,
+				user.State,
 			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
@@ -280,6 +281,7 @@ func TestResolvers(t *testing.T) {
 			userClaim := auth.NewUserClaim(
 				user.ID,
 				user.Username,
+				user.State,
 			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
@@ -408,6 +410,7 @@ func TestResolvers(t *testing.T) {
 		userClaim := auth.NewUserClaim(
 			user.ID,
 			user.Username,
+			user.State,
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -506,6 +509,7 @@ func TestResolvers(t *testing.T) {
 		userClaim := auth.NewUserClaim(
 			user.ID,
 			user.Username,
+			user.State,
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -559,6 +563,7 @@ func TestResolvers(t *testing.T) {
 		userClaim := auth.NewUserClaim(
 			user.ID,
 			user.Username,
+			user.State,
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -593,6 +598,7 @@ func TestResolvers(t *testing.T) {
 		userClaim := auth.NewUserClaim(
 			receipt.User.ID,
 			receipt.User.Username,
+			receipt.User.State,
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -645,6 +651,7 @@ func TestResolvers(t *testing.T) {
 		userClaim := auth.NewUserClaim(
 			user.ID,
 			user.Username,
+			user.State,
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 

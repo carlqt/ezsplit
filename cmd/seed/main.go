@@ -36,7 +36,7 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 		return "", err
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username)
+	userClaim := auth.NewUserClaim(user.ID, user.Username, user.State)
 	signedToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		slog.Error(err.Error())

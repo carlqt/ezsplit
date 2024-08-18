@@ -3,6 +3,7 @@ package auth
 import (
 	"testing"
 
+	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,6 +26,7 @@ func TestValidateBearerToken(t *testing.T) {
 		claim := NewUserClaim(
 			int32(5),
 			"username",
+			repository.Verified,
 		)
 
 		accessToken, _ := CreateAndSignToken(claim, secretKey)
@@ -41,6 +43,7 @@ func TestValidateBearerToken(t *testing.T) {
 		claim := NewUserClaim(
 			int32(5),
 			"username",
+			repository.Verified,
 		)
 
 		accessToken, _ := CreateAndSignToken(claim, []byte("notSoSecretKey"))

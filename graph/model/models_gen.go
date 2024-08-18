@@ -93,18 +93,18 @@ type UserWithJwt struct {
 type UserState string
 
 const (
-	UserStateGuest         UserState = "GUEST"
-	UserStateAuthenticated UserState = "AUTHENTICATED"
+	UserStateGuest    UserState = "GUEST"
+	UserStateVerified UserState = "VERIFIED"
 )
 
 var AllUserState = []UserState{
 	UserStateGuest,
-	UserStateAuthenticated,
+	UserStateVerified,
 }
 
 func (e UserState) IsValid() bool {
 	switch e {
-	case UserStateGuest, UserStateAuthenticated:
+	case UserStateGuest, UserStateVerified:
 		return true
 	}
 	return false
