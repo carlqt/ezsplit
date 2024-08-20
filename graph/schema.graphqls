@@ -53,6 +53,10 @@ input AssignOrDeleteMeToItemInput {
   itemId: ID!
 }
 
+input CreateGuestUserInput {
+  username: String!
+}
+
 type Mutation {
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
@@ -60,6 +64,7 @@ type Mutation {
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
+  createGuestUser(input: CreateGuestUserInput): User!
   loginUser(input: LoginUserInput): UserWithJwt!
   logoutUser: String!
 }
