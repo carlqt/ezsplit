@@ -134,7 +134,7 @@ func (r *receiptResolver) User(ctx context.Context, obj *model.Receipt) (*model.
 		return nil, err
 	}
 
-	return newModelUser(user.ID, user.Username), nil
+	return newModelUser(user.ID, user.Name), nil
 }
 
 // Items is the resolver for the items field.

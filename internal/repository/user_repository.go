@@ -14,127 +14,131 @@ import (
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
-type UserState struct {
-	value string
-}
-
-var (
-	Guest    = UserState{"guest"}
-	Verified = UserState{"verified"}
-)
-
-func (u UserState) String() string {
-	return u.value
-}
-
-// User is a public struct that will be returned or received by this package
 type User struct {
 	model.Users
-	State UserState
-}
-
-// StateVal is a helper method to get the string value of the UserState
-func (u User) StateVal() string {
-	return u.State.value
+	Account Account
 }
 
 type UserRepository struct {
 	DB *sql.DB
 }
 
-func (r *UserRepository) Create(username string, password string) (User, error) {
-	user := model.Users{}
-	user.Username = username
-	user.Password = password
-	user.State = Verified.String()
+func (u User) IsVerified() bool {
+	return u.AccountID != nil
+}
 
-	stmt := Users.INSERT(
-		Users.Username, Users.Password, Users.State,
-	).MODEL(user).RETURNING(Users.Username, Users.ID)
+// TODO: Introduce a service layer and move this logic there
+func (r *UserRepository) CreateWithAccount(username, password string) (User, error) {
+	var account Account
+	var user User
 
-	err := stmt.Query(r.DB, &user)
+	tx, err := r.DB.Begin()
 	if err != nil {
-		return convertUserModelToUser(user), fmt.Errorf("failed to create user with username %s: %w", username, err)
+		return user, fmt.Errorf("Failed to start the transaction: %w", err)
 	}
-	return convertUserModelToUser(user), nil
+
+	//nolint:errcheck
+	defer tx.Rollback()
+
+	account.Username = username
+	account.Password = password
+
+	accountStmt := Accounts.INSERT(
+		Accounts.Username, Accounts.Password,
+	).MODEL(account).RETURNING(Accounts.ID, Accounts.Username, Accounts.CreatedAt)
+
+	err = accountStmt.Query(tx, &account)
+	if err != nil {
+		return user, fmt.Errorf("Failed to create the account: %w", err)
+	}
+
+	user.Name = username
+	user.AccountID = Nullable(BigInt(account.ID))
+	userStmt := Users.INSERT(
+		Users.Name, Users.AccountID,
+	).MODEL(user).RETURNING(Users.Name, Users.ID, Users.AccountID, Users.CreatedAt)
+
+	err = userStmt.Query(tx, &user)
+
+	if err != nil {
+		return user, fmt.Errorf("Failed to create the user: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return user, fmt.Errorf("Failed to commit the transaction: %w", err)
+	}
+
+	user.Account = account
+
+	return user, nil
 }
 
 func (r *UserRepository) CreateGuest(username string) (User, error) {
-	user := model.Users{}
-	user.Username = username
-	user.State = Guest.String()
+	var user User
+	user.Name = username
 
 	stmt := Users.INSERT(
-		Users.Username, Users.Password, Users.State,
-	).MODEL(user).RETURNING(Users.Username, Users.ID)
+		Users.Name,
+	).MODEL(user).RETURNING(Users.Name, Users.ID)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
-		return convertUserModelToUser(user), fmt.Errorf("failed to create guest %s: %w", username, err)
+		return user, fmt.Errorf("failed to create guest %s: %w", username, err)
 	}
-	return convertUserModelToUser(user), nil
+	return user, nil
 }
 
 func (r *UserRepository) FindByID(id string) (User, error) {
-	user := model.Users{}
-	stmt := SELECT(Users.ID, Users.Username).FROM(Users.Table).WHERE(Users.ID.EQ(RawInt(id)))
+	var user User
+	stmt := SELECT(Users.ID, Users.Name, Users.AccountID).FROM(Users.Table).WHERE(Users.ID.EQ(RawInt(id))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
-		return convertUserModelToUser(user), fmt.Errorf("%w: DB Query failed for id=%s", err, id)
+		return user, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
-	return convertUserModelToUser(user), nil
+	return user, nil
 }
 
-func (r *UserRepository) FindByUsername(username string) (User, error) {
-	user := model.Users{}
+func (r *UserRepository) FindByName(name string) (User, error) {
+	var user User
 
-	stmt := Users.SELECT(Users.ID, Users.Username, Users.Password).WHERE(Users.Username.EQ(String(username)))
+	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID).WHERE(Users.Name.EQ(String(name)))
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
-		return convertUserModelToUser(user), fmt.Errorf("failed to find user: %w", err)
+		return user, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	return convertUserModelToUser(user), nil
+	return user, nil
 }
 
+// FindVerifiedByUsername finds users with an account associated with them
 func (r *UserRepository) FindVerifiedByUsername(username string) (User, error) {
-	user := model.Users{}
+	var user User
 
-	stmt := Users.SELECT(
-		Users.ID, Users.Username, Users.Password,
-	).WHERE(Users.Username.EQ(String(username)).AND(Users.State.EQ(String(Verified.String()))))
+	stmt := SELECT(
+		Users.ID, Users.Name, Users.AccountID, Accounts.Password, Accounts.ID, Accounts.Username,
+	).FROM(
+		Users, Accounts,
+	).WHERE(Accounts.Username.EQ(String(username))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
-		return convertUserModelToUser(user), fmt.Errorf("failed to find user: %w", err)
+		return user, fmt.Errorf("failed to find user: %w", err)
 	}
 
-	return convertUserModelToUser(user), nil
+	return user, nil
 }
 
 func (r *UserRepository) GetAllUsers() ([]User, error) {
 	var returnedUsers []User
 
-	users := []model.Users{}
-	stmt := Users.SELECT(Users.ID, Users.Username)
+	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID)
 
-	err := stmt.Query(r.DB, &users)
+	err := stmt.Query(r.DB, &returnedUsers)
 	if err != nil {
 		return returnedUsers, fmt.Errorf("failed to get users: %w", err)
 	}
 
-	for _, u := range users {
-		returnedUsers = append(returnedUsers, convertUserModelToUser(u))
-	}
-
 	return returnedUsers, nil
-}
-
-func convertUserModelToUser(user model.Users) User {
-	return User{
-		Users: user,
-		State: UserState{user.State},
-	}
 }

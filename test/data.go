@@ -38,14 +38,23 @@ func TruncateAllTables(db *sql.DB) {
 }
 
 func CreateVerifiedUser(db DbWriter, username string) (User, error) {
+	var user User
+	var account repository.Account
+
 	fakePassword := "password"
 	hashedPassword, _ := auth.HashPassword(fakePassword)
 
-	user := User{}
-	user.Username = username
+	sql := "INSERT INTO accounts (username, password) VALUES ($1, $2) RETURNING id"
+	err := db.QueryRow(sql, username, hashedPassword).Scan(&account.ID)
+	if err != nil {
+		return user, err
+	}
 
-	sql := "INSERT INTO users (username, password, state) VALUES ($1, $2, $3) RETURNING id"
-	err := db.QueryRow(sql, username, hashedPassword, repository.Verified.String()).Scan(&user.ID)
+	user.Name = username
+	user.AccountID = repository.Nullable(repository.BigInt(account.ID))
+
+	sql = "INSERT INTO users (name, account_id) VALUES ($1, $2) RETURNING id, name, account_id"
+	err = db.QueryRow(sql, username, user.AccountID).Scan(&user.ID, &user.Name, &user.AccountID)
 	if err != nil {
 		return user, err
 	}
@@ -54,7 +63,7 @@ func CreateVerifiedUser(db DbWriter, username string) (User, error) {
 }
 
 func (u User) GetAuthToken(secret []byte) (string, error) {
-	userClaim := auth.NewUserClaim(u.ID, u.Username, u.State)
+	userClaim := auth.NewUserClaim(u.ID, u.Name, u.IsVerified())
 	accessToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		return accessToken, nil

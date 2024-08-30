@@ -3,9 +3,14 @@ package auth
 import (
 	"testing"
 
-	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/stretchr/testify/assert"
 )
+
+func NullableInt64(n int) *int64 {
+	result := int64(n)
+
+	return &result
+}
 
 func TestValidateBearerToken(t *testing.T) {
 	secretKey := []byte("secret")
@@ -26,7 +31,7 @@ func TestValidateBearerToken(t *testing.T) {
 		claim := NewUserClaim(
 			int32(5),
 			"username",
-			repository.Verified,
+			true,
 		)
 
 		accessToken, _ := CreateAndSignToken(claim, secretKey)
@@ -43,7 +48,7 @@ func TestValidateBearerToken(t *testing.T) {
 		claim := NewUserClaim(
 			int32(5),
 			"username",
-			repository.Verified,
+			false,
 		)
 
 		accessToken, _ := CreateAndSignToken(claim, []byte("notSoSecretKey"))

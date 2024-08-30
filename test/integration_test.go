@@ -178,8 +178,8 @@ func TestResolvers(t *testing.T) {
 		t.Run("with Receipts field", func(t *testing.T) {
 			userClaim := auth.NewUserClaim(
 				user.ID,
-				user.Username,
-				user.State,
+				user.Name,
+				user.IsVerified(),
 			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
@@ -231,7 +231,7 @@ func TestResolvers(t *testing.T) {
 					responseReceipt := resp.Me.Receipts[0]
 					expectedReceiptID := strconv.Itoa(int(receipt.ID))
 
-					assert.Equal(t, user.Username, resp.Me.Username)
+					assert.Equal(t, user.Name, resp.Me.Username)
 					assert.Equal(t, expectedReceiptID, responseReceipt.ID)
 					assert.Equal(t, "test receipt", responseReceipt.Description)
 					assert.Equal(t, "350.00", responseReceipt.Total)
@@ -280,8 +280,8 @@ func TestResolvers(t *testing.T) {
 		t.Run("when jwt exists", func(t *testing.T) {
 			userClaim := auth.NewUserClaim(
 				user.ID,
-				user.Username,
-				user.State,
+				user.Name,
+				user.IsVerified(),
 			)
 			accessToken, err := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 			if err != nil {
@@ -309,7 +309,7 @@ func TestResolvers(t *testing.T) {
 			err = c.Post(query, &resp, option)
 
 			if assert.Nil(t, err) {
-				assert.Equal(t, user.Username, resp.Me.Username)
+				assert.Equal(t, user.Name, resp.Me.Username)
 				assert.Equal(t, userClaim.ID, resp.Me.Id)
 			}
 		})
@@ -382,7 +382,7 @@ func TestResolvers(t *testing.T) {
 	t.Run("mutation assignMeToItem", func(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
-		user, err := app.Repositories.UserRepository.Create("john_doe", "testing")
+		user, err := app.Repositories.UserRepository.CreateWithAccount("john_doe", "testing")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -409,8 +409,8 @@ func TestResolvers(t *testing.T) {
 
 		userClaim := auth.NewUserClaim(
 			user.ID,
-			user.Username,
-			user.State,
+			user.Name,
+			user.IsVerified(),
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -451,7 +451,7 @@ func TestResolvers(t *testing.T) {
 			assert.Equal(t, "100.00", resp.AssignMeToItem.Price)
 			assert.Equal(t, *item.Name, resp.AssignMeToItem.Name)
 			assert.Equal(t, userClaim.ID, resp.AssignMeToItem.SharedBy[0].Id)
-			assert.Equal(t, user.Username, resp.AssignMeToItem.SharedBy[0].Username)
+			assert.Equal(t, user.Name, resp.AssignMeToItem.SharedBy[0].Username)
 		}
 	})
 
@@ -459,12 +459,12 @@ func TestResolvers(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
 		// Creating 2 users
-		user, err := app.Repositories.UserRepository.Create("john_doe", "password")
+		user, err := app.Repositories.UserRepository.CreateWithAccount("john_doe", "password")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		user2, err := app.Repositories.UserRepository.Create("jane_doe", "password")
+		user2, err := app.Repositories.UserRepository.CreateWithAccount("jane_doe", "password")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -508,8 +508,8 @@ func TestResolvers(t *testing.T) {
 
 		userClaim := auth.NewUserClaim(
 			user.ID,
-			user.Username,
-			user.State,
+			user.Name,
+			user.IsVerified(),
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -539,7 +539,7 @@ func TestResolvers(t *testing.T) {
 	t.Run("mutation DeleteMyReceipt", func(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
-		user, err := app.Repositories.UserRepository.Create("john_doe", "testing")
+		user, err := app.Repositories.UserRepository.CreateWithAccount("john_doe", "testing")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -562,8 +562,8 @@ func TestResolvers(t *testing.T) {
 
 		userClaim := auth.NewUserClaim(
 			user.ID,
-			user.Username,
-			user.State,
+			user.Name,
+			user.IsVerified(),
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -597,8 +597,8 @@ func TestResolvers(t *testing.T) {
 
 		userClaim := auth.NewUserClaim(
 			receipt.User.ID,
-			receipt.User.Username,
-			receipt.User.State,
+			receipt.User.Name,
+			receipt.User.IsVerified(),
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
@@ -640,7 +640,7 @@ func TestResolvers(t *testing.T) {
 		defer TruncateAllTables(app.DB)
 
 		// Creat User and their receipt
-		user, _ := app.Repositories.UserRepository.Create("john_doe", "testing")
+		user, _ := app.Repositories.UserRepository.CreateWithAccount("john_doe", "testing")
 		userID := strconv.Itoa(int(user.ID))
 		receipt, err := repository.NewReceipt(35000, "test receipt", userID)
 		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
@@ -650,8 +650,8 @@ func TestResolvers(t *testing.T) {
 
 		userClaim := auth.NewUserClaim(
 			user.ID,
-			user.Username,
-			user.State,
+			user.Name,
+			user.IsVerified(),
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 

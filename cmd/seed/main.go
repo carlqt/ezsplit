@@ -30,13 +30,13 @@ func createUser(repo *repository.UserRepository, secret []byte) (string, error) 
 	password := "password"
 	hashedPassword, _ := auth.HashPassword(password)
 
-	user, err := repo.Create("john_smith", hashedPassword)
+	user, err := repo.CreateWithAccount("john_smith", hashedPassword)
 	if err != nil {
 		slog.Error(err.Error())
 		return "", err
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username, user.State)
+	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 	signedToken, err := auth.CreateAndSignToken(userClaim, secret)
 	if err != nil {
 		slog.Error(err.Error())
