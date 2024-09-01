@@ -711,6 +711,7 @@ func TestResolvers(t *testing.T) {
 			createGuestUser(input: {username: "%s"}) {
 				username
 				id
+        state
 			}
 		}`, username)
 
@@ -718,6 +719,7 @@ func TestResolvers(t *testing.T) {
 			CreateGuestUser struct {
 				Username string
 				Id       string
+				State    string
 			}
 		}
 
@@ -725,6 +727,7 @@ func TestResolvers(t *testing.T) {
 
 		if assert.Nil(t, err) {
 			assert.Equal(t, username, resp.CreateGuestUser.Username)
+			assert.Equal(t, string(model.UserStateGuest), resp.CreateGuestUser.State)
 		}
 	})
 }

@@ -78,8 +78,9 @@ type ReceiptInput struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
+	ID       string    `json:"id"`
+	Username string    `json:"username"`
+	State    UserState `json:"state"`
 }
 
 type UserInput struct {

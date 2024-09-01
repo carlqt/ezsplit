@@ -28,7 +28,7 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := newModelUser(user.ID, user.Name)
+		modelUser := newModelUser(user.ID, user.Name, user.IsVerified())
 		modelUsers = append(modelUsers, modelUser)
 	}
 
@@ -176,6 +176,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 	return newModelUser(
 		user.ID,
 		user.Name,
+		user.IsVerified(),
 	), nil
 }
 
@@ -260,6 +261,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 		modelUser := newModelUser(
 			user.ID,
 			user.Name,
+			user.IsVerified(),
 		)
 		modelUsers = append(modelUsers, modelUser)
 	}
