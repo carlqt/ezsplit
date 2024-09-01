@@ -1,3 +1,7 @@
+enum UserState {
+  GUEST
+  VERIFIED
+}
 
 # Gets the current user
 type Me {
@@ -5,6 +9,7 @@ type Me {
   username: String!
   totalPayables: String!
   receipts: [Receipt!]!
+  state: UserState!
 } 
 
 extend type Query {

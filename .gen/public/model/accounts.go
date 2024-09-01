@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-type Users struct {
+type Accounts struct {
 	ID        int32 `sql:"primary_key"`
-	Name      string
+	Username  string
+	Password  string
 	CreatedAt time.Time
-	AccountID *int64
 }

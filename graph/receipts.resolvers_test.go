@@ -27,10 +27,11 @@ func TestReceiptsResolver(t *testing.T) {
 		t.Run("when userclaim exists it returns the model.Receipt struct", func(t *testing.T) {
 			defer truncateTables()
 
-			user, _ := integration_test.CreateUser(app.DB, "sample_username")
+			user, _ := integration_test.CreateVerifiedUser(app.DB, "sample_username")
 			claims := auth.NewUserClaim(
 				user.ID,
-				user.Username,
+				user.Name,
+				user.IsVerified(),
 			)
 
 			ctx := context.Background()
@@ -74,7 +75,8 @@ func TestReceiptsResolver(t *testing.T) {
 
 			currentUserClaims := auth.NewUserClaim(
 				receipt1.User.ID,
-				receipt1.User.Username,
+				receipt1.User.Name,
+				receipt1.User.IsVerified(),
 			)
 
 			ctx := context.Background()
@@ -100,7 +102,7 @@ func TestReceiptsResolver(t *testing.T) {
 
 			myQueryResolver := queryResolver{&resolvers}
 
-			user, _ := app.Repositories.UserRepository.Create("jamesjames", "password")
+			user, _ := app.Repositories.UserRepository.CreateWithAccount("jamesjames", "password")
 
 			userID := strconv.Itoa(int(user.ID))
 			receipt1, _ := repository.NewReceipt(9900, "receipt 1", userID)
@@ -114,7 +116,8 @@ func TestReceiptsResolver(t *testing.T) {
 
 			currentUserClaims := auth.NewUserClaim(
 				user.ID,
-				user.Username,
+				user.Name,
+				user.IsVerified(),
 			)
 
 			ctx := context.Background()
@@ -145,7 +148,7 @@ func TestReceiptsResolver(t *testing.T) {
 			myQueryResolver := queryResolver{&resolvers}
 
 			// Create user
-			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
+			user, _ := app.Repositories.UserRepository.CreateWithAccount("sample_username", "password")
 
 			// Creating a receipt
 			receipt, _ := repository.NewReceipt(
@@ -178,7 +181,8 @@ func TestReceiptsResolver(t *testing.T) {
 
 		currentUserClaims := auth.NewUserClaim(
 			receipt.User.ID,
-			receipt.User.Username,
+			receipt.User.Name,
+			receipt.User.IsVerified(),
 		)
 
 		ctx := context.Background()
@@ -208,7 +212,8 @@ func TestReceiptsResolver(t *testing.T) {
 
 		currentUserClaims := auth.NewUserClaim(
 			receipt.User.ID,
-			receipt.User.Username,
+			receipt.User.Name,
+			receipt.User.IsVerified(),
 		)
 
 		ctx := context.Background()
@@ -231,7 +236,7 @@ func TestReceiptsResolver(t *testing.T) {
 			myQueryResolver := queryResolver{&resolvers}
 
 			// Create user
-			user, _ := app.Repositories.UserRepository.Create("sample_username", "password")
+			user, _ := app.Repositories.UserRepository.CreateWithAccount("sample_username", "password")
 
 			// Creating a receipt
 			receipt, _ := repository.NewReceipt(

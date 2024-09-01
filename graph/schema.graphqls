@@ -7,6 +7,9 @@ directive @authenticated repeatable on OBJECT | FIELD_DEFINITION
 type User {
   id: ID!
   username: String!
+
+  # UserState enum is in me.graphqls file
+  state: UserState!
 }
 
 type UserWithJwt {
@@ -53,6 +56,10 @@ input AssignOrDeleteMeToItemInput {
   itemId: ID!
 }
 
+input CreateGuestUserInput {
+  username: String!
+}
+
 type Mutation {
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
@@ -60,6 +67,7 @@ type Mutation {
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   createUser(input: UserInput): UserWithJwt!
+  createGuestUser(input: CreateGuestUserInput): User!
   loginUser(input: LoginUserInput): UserWithJwt!
   logoutUser: String!
 }

@@ -1,9 +1,13 @@
+// Memo: The user repository is a bit complicated as it abstracts 2 user structs and also plays around with Struct Enums.
+// Abstracting the user is actually the preferred implementation as it allows us to change the underlying model without affecting the public API.
+
 package repository
 
 import (
-	_ "github.com/lib/pq"
 	"database/sql"
 	"fmt"
+
+	_ "github.com/lib/pq"
 
 	"github.com/carlqt/ezsplit/.gen/public/model"
 	. "github.com/carlqt/ezsplit/.gen/public/table"
@@ -12,56 +16,129 @@ import (
 
 type User struct {
 	model.Users
+	Account Account
 }
 
 type UserRepository struct {
 	DB *sql.DB
 }
 
-func (r *UserRepository) Create(username string, password string) (User, error) {
-	user := User{}
+func (u User) IsVerified() bool {
+	return u.AccountID != nil
+}
 
-	stmt := Users.INSERT(Users.Username, Users.Password).VALUES(username, password).RETURNING(Users.Username, Users.ID, Users.Username)
+// TODO: Introduce a service layer and move this logic there
+func (r *UserRepository) CreateWithAccount(username, password string) (User, error) {
+	var account Account
+	var user User
 
-  err := stmt.Query(r.DB, &user)
+	tx, err := r.DB.Begin()
 	if err != nil {
-		return user, fmt.Errorf("%w | failed to insert username %s", err, username)
+		return user, fmt.Errorf("Failed to start the transaction: %w", err)
+	}
+
+	//nolint:errcheck
+	defer tx.Rollback()
+
+	account.Username = username
+	account.Password = password
+
+	accountStmt := Accounts.INSERT(
+		Accounts.Username, Accounts.Password,
+	).MODEL(account).RETURNING(Accounts.ID, Accounts.Username, Accounts.CreatedAt)
+
+	err = accountStmt.Query(tx, &account)
+	if err != nil {
+		return user, fmt.Errorf("Failed to create the account: %w", err)
+	}
+
+	user.Name = username
+	user.AccountID = Nullable(BigInt(account.ID))
+	userStmt := Users.INSERT(
+		Users.Name, Users.AccountID,
+	).MODEL(user).RETURNING(Users.Name, Users.ID, Users.AccountID, Users.CreatedAt)
+
+	err = userStmt.Query(tx, &user)
+
+	if err != nil {
+		return user, fmt.Errorf("Failed to create the user: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return user, fmt.Errorf("Failed to commit the transaction: %w", err)
+	}
+
+	user.Account = account
+
+	return user, nil
+}
+
+func (r *UserRepository) CreateGuest(username string) (User, error) {
+	var user User
+	user.Name = username
+
+	stmt := Users.INSERT(
+		Users.Name,
+	).MODEL(user).RETURNING(Users.Name, Users.ID)
+
+	err := stmt.Query(r.DB, &user)
+	if err != nil {
+		return user, fmt.Errorf("failed to create guest %s: %w", username, err)
 	}
 	return user, nil
 }
 
 func (r *UserRepository) FindByID(id string) (User, error) {
-  user := User{}
-  stmt := SELECT(Users.ID, Users.Username).FROM(Users.Table).WHERE(Users.ID.EQ(RawInt(id)))
+	var user User
+	stmt := SELECT(Users.ID, Users.Name, Users.AccountID).FROM(Users.Table).WHERE(Users.ID.EQ(RawInt(id))).LIMIT(1)
 
-  err := stmt.Query(r.DB, &user)
+	err := stmt.Query(r.DB, &user)
 	if err != nil {
 		return user, fmt.Errorf("%w: DB Query failed for id=%s", err, id)
 	}
 	return user, nil
 }
 
-func (r *UserRepository) FindByUsername(username string) (User, error) {
-	user := User{}
+func (r *UserRepository) FindByName(name string) (User, error) {
+	var user User
 
-  stmt := Users.SELECT(Users.ID, Users.Username, Users.Password).WHERE(Users.Username.EQ(String(username)))
+	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID).WHERE(Users.Name.EQ(String(name)))
 
-  err := stmt.Query(r.DB, &user)
+	err := stmt.Query(r.DB, &user)
 	if err != nil {
-    return user, fmt.Errorf("failed to find user: %w", err)
+		return user, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	return user, nil
+}
+
+// FindVerifiedByUsername finds users with an account associated with them
+func (r *UserRepository) FindVerifiedByUsername(username string) (User, error) {
+	var user User
+
+	stmt := SELECT(
+		Users.ID, Users.Name, Users.AccountID, Accounts.Password, Accounts.ID, Accounts.Username,
+	).FROM(
+		Users, Accounts,
+	).WHERE(Accounts.Username.EQ(String(username))).LIMIT(1)
+
+	err := stmt.Query(r.DB, &user)
+	if err != nil {
+		return user, fmt.Errorf("failed to find user: %w", err)
 	}
 
 	return user, nil
 }
 
 func (r *UserRepository) GetAllUsers() ([]User, error) {
-  users := []User{}
-  stmt := Users.SELECT(Users.ID, Users.Username)
+	var returnedUsers []User
 
-	err := stmt.Query(r.DB, &users)
-  if err != nil {
-    return users, fmt.Errorf("failed to get users: %w", err)
-  }
+	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID)
 
-	return users, nil
+	err := stmt.Query(r.DB, &returnedUsers)
+	if err != nil {
+		return returnedUsers, fmt.Errorf("failed to get users: %w", err)
+	}
+
+	return returnedUsers, nil
 }

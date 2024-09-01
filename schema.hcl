@@ -1,4 +1,4 @@
-table "users" {
+table "accounts" {
   schema = schema.public
   column "id" {
     null = false
@@ -20,9 +20,44 @@ table "users" {
   primary_key {
     columns = [column.id]
   }
-  index "idx_username" {
+}
+
+table "users" {
+  schema = schema.public
+  column "id" {
+    null = false
+    type = serial
+  }
+  column "name" {
+    null    = false
+    type    = varchar(25)
+    default = ""
+  }
+  column "created_at" {
+    null    = false
+    type    = timestamp
+    default = sql("now()")
+  }
+  column "account_id" {
+    null = true
+    type = bigint  
+  }
+  primary_key {
+    columns = [column.id]
+  }
+  foreign_key "account_id" {
+    columns     = [column.account_id]
+    ref_columns = [table.accounts.column.id]
+    on_update   = NO_ACTION
+    on_delete   = NO_ACTION
+  }
+  index "idx_users_on_name" {
+    columns = [column.name]
     unique = true
-    columns = [column.username]
+    where = "account_id IS NOT NULL"
+  }
+  index "idx_users_on_account_id" {
+    columns = [column.account_id]
   }
 }
 

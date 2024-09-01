@@ -2,6 +2,12 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type AddItemToReceiptInput struct {
 	ReceiptID string   `json:"receiptId"`
 	Name      string   `json:"name"`
@@ -15,6 +21,10 @@ type AssignOrDeleteMeToItemInput struct {
 type AssignUserToItemInput struct {
 	ItemID string `json:"itemId"`
 	UserID string `json:"userId"`
+}
+
+type CreateGuestUserInput struct {
+	Username string `json:"username"`
 }
 
 type DeleteItemPayload struct {
@@ -43,6 +53,7 @@ type Me struct {
 	Username      string     `json:"username"`
 	TotalPayables string     `json:"totalPayables"`
 	Receipts      []*Receipt `json:"receipts"`
+	State         UserState  `json:"state"`
 }
 
 type Mutation struct {
@@ -67,8 +78,9 @@ type ReceiptInput struct {
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
+	ID       string    `json:"id"`
+	Username string    `json:"username"`
+	State    UserState `json:"state"`
 }
 
 type UserInput struct {
@@ -81,4 +93,45 @@ type UserWithJwt struct {
 	ID          string `json:"id"`
 	Username    string `json:"username"`
 	AccessToken string `json:"accessToken"`
+}
+
+type UserState string
+
+const (
+	UserStateGuest    UserState = "GUEST"
+	UserStateVerified UserState = "VERIFIED"
+)
+
+var AllUserState = []UserState{
+	UserStateGuest,
+	UserStateVerified,
+}
+
+func (e UserState) IsValid() bool {
+	switch e {
+	case UserStateGuest, UserStateVerified:
+		return true
+	}
+	return false
+}
+
+func (e UserState) String() string {
+	return string(e)
+}
+
+func (e *UserState) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserState", str)
+	}
+	return nil
+}
+
+func (e UserState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

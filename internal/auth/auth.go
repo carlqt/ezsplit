@@ -18,14 +18,21 @@ type UserClaim struct {
 	jwt.RegisteredClaims
 	ID       string `json:"id"`
 	Username string `json:"username"`
+	State    string `json:"state"`
 }
 
-func NewUserClaim(id int32, username string) UserClaim {
+func NewUserClaim(id int32, username string, isVerified bool) UserClaim {
 	userID := strconv.Itoa(int(id))
+	state := "guest"
+
+	if isVerified {
+		state = "verified"
+	}
 
 	return UserClaim{
 		ID:       userID,
 		Username: username,
+		State:    state,
 	}
 }
 

@@ -8,21 +8,33 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
-func newModelUser(userID int32, username string) *model.User {
+func newModelUser(userID int32, username string, isVerified bool) *model.User {
 	id := strconv.Itoa(int(userID))
+	state := model.UserStateGuest
+
+	if isVerified {
+		state = model.UserStateVerified
+	}
 
 	return &model.User{
 		ID:       id,
 		Username: username,
+		State:    state,
 	}
 }
 
-func newModelMe(userID int32, username string) *model.Me {
+func newModelMe(userID int32, username string, isVerified bool) *model.Me {
 	id := strconv.Itoa(int(userID))
+	state := model.UserStateGuest
+
+	if isVerified {
+		state = model.UserStateVerified
+	}
 
 	return &model.Me{
 		ID:       id,
 		Username: username,
+		State:    state,
 	}
 }
 

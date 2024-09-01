@@ -28,7 +28,7 @@ func (r *itemResolver) SharedBy(ctx context.Context, obj *model.Item) ([]*model.
 
 	var modelUsers []*model.User
 	for _, user := range users {
-		modelUser := newModelUser(user.ID, user.Username)
+		modelUser := newModelUser(user.ID, user.Name, user.IsVerified())
 		modelUsers = append(modelUsers, modelUser)
 	}
 
@@ -106,12 +106,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, err
 	}
 
-	user, err := r.Repositories.UserRepository.Create(input.Username, password)
+	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, password)
 	if err != nil {
 		return nil, err
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username)
+	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		log.Println(err)
@@ -135,28 +135,69 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 	return newModelUserWithJwt(
 		user.ID,
-		user.Username,
+		user.Name,
 		signedToken,
+	), nil
+}
+
+// CreateGuestUser is the resolver for the createGuestUser field.
+func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error) {
+	if input == nil || input.Username == "" {
+		return nil, errors.New("name required")
+	}
+
+	user, err := r.Repositories.UserRepository.CreateGuest(input.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("error signing token")
+	}
+
+	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
+	if !ok {
+		return nil, errors.New("error setting cookie")
+	}
+
+	setCookieFn(&http.Cookie{
+		Name:     string(internal.BearerTokenCookie),
+		Value:    signedToken,
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return newModelUser(
+		user.ID,
+		user.Name,
+		user.IsVerified(),
 	), nil
 }
 
 // LoginUser is the resolver for the loginUser field.
 func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
 	if input == nil {
+		slog.Warn("input is nil")
 		return nil, errors.New("incorrect username or password")
 	}
 
-	user, err := r.Repositories.UserRepository.FindByUsername(input.Username)
+	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username)
 	if err != nil {
 		slog.Warn(err.Error())
 	}
 
-	ok := auth.ComparePassword(user.Password, input.Password)
+	ok := auth.ComparePassword(user.Account.Password, input.Password)
 	if !ok {
 		return nil, errors.New("incorrect username or password")
 	}
 
-	userClaim := auth.NewUserClaim(user.ID, user.Username)
+	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
 		slog.Error(err.Error())
@@ -181,7 +222,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 
 	return newModelUserWithJwt(
 		user.ID,
-		user.Username,
+		user.Name,
 		signedToken,
 	), nil
 }
@@ -219,7 +260,8 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	for _, user := range users {
 		modelUser := newModelUser(
 			user.ID,
-			user.Username,
+			user.Name,
+			user.IsVerified(),
 		)
 		modelUsers = append(modelUsers, modelUser)
 	}

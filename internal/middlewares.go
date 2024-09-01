@@ -14,7 +14,7 @@ type ContextKey string
 const ContextKeySetCookie ContextKey = "setCookieFn"
 const BearerTokenCookie = "bearerTokenCookie"
 
-// BearerTokenMiddleware extracts the bearer token from the Authorization header
+// BearerTokenMiddleware extracts the bearer token from the BearerTokenCookie
 // and stores it in the context.
 // The error is ignored because the token is optional and the resolver will handle the error.
 func BearerTokenMiddleware(next http.Handler) http.Handler {
@@ -50,8 +50,8 @@ func InjectSetCookieMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// getBearerToken extracts the bearer token from the Authorization header.
-// An error is returned if Authorization header is missing or the format is invalid.
+// getBearerToken tries to extract the token from the Cookie.
+// Supresses ErrNoCookie error since it's a valid scenario because not all requests requires a cookie
 func getBearerToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie(BearerTokenCookie)
 

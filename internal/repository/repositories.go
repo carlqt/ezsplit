@@ -10,6 +10,7 @@ type Repository struct {
 	ReceiptRepository    *ReceiptRepository
 	ItemRepository       *ItemRepository
 	UserOrdersRepository *UserOrdersRepository
+	AccountRepository    *AccountRepository
 }
 
 func NewRepository(db *sql.DB) *Repository {
@@ -18,6 +19,7 @@ func NewRepository(db *sql.DB) *Repository {
 		ReceiptRepository:    &ReceiptRepository{DB: db},
 		ItemRepository:       &ItemRepository{DB: db},
 		UserOrdersRepository: &UserOrdersRepository{DB: db},
+		AccountRepository:    &AccountRepository{DB: db},
 	}
 }
 
