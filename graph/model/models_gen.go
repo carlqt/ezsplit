@@ -23,6 +23,10 @@ type AssignUserToItemInput struct {
 	UserID string `json:"userId"`
 }
 
+type CreateGuestUserInput struct {
+	Username string `json:"username"`
+}
+
 type DeleteItemPayload struct {
 	Msg string `json:"msg"`
 	ID  string `json:"id"`

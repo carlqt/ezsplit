@@ -140,6 +140,45 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	), nil
 }
 
+// CreateGuestUser is the resolver for the createGuestUser field.
+func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error) {
+	if input == nil || input.Username == "" {
+		return nil, errors.New("name required")
+	}
+
+	user, err := r.Repositories.UserRepository.CreateGuest(input.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("error signing token")
+	}
+
+	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
+	if !ok {
+		return nil, errors.New("error setting cookie")
+	}
+
+	setCookieFn(&http.Cookie{
+		Name:     string(internal.BearerTokenCookie),
+		Value:    signedToken,
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return newModelUser(
+		user.ID,
+		user.Name,
+	), nil
+}
+
 // LoginUser is the resolver for the loginUser field.
 func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
 	if input == nil {

@@ -701,4 +701,30 @@ func TestResolvers(t *testing.T) {
 			assert.Empty(t, resp.AddItemToReceipt.SharedBy)
 		}
 	})
+
+	t.Run("createGuestUser mutation", func(t *testing.T) {
+		defer TruncateAllTables(app.DB)
+
+		username := "mutation_user160"
+
+		query := fmt.Sprintf(`mutation createGuestUser {
+			createGuestUser(input: {username: "%s"}) {
+				username
+				id
+			}
+		}`, username)
+
+		var resp struct {
+			CreateGuestUser struct {
+				Username string
+				Id       string
+			}
+		}
+
+		err := c.Post(query, &resp)
+
+		if assert.Nil(t, err) {
+			assert.Equal(t, username, resp.CreateGuestUser.Username)
+		}
+	})
 }
