@@ -43,7 +43,7 @@ func main() {
 	// TODO: Remove the playground handler in production.
 	http.HandleFunc("/", playground.Handler)
 
-	http.Handle("/query", internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
+	http.Handle("/query", internal.JwtMiddleware(internal.InjectSetCookieMiddleware(srv), app.Config.JWTSecret))
 	http.Handle("/ping", http.HandlerFunc(pong))
 
 	fmt.Printf("connect to http://localhost:%s/ for GraphQL playground\n", port)

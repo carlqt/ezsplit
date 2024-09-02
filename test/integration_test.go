@@ -26,7 +26,7 @@ func TestResolvers(t *testing.T) {
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
-	c := client.New(internal.BearerTokenMiddleware(internal.InjectSetCookieMiddleware(srv)))
+	c := client.New(internal.JwtMiddleware(internal.InjectSetCookieMiddleware(srv), app.Config.JWTSecret))
 
 	toString := func(i int32) string {
 		return strconv.Itoa(int(i))
@@ -331,10 +331,7 @@ func TestResolvers(t *testing.T) {
 
 			err = c.Post(query, &resp)
 
-			if assert.NotNil(t, err) {
-				// TODO: There should be a better way to check the error message
-				assert.EqualError(t, err, `[{"message":"unauthorized access","path":["me"]}]`)
-			}
+			assert.Nil(t, err)
 		})
 	})
 

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal/auth"
 )
 
@@ -13,20 +14,13 @@ type GqlDirective func(ctx context.Context, obj interface{}, next graphql.Resolv
 
 func AuthDirective(tokenSecret []byte) GqlDirective {
 	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
+		claims, ok := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
 		// TODO: Check the 2nd return value. Basically, handle if this failes. 1 scenario is empty token.
-		bearerToken, ok := ctx.Value(auth.TokenKey).(string)
-		if !ok {
+		if !ok || claims.State == string(model.UserStateGuest) {
 			slog.Info("no token found in context")
 			return nil, errors.New("unauthorized access")
 		}
-
-		claims, err := auth.ValidateBearerToken(bearerToken, tokenSecret)
-		if err != nil {
-			slog.Error(err.Error())
-			return nil, errors.New("unauthorized access")
-		}
-
-		ctx = context.WithValue(ctx, auth.UserClaimKey, claims)
 
 		return next(ctx)
 	}

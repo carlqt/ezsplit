@@ -17,18 +17,26 @@ const BearerTokenCookie = "bearerTokenCookie"
 // BearerTokenMiddleware extracts the bearer token from the BearerTokenCookie
 // and stores it in the context.
 // The error is ignored because the token is optional and the resolver will handle the error.
-func BearerTokenMiddleware(next http.Handler) http.Handler {
+func JwtMiddleware(next http.Handler, tokenSecret []byte) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bearerToken, err := getBearerToken(r)
 
 		if bearerToken == "" && err == nil {
 			next.ServeHTTP(w, r)
 		} else {
+			// If bearerToken exists. Try to validate and decode
+			// if validated and decoded, add to context and call next
+			// else
 			if err != nil {
 				slog.Warn(err.Error())
 			}
 
-			ctx := context.WithValue(r.Context(), auth.TokenKey, bearerToken)
+			claims, err := auth.ValidateBearerToken(bearerToken, tokenSecret)
+			if err != nil {
+				slog.Warn(err.Error())
+			}
+
+			ctx := context.WithValue(r.Context(), auth.UserClaimKey, claims)
 			newReq := r.WithContext(ctx)
 
 			next.ServeHTTP(w, newReq)
