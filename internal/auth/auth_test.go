@@ -12,17 +12,17 @@ func NullableInt64(n int) *int64 {
 	return &result
 }
 
-func TestValidateBearerToken(t *testing.T) {
+func TestValidateJWT(t *testing.T) {
 	secretKey := []byte("secret")
 
 	t.Run("when bearerToken is not in the correct format", func(t *testing.T) {
-		_, err := ValidateBearerToken("", secretKey)
+		_, err := ValidateJWT("", secretKey)
 
 		assert.ErrorContains(t, err, "failed to parse bearerToken")
 	})
 
 	t.Run("when bearerToken is empty", func(t *testing.T) {
-		_, err := ValidateBearerToken("", secretKey)
+		_, err := ValidateJWT("", secretKey)
 
 		assert.ErrorContains(t, err, "failed to parse bearerToken")
 	})
@@ -36,7 +36,7 @@ func TestValidateBearerToken(t *testing.T) {
 
 		accessToken, _ := CreateAndSignToken(claim, secretKey)
 
-		result, err := ValidateBearerToken(accessToken, secretKey)
+		result, err := ValidateJWT(accessToken, secretKey)
 
 		if assert.Nil(t, err) {
 			assert.Equal(t, "username", result.Username)
@@ -53,7 +53,7 @@ func TestValidateBearerToken(t *testing.T) {
 
 		accessToken, _ := CreateAndSignToken(claim, []byte("notSoSecretKey"))
 
-		_, err := ValidateBearerToken(accessToken, secretKey)
+		_, err := ValidateJWT(accessToken, secretKey)
 
 		assert.ErrorContains(t, err, "failed to parse bearerToken")
 	})

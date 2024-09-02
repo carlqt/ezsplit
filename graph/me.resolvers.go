@@ -49,11 +49,8 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 
 // Me is the resolver for the Me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
-	// TODO: Fix failing test when this is removed
-	if ctx == nil {
-		return nil, nil
-	}
-
+	// Reminder for me. We can trust the claims in the context.
+	// If the claims have been tampered in the frontend, it will be caught by the JWTMiddleware
 	claims, ok := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	// !ok means the request didn't have a cookie or

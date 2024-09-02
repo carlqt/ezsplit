@@ -222,7 +222,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+					bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -263,7 +263,7 @@ func TestResolvers(t *testing.T) {
 				}
 
 				option := func(bd *client.Request) {
-					bd.HTTP.AddCookie(&http.Cookie{Name: internal.BearerTokenCookie, Value: accessToken})
+					bd.HTTP.AddCookie(&http.Cookie{Name: internal.JWTCookie, Value: accessToken})
 				}
 
 				err = c.Post(query, &resp, option)
@@ -303,7 +303,7 @@ func TestResolvers(t *testing.T) {
 			}
 
 			option := func(bd *client.Request) {
-				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+				bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 			}
 
 			err = c.Post(query, &resp, option)
@@ -365,7 +365,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -436,7 +436,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -523,7 +523,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -573,7 +573,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -614,7 +614,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
@@ -685,7 +685,7 @@ func TestResolvers(t *testing.T) {
 		}
 
 		option := func(bd *client.Request) {
-			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.BearerTokenCookie), Value: accessToken})
+			bd.HTTP.AddCookie(&http.Cookie{Name: string(internal.JWTCookie), Value: accessToken})
 		}
 
 		err = c.Post(query, &resp, option)
