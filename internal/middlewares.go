@@ -12,23 +12,30 @@ import (
 type ContextKey string
 
 const ContextKeySetCookie ContextKey = "setCookieFn"
-const BearerTokenCookie = "bearerTokenCookie"
+const JWTCookie = "JWTCookie"
 
-// BearerTokenMiddleware extracts the bearer token from the BearerTokenCookie
-// and stores it in the context.
+// JwtMiddleware extracts the JWT from the cookie.
+// After extracting, it's decoded and stores the claim in context
 // The error is ignored because the token is optional and the resolver will handle the error.
-func BearerTokenMiddleware(next http.Handler) http.Handler {
+func JwtMiddleware(next http.Handler, tokenSecret []byte) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearerToken, err := getBearerToken(r)
+		token, err := getJwtCookieValue(r)
 
-		if bearerToken == "" && err == nil {
+		// If there's an error in getting the cookie, just treat it as no cookie detected
+		if token == "" || err != nil {
 			next.ServeHTTP(w, r)
 		} else {
+			// If JWT exists. Try to validate and decode
+			// if validated and decoded, add to context and call next
+			claims, err := auth.ValidateJWT(token, tokenSecret)
+
+			// If there's an error validating, treat it as no cookie
 			if err != nil {
-				slog.Warn(err.Error())
+				slog.Warn("failed to validate token", "error", err.Error())
+				next.ServeHTTP(w, r)
 			}
 
-			ctx := context.WithValue(r.Context(), auth.TokenKey, bearerToken)
+			ctx := context.WithValue(r.Context(), auth.UserClaimKey, claims)
 			newReq := r.WithContext(ctx)
 
 			next.ServeHTTP(w, newReq)
@@ -50,10 +57,10 @@ func InjectSetCookieMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// getBearerToken tries to extract the token from the Cookie.
+// getJwtCookieValue tries to extract the token from the Cookie.
 // Supresses ErrNoCookie error since it's a valid scenario because not all requests requires a cookie
-func getBearerToken(r *http.Request) (string, error) {
-	cookie, err := r.Cookie(BearerTokenCookie)
+func getJwtCookieValue(r *http.Request) (string, error) {
+	cookie, err := r.Cookie(JWTCookie)
 
 	if err != nil {
 		switch {

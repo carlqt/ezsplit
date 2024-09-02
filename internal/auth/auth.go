@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/carlqt/ezsplit/graph/model"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,17 +17,17 @@ const UserClaimKey AuthKey = "UserClaim"
 
 type UserClaim struct {
 	jwt.RegisteredClaims
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	State    string `json:"state"`
+	ID       string          `json:"id"`
+	Username string          `json:"username"`
+	State    model.UserState `json:"state"`
 }
 
 func NewUserClaim(id int32, username string, isVerified bool) UserClaim {
 	userID := strconv.Itoa(int(id))
-	state := "guest"
+	state := model.UserStateGuest
 
 	if isVerified {
-		state = "verified"
+		state = model.UserStateVerified
 	}
 
 	return UserClaim{
@@ -47,7 +48,7 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 	return signedToken, nil
 }
 
-func ValidateBearerToken(bearerToken string, secret []byte) (UserClaim, error) {
+func ValidateJWT(bearerToken string, secret []byte) (UserClaim, error) {
 	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})

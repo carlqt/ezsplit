@@ -124,7 +124,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	}
 
 	setCookieFn(&http.Cookie{
-		Name:     string(internal.BearerTokenCookie),
+		Name:     string(internal.JWTCookie),
 		Value:    signedToken,
 		Path:     "/",
 		MaxAge:   3600,
@@ -164,7 +164,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 	}
 
 	setCookieFn(&http.Cookie{
-		Name:     string(internal.BearerTokenCookie),
+		Name:     string(internal.JWTCookie),
 		Value:    signedToken,
 		Path:     "/",
 		MaxAge:   3600,
@@ -211,7 +211,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 	}
 
 	setCookieFn(&http.Cookie{
-		Name:     string(internal.BearerTokenCookie),
+		Name:     string(internal.JWTCookie),
 		Value:    signedToken,
 		Path:     "/",
 		MaxAge:   3600,
@@ -235,7 +235,7 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 	}
 
 	setCookieFn(&http.Cookie{
-		Name:     string(internal.BearerTokenCookie),
+		Name:     string(internal.JWTCookie),
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
