@@ -49,13 +49,18 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 
 // Me is the resolver for the Me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
-	// Nil context may mean the request didn't have a cookie or
-	// The cookie didn't have a bearerToken field
+	// TODO: Fix failing test when this is removed
 	if ctx == nil {
 		return nil, nil
 	}
 
-	claims := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+	claims, ok := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	// !ok means the request didn't have a cookie or
+	// The cookie didn't have a bearerToken field
+	if !ok {
+		return nil, nil
+	}
 
 	user, err := r.Repositories.UserRepository.FindByID(claims.ID)
 	if err != nil {
