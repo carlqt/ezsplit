@@ -89,6 +89,12 @@ type UserInput struct {
 	ConfirmPassword string `json:"confirmPassword"`
 }
 
+type UserOrderRef struct {
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	ItemID string `json:"itemId"`
+}
+
 type UserWithJwt struct {
 	ID          string `json:"id"`
 	Username    string `json:"username"`

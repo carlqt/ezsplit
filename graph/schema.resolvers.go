@@ -17,6 +17,7 @@ import (
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
+	"github.com/go-jet/jet/v2/qrm"
 )
 
 // SharedBy is the resolver for the sharedBy field.
@@ -96,8 +97,37 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 }
 
 // AssignOrRemoveMeFromItem is the resolver for the assignOrRemoveMeFromItem field.
-func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented: AssignOrRemoveMeFromItem - assignOrRemoveMeFromItem"))
+func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.UserOrderRef, error) {
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	_, err := r.Repositories.UserOrdersRepository.FindByUserIDAndItemID(userClaim.ID, itemID)
+
+	// IF assigned, remove user from item (Deleting)
+	// nil error means user order is found
+	if err == nil {
+		// need to delete the user_order and return the item :thinking:
+		e := r.Repositories.UserOrdersRepository.Delete(userClaim.ID, itemID)
+
+		if e != nil {
+			return nil, fmt.Errorf("failed to unassign user from item")
+		}
+
+		// return the item
+	}
+
+	if err != nil && !errors.Is(err, qrm.ErrNoRows) {
+		slog.Error("failed to search user order", "error", err.Error())
+		return nil, fmt.Errorf("failed to assign or remove user from item")
+	}
+
+	err = r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, err
+	}
+
+	// IF not assigned, assign user
+	return nil, nil
 }
 
 // CreateUser is the resolver for the createUser field.
