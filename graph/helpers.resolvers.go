@@ -92,14 +92,3 @@ func toPriceDisplay[T int | int32](price T) string {
 
 	return p.FloatString(2)
 }
-
-// getVal is a helper function that returns the value of a pointer or a default value if the pointer is nil
-func getVal[T any](val *T) T {
-  var newVal T
-
-  if val == nil {
-    return newVal
-  }
-
-  return *val
-}
