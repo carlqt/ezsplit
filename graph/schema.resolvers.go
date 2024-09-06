@@ -95,6 +95,11 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 	}, nil
 }
 
+// AssignOrRemoveMeFromItem is the resolver for the assignOrRemoveMeFromItem field.
+func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.Item, error) {
+	panic(fmt.Errorf("not implemented: AssignOrRemoveMeFromItem - assignOrRemoveMeFromItem"))
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
 	if input.ConfirmPassword != input.Password {

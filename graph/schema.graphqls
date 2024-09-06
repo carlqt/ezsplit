@@ -66,6 +66,8 @@ type Mutation {
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
+  assignOrRemoveMeFromItem(itemId: ID!): Item!
+
   createUser(input: UserInput): UserWithJwt!
   createGuestUser(input: CreateGuestUserInput): User!
   loginUser(input: LoginUserInput): UserWithJwt!

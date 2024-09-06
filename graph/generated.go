@@ -72,18 +72,19 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddItemToReceipt  func(childComplexity int, input *model.AddItemToReceiptInput) int
-		AssignMeToItem    func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
-		AssignUserToItem  func(childComplexity int, input *model.AssignUserToItemInput) int
-		CreateGuestUser   func(childComplexity int, input *model.CreateGuestUserInput) int
-		CreateMyReceipt   func(childComplexity int, input *model.ReceiptInput) int
-		CreateUser        func(childComplexity int, input *model.UserInput) int
-		DeleteMyReceipt   func(childComplexity int, input *model.DeleteMyReceiptInput) int
-		GeneratePublicURL func(childComplexity int, id string) int
-		LoginUser         func(childComplexity int, input *model.LoginUserInput) int
-		LogoutUser        func(childComplexity int) int
-		RemoveMeFromItem  func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
-		RemovePublicURL   func(childComplexity int, id string) int
+		AddItemToReceipt         func(childComplexity int, input *model.AddItemToReceiptInput) int
+		AssignMeToItem           func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
+		AssignOrRemoveMeFromItem func(childComplexity int, itemID string) int
+		AssignUserToItem         func(childComplexity int, input *model.AssignUserToItemInput) int
+		CreateGuestUser          func(childComplexity int, input *model.CreateGuestUserInput) int
+		CreateMyReceipt          func(childComplexity int, input *model.ReceiptInput) int
+		CreateUser               func(childComplexity int, input *model.UserInput) int
+		DeleteMyReceipt          func(childComplexity int, input *model.DeleteMyReceiptInput) int
+		GeneratePublicURL        func(childComplexity int, id string) int
+		LoginUser                func(childComplexity int, input *model.LoginUserInput) int
+		LogoutUser               func(childComplexity int) int
+		RemoveMeFromItem         func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
+		RemovePublicURL          func(childComplexity int, id string) int
 	}
 
 	Query struct {
@@ -129,6 +130,7 @@ type MutationResolver interface {
 	AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error)
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
+	AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.Item, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
 	CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error)
 	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
@@ -270,6 +272,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AssignMeToItem(childComplexity, args["input"].(*model.AssignOrDeleteMeToItemInput)), true
+
+	case "Mutation.assignOrRemoveMeFromItem":
+		if e.complexity.Mutation.AssignOrRemoveMeFromItem == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_assignOrRemoveMeFromItem_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AssignOrRemoveMeFromItem(childComplexity, args["itemId"].(string)), true
 
 	case "Mutation.assignUserToItem":
 		if e.complexity.Mutation.AssignUserToItem == nil {
@@ -683,6 +697,21 @@ func (ec *executionContext) field_Mutation_assignMeToItem_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_assignOrRemoveMeFromItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["itemId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("itemId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["itemId"] = arg0
 	return args, nil
 }
 
@@ -1742,6 +1771,71 @@ func (ec *executionContext) fieldContext_Mutation_removeMeFromItem(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_removeMeFromItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_assignOrRemoveMeFromItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_assignOrRemoveMeFromItem(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AssignOrRemoveMeFromItem(rctx, fc.Args["itemId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Item)
+	fc.Result = res
+	return ec.marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐItem(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_assignOrRemoveMeFromItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Item_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Item_name(ctx, field)
+			case "price":
+				return ec.fieldContext_Item_price(ctx, field)
+			case "sharedBy":
+				return ec.fieldContext_Item_sharedBy(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_assignOrRemoveMeFromItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5731,6 +5825,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "removeMeFromItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_removeMeFromItem(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "assignOrRemoveMeFromItem":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_assignOrRemoveMeFromItem(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
