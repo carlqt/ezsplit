@@ -112,7 +112,6 @@ type ComplexityRoot struct {
 	}
 
 	UserOrderRef struct {
-		ID     func(childComplexity int) int
 		ItemID func(childComplexity int) int
 		UserID func(childComplexity int) int
 	}
@@ -520,13 +519,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Username(childComplexity), true
-
-	case "UserOrderRef.id":
-		if e.complexity.UserOrderRef.ID == nil {
-			break
-		}
-
-		return e.complexity.UserOrderRef.ID(childComplexity), true
 
 	case "UserOrderRef.itemId":
 		if e.complexity.UserOrderRef.ItemID == nil {
@@ -1843,8 +1835,6 @@ func (ec *executionContext) fieldContext_Mutation_assignOrRemoveMeFromItem(ctx c
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_UserOrderRef_id(ctx, field)
 			case "userId":
 				return ec.fieldContext_UserOrderRef_userId(ctx, field)
 			case "itemId":
@@ -3374,50 +3364,6 @@ func (ec *executionContext) fieldContext_User_state(_ context.Context, field gra
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UserState does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserOrderRef_id(ctx context.Context, field graphql.CollectedField, obj *model.UserOrderRef) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserOrderRef_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserOrderRef_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserOrderRef",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6417,11 +6363,6 @@ func (ec *executionContext) _UserOrderRef(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("UserOrderRef")
-		case "id":
-			out.Values[i] = ec._UserOrderRef_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "userId":
 			out.Values[i] = ec._UserOrderRef_userId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

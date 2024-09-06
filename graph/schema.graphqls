@@ -27,7 +27,6 @@ type Item {
 
 # Use this for relations between Users and Items
 type UserOrderRef {
-  id: ID!
   userId: ID!
   itemId: ID!
 }

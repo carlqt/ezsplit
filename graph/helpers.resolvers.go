@@ -8,6 +8,13 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
+func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
+  return &model.UserOrderRef{
+    ItemID: userID,
+    UserID: itemID,
+  }
+}
+
 func newModelUser(userID int32, username string, isVerified bool) *model.User {
 	id := strconv.Itoa(int(userID))
 	state := model.UserStateGuest
@@ -84,4 +91,15 @@ func toPriceDisplay[T int | int32](price T) string {
 	p := big.NewRat(int64(price), 100)
 
 	return p.FloatString(2)
+}
+
+// getVal is a helper function that returns the value of a pointer or a default value if the pointer is nil
+func getVal[T any](val *T) T {
+  var newVal T
+
+  if val == nil {
+    return newVal
+  }
+
+  return *val
 }

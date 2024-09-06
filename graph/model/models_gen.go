@@ -90,7 +90,6 @@ type UserInput struct {
 }
 
 type UserOrderRef struct {
-	ID     string `json:"id"`
 	UserID string `json:"userId"`
 	ItemID string `json:"itemId"`
 }

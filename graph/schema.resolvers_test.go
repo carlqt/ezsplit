@@ -59,12 +59,47 @@ func TestSchemaResolver(t *testing.T) {
       app.Repositories.ItemRepository.Create(&item)
 
       itemID := strconv.Itoa(int(item.ID))
-      _, err := testMutationResolver.AssignOrRemoveMeFromItem(ctx, itemID)
+      resp, err := testMutationResolver.AssignOrRemoveMeFromItem(ctx, itemID)
 
-      assert.Nil(t, err)
+      if assert.Nil(t, err) {
+        assert.Equal(t, itemID, resp.ItemID)
+        assert.Equal(t, userClaim.ID, resp.UserID)
+      }
     })
 
     t.Run("when user is assigned to an item", func(t *testing.T) {
+      // create user
+      user, _ := app.Repositories.UserRepository.CreateWithAccount("john_doe", "password")
+			userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+
+      // create receipt 
+      receipt := repository.Receipt{}
+      receipt.UserID = repository.BigInt(user.ID)
+      receipt.Description = "sample receipt"
+
+      app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+
+      // create Item for receipt
+      item := repository.Item{}
+      item.Name = repository.Nullable("Item 1")
+      item.Price = 5000
+      item.ReceiptID = repository.BigInt(receipt.ID)
+      app.Repositories.ItemRepository.Create(&item)
+
+      itemID := strconv.Itoa(int(item.ID))
+
+      // assign user to item
+      app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+
+      resp, err := testMutationResolver.AssignOrRemoveMeFromItem(ctx, itemID)
+
+      if assert.Nil(t, err) {
+        assert.Equal(t, itemID, resp.ItemID)
+        assert.Equal(t, user.ID, resp.UserID)
+      }
     })
   })
 }

@@ -105,29 +105,29 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 	// IF assigned, remove user from item (Deleting)
 	// nil error means user order is found
 	if err == nil {
-		// need to delete the user_order and return the item :thinking:
 		e := r.Repositories.UserOrdersRepository.Delete(userClaim.ID, itemID)
 
 		if e != nil {
+			slog.Error("failed to unselect self to item", "error", e.Error(), "itemID", itemID, "userID", userClaim.ID)
 			return nil, fmt.Errorf("failed to unassign user from item")
 		}
 
-		// return the item
+		return newUserOrderRef(userClaim.ID, itemID), nil
 	}
 
-	if err != nil && !errors.Is(err, qrm.ErrNoRows) {
-		slog.Error("failed to search user order", "error", err.Error())
-		return nil, fmt.Errorf("failed to assign or remove user from item")
-	}
+	// If error return is ErrNoRows, create/assign a user order
+	if errors.Is(err, qrm.ErrNoRows) {
+		e := r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+		if e != nil {
+			slog.Error("failed to assign self to item", "error", e.Error(), "itemID", itemID, "userID", userClaim.ID)
+			return nil, fmt.Errorf("failed to assign self to item")
+		}
 
-	err = r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
-	if err != nil {
-		slog.Error(err.Error())
-		return nil, err
+		return newUserOrderRef(userClaim.ID, itemID), nil
 	}
 
 	// IF not assigned, assign user
-	return nil, nil
+	return nil, err
 }
 
 // CreateUser is the resolver for the createUser field.

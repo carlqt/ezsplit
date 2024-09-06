@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/carlqt/ezsplit/.gen/public/model"
 	. "github.com/carlqt/ezsplit/.gen/public/table"
