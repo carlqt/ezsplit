@@ -25,6 +25,12 @@ type Item {
   sharedBy: [User!]!
 }
 
+# Use this for relations between Users and Items
+type UserOrderRef {
+  userId: ID!
+  itemId: ID!
+}
+
 type DeleteItemPayload {
   msg: String!
   id: ID!
@@ -65,6 +71,8 @@ type Mutation {
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
+
+  assignOrRemoveMeFromItem(itemId: ID!): UserOrderRef!
 
   createUser(input: UserInput): UserWithJwt!
   createGuestUser(input: CreateGuestUserInput): User!

@@ -8,6 +8,13 @@ import (
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
+func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
+  return &model.UserOrderRef{
+    ItemID: itemID,
+    UserID: userID,
+  }
+}
+
 func newModelUser(userID int32, username string, isVerified bool) *model.User {
 	id := strconv.Itoa(int(userID))
 	state := model.UserStateGuest

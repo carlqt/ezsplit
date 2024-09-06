@@ -17,6 +17,7 @@ import (
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
+	"github.com/go-jet/jet/v2/qrm"
 )
 
 // SharedBy is the resolver for the sharedBy field.
@@ -59,6 +60,8 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 
 // AssignMeToItem is the resolver for the assignMeToItem field.
 func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error) {
+  // TODO: Need to refactor since it's really huge
+
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
 	// Create a New UserOrder using ItemID and userID
@@ -93,6 +96,40 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 		ID:  input.ItemID,
 		Msg: "Item removed",
 	}, nil
+}
+
+// AssignOrRemoveMeFromItem is the resolver for the assignOrRemoveMeFromItem field.
+func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.UserOrderRef, error) {
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+
+	_, err := r.Repositories.UserOrdersRepository.FindByUserIDAndItemID(userClaim.ID, itemID)
+
+	// IF assigned, remove user from item (Deleting)
+	// nil error means user order is found
+	if err == nil {
+		e := r.Repositories.UserOrdersRepository.Delete(userClaim.ID, itemID)
+
+		if e != nil {
+			slog.Error("failed to unselect self to item", "error", e.Error(), "itemID", itemID, "userID", userClaim.ID)
+			return nil, fmt.Errorf("failed to unassign user from item")
+		}
+
+		return newUserOrderRef(userClaim.ID, itemID), nil
+	}
+
+	// If error return is ErrNoRows, create/assign a user order
+	if errors.Is(err, qrm.ErrNoRows) {
+		e := r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+		if e != nil {
+			slog.Error("failed to assign self to item", "error", e.Error(), "itemID", itemID, "userID", userClaim.ID)
+			return nil, fmt.Errorf("failed to assign self to item")
+		}
+
+		return newUserOrderRef(userClaim.ID, itemID), nil
+	}
+
+	// IF not assigned, assign user
+	return nil, err
 }
 
 // CreateUser is the resolver for the createUser field.
