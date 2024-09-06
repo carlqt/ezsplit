@@ -10,8 +10,8 @@ import (
 
 func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
   return &model.UserOrderRef{
-    ItemID: userID,
-    UserID: itemID,
+    ItemID: itemID,
+    UserID: userID,
   }
 }
 

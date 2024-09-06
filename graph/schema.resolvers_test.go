@@ -69,7 +69,11 @@ func TestSchemaResolver(t *testing.T) {
 
     t.Run("when user is assigned to an item", func(t *testing.T) {
       // create user
-      user, _ := app.Repositories.UserRepository.CreateWithAccount("john_doe", "password")
+      user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith", "password")
+      if err != nil {
+        t.Fatal(err)
+      }
+
 			userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 
 			ctx := context.Background()
@@ -80,14 +84,20 @@ func TestSchemaResolver(t *testing.T) {
       receipt.UserID = repository.BigInt(user.ID)
       receipt.Description = "sample receipt"
 
-      app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+      err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+      if err != nil {
+        t.Fatal(err)
+      }
 
       // create Item for receipt
       item := repository.Item{}
       item.Name = repository.Nullable("Item 1")
       item.Price = 5000
       item.ReceiptID = repository.BigInt(receipt.ID)
-      app.Repositories.ItemRepository.Create(&item)
+      err = app.Repositories.ItemRepository.Create(&item)
+      if err != nil {
+        t.Fatal(err)
+      }
 
       itemID := strconv.Itoa(int(item.ID))
 
@@ -98,7 +108,7 @@ func TestSchemaResolver(t *testing.T) {
 
       if assert.Nil(t, err) {
         assert.Equal(t, itemID, resp.ItemID)
-        assert.Equal(t, user.ID, resp.UserID)
+        assert.Equal(t, userClaim.ID, resp.UserID)
       }
     })
   })
