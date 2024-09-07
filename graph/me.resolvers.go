@@ -50,6 +50,11 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 
 // Orders is the resolver for the orders field.
 func (r *meResolver) Orders(ctx context.Context, obj *model.Me, filterInput *model.OrderFilterInput) ([]*model.Item, error) {
+  // if filterInput is nil return all
+
+  // Get all the items that his user has ordered/selected
+  // ItemRepository.GetMyOrders(userId, receiptId)
+
 	panic(fmt.Errorf("not implemented: Orders - orders"))
 }
 
