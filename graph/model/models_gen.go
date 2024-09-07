@@ -54,9 +54,14 @@ type Me struct {
 	TotalPayables string     `json:"totalPayables"`
 	Receipts      []*Receipt `json:"receipts"`
 	State         UserState  `json:"state"`
+	Orders        []*Item    `json:"orders"`
 }
 
 type Mutation struct {
+}
+
+type OrderFilterInput struct {
+	ReceiptID string `json:"receiptId"`
 }
 
 type Query struct {

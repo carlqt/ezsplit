@@ -60,7 +60,7 @@ func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.As
 
 // AssignMeToItem is the resolver for the assignMeToItem field.
 func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error) {
-  // TODO: Need to refactor since it's really huge
+	// TODO: Need to refactor since it's really huge
 
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 

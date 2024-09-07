@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/carlqt/ezsplit/graph/model"
@@ -45,6 +46,11 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 	}
 
 	return modelReceipts, nil
+}
+
+// Orders is the resolver for the orders field.
+func (r *meResolver) Orders(ctx context.Context, obj *model.Me, filterInput *model.OrderFilterInput) ([]*model.Item, error) {
+	panic(fmt.Errorf("not implemented: Orders - orders"))
 }
 
 // Me is the resolver for the Me field.
