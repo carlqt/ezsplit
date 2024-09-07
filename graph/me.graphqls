@@ -10,7 +10,15 @@ type Me {
   totalPayables: String!
   receipts: [Receipt!]!
   state: UserState!
+
+  # The items/orders of the current user
+  # Should be able to filter by receipt to only show the items on that
+  orders(filterInput: OrderFilterInput): [Item!]!
 } 
+
+input OrderFilterInput {
+  receiptId: ID!
+}
 
 extend type Query {
   me: Me
