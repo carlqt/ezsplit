@@ -2,11 +2,13 @@ package graph
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/auth"
+	"github.com/carlqt/ezsplit/internal/repository"
 	integration_test "github.com/carlqt/ezsplit/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,4 +84,107 @@ func TestMeResolver(t *testing.T) {
 			assert.ErrorContains(t, err, "can't find current user")
 		})
 	})
+
+  t.Run("Orders", func(t *testing.T) {
+    t.Run("when filtering by receipt", func(t *testing.T) {
+      var me model.Me
+      var filter model.OrderFilterInput
+
+      // create user
+      user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith", "password")
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+      
+
+      ctx := context.Background()
+      ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+
+      // create receipt 
+      receipt := repository.Receipt{}
+      receipt.UserID = repository.BigInt(user.ID)
+      receipt.Description = "sample receipt"
+
+      err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      // create Item for receipt
+      item := repository.Item{}
+      item.Name = repository.Nullable("Item 1")
+      item.Price = 5000
+      item.ReceiptID = repository.BigInt(receipt.ID)
+      err = app.Repositories.ItemRepository.Create(&item)
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      itemID := strconv.Itoa(int(item.ID))
+      // assign user to item
+      app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+
+
+      receiptID := strconv.Itoa(int(receipt.ID))
+      filter.ReceiptID = receiptID
+      resp, err := testMeResolver.Orders(ctx, &me, &filter)
+
+      if assert.Nil(t, err) {
+        respItem := resp[0]
+
+        assert.Equal(t, itemID, respItem.ID)
+      }
+    })
+
+    t.Run("when filter input is not nil", func(t *testing.T) {
+      var me model.Me
+
+      // create user
+      user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith1", "password")
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+      
+
+      ctx := context.Background()
+      ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+
+      // create receipt 
+      receipt := repository.Receipt{}
+      receipt.UserID = repository.BigInt(user.ID)
+      receipt.Description = "sample receipt"
+
+      err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      // create Item for receipt
+      item := repository.Item{}
+      item.Name = repository.Nullable("Item 1")
+      item.Price = 5000
+      item.ReceiptID = repository.BigInt(receipt.ID)
+      err = app.Repositories.ItemRepository.Create(&item)
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      itemID := strconv.Itoa(int(item.ID))
+
+      // assign user to item
+      app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+
+      resp, err := testMeResolver.Orders(ctx, &me, nil)
+
+      if assert.Nil(t, err) {
+        respItem := resp[len(resp) - 1]
+
+        assert.Equal(t, itemID, respItem.ID)
+      }
+    })
+  })
 }
