@@ -133,7 +133,7 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 }
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error) {
 	if input.ConfirmPassword != input.Password {
 		return nil, errors.New("password doesn't match confirm password")
 	}
@@ -170,10 +170,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return newModelUserWithJwt(
+	return newModelMe(
 		user.ID,
 		user.Name,
-		signedToken,
+		user.IsVerified(),
 	), nil
 }
 
@@ -218,7 +218,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 }
 
 // LoginUser is the resolver for the loginUser field.
-func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error) {
+func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.Me, error) {
 	if input == nil {
 		slog.Warn("input is nil")
 		return nil, errors.New("incorrect username or password")
@@ -257,10 +257,10 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return newModelUserWithJwt(
+	return newModelMe(
 		user.ID,
 		user.Name,
-		signedToken,
+		user.IsVerified(),
 	), nil
 }
 

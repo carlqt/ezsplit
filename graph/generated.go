@@ -139,9 +139,9 @@ type MutationResolver interface {
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.UserOrderRef, error)
-	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
+	CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error)
 	CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error)
-	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
+	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.Me, error)
 	LogoutUser(ctx context.Context) (string, error)
 	GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error)
 	RemovePublicURL(ctx context.Context, id string) (*model.Receipt, error)
@@ -1979,9 +1979,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.UserWithJwt)
+	res := resTmp.(*model.Me)
 	fc.Result = res
-	return ec.marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1993,13 +1993,19 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_UserWithJwt_id(ctx, field)
+				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
-				return ec.fieldContext_UserWithJwt_username(ctx, field)
-			case "accessToken":
-				return ec.fieldContext_UserWithJwt_accessToken(ctx, field)
+				return ec.fieldContext_Me_username(ctx, field)
+			case "totalPayables":
+				return ec.fieldContext_Me_totalPayables(ctx, field)
+			case "receipts":
+				return ec.fieldContext_Me_receipts(ctx, field)
+			case "state":
+				return ec.fieldContext_Me_state(ctx, field)
+			case "orders":
+				return ec.fieldContext_Me_orders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type UserWithJwt", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
 	}
 	defer func() {
@@ -2105,9 +2111,9 @@ func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.UserWithJwt)
+	res := resTmp.(*model.Me)
 	fc.Result = res
-	return ec.marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2119,13 +2125,19 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_UserWithJwt_id(ctx, field)
+				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
-				return ec.fieldContext_UserWithJwt_username(ctx, field)
-			case "accessToken":
-				return ec.fieldContext_UserWithJwt_accessToken(ctx, field)
+				return ec.fieldContext_Me_username(ctx, field)
+			case "totalPayables":
+				return ec.fieldContext_Me_totalPayables(ctx, field)
+			case "receipts":
+				return ec.fieldContext_Me_receipts(ctx, field)
+			case "state":
+				return ec.fieldContext_Me_state(ctx, field)
+			case "orders":
+				return ec.fieldContext_Me_orders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type UserWithJwt", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
 	}
 	defer func() {
@@ -7034,6 +7046,20 @@ func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgr
 	return ec._Item(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMe2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v model.Me) graphql.Marshaler {
+	return ec._Me(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v *model.Me) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Me(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNReceipt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v model.Receipt) graphql.Marshaler {
 	return ec._Receipt(ctx, sel, &v)
 }
@@ -7225,20 +7251,6 @@ func (ec *executionContext) unmarshalNUserState2githubᚗcomᚋcarlqtᚋezsplit�
 
 func (ec *executionContext) marshalNUserState2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserState(ctx context.Context, sel ast.SelectionSet, v model.UserState) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNUserWithJwt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v model.UserWithJwt) graphql.Marshaler {
-	return ec._UserWithJwt(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v *model.UserWithJwt) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._UserWithJwt(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

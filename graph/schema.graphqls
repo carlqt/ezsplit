@@ -74,9 +74,9 @@ type Mutation {
 
   assignOrRemoveMeFromItem(itemId: ID!): UserOrderRef!
 
-  createUser(input: UserInput): UserWithJwt!
+  createUser(input: UserInput): Me!
   createGuestUser(input: CreateGuestUserInput): User!
-  loginUser(input: LoginUserInput): UserWithJwt!
+  loginUser(input: LoginUserInput): Me!
   logoutUser: String!
 }
 
