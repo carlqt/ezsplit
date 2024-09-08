@@ -22,7 +22,7 @@ type UserClaim struct {
 	State    model.UserState `json:"state"`
 }
 
-func NewUserClaim(id int32, username string, isVerified bool) UserClaim {
+func NewUserClaim(id int64, username string, isVerified bool) UserClaim {
 	userID := strconv.Itoa(int(id))
 	state := model.UserStateGuest
 

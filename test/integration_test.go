@@ -28,7 +28,7 @@ func TestResolvers(t *testing.T) {
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
 	c := client.New(internal.JwtMiddleware(internal.InjectSetCookieMiddleware(srv), app.Config.JWTSecret))
 
-	toString := func(i int32) string {
+	toString := func(i int64) string {
 		return strconv.Itoa(int(i))
 	}
 

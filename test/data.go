@@ -51,7 +51,7 @@ func CreateVerifiedUser(db DbWriter, username string) (User, error) {
 	}
 
 	user.Name = username
-	user.AccountID = repository.Nullable(repository.BigInt(account.ID))
+	user.AccountID = repository.Nullable(account.ID)
 
 	sql = "INSERT INTO users (name, account_id) VALUES ($1, $2) RETURNING id, name, account_id"
 	err = db.QueryRow(sql, username, user.AccountID).Scan(&user.ID, &user.Name, &user.AccountID)

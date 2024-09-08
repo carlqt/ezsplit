@@ -53,7 +53,7 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 	}
 
 	user.Name = username
-	user.AccountID = Nullable(BigInt(account.ID))
+	user.AccountID = Nullable(account.ID)
 	userStmt := Users.INSERT(
 		Users.Name, Users.AccountID,
 	).MODEL(user).RETURNING(Users.Name, Users.ID, Users.AccountID, Users.CreatedAt)

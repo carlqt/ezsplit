@@ -15,7 +15,7 @@ func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
   }
 }
 
-func newModelUser(userID int32, username string, isVerified bool) *model.User {
+func newModelUser(userID int64, username string, isVerified bool) *model.User {
 	id := strconv.Itoa(int(userID))
 	state := model.UserStateGuest
 
@@ -30,7 +30,7 @@ func newModelUser(userID int32, username string, isVerified bool) *model.User {
 	}
 }
 
-func newModelMe(userID int32, username string, isVerified bool) *model.Me {
+func newModelMe(userID int64, username string, isVerified bool) *model.Me {
 	id := strconv.Itoa(int(userID))
 	state := model.UserStateGuest
 

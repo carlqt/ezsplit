@@ -46,7 +46,7 @@ func TestSchemaResolver(t *testing.T) {
 
       // create receipt 
       receipt := repository.Receipt{}
-      receipt.UserID = repository.BigInt(user.ID)
+      receipt.UserID = user.ID
       receipt.Description = "sample receipt"
 
       app.Repositories.ReceiptRepository.CreateForUser(&receipt)
@@ -81,7 +81,7 @@ func TestSchemaResolver(t *testing.T) {
 
       // create receipt 
       receipt := repository.Receipt{}
-      receipt.UserID = repository.BigInt(user.ID)
+      receipt.UserID = user.ID
       receipt.Description = "sample receipt"
 
       err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
