@@ -109,8 +109,10 @@ table "receipts" {
 table "items" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "receipt_id" {
     type = bigint
