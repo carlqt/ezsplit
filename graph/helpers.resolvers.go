@@ -45,16 +45,6 @@ func newModelMe(userID int32, username string, isVerified bool) *model.Me {
 	}
 }
 
-func newModelUserWithJwt(userID int32, username string, accessToken string) *model.UserWithJwt {
-	id := strconv.Itoa(int(userID))
-
-	return &model.UserWithJwt{
-		ID:          id,
-		Username:    username,
-		AccessToken: accessToken,
-	}
-}
-
 // newModelItem is a constructor that converts a repository.Item to a model.Item
 func newModelItem(item repository.Item) *model.Item {
 	price := toPriceDisplay(item.Price)
