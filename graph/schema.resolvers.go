@@ -145,7 +145,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 
 	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, password)
 	if err != nil {
-		return nil, err
+		slog.Error(err.Error())
+		return nil, errors.New("user already exists")
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
