@@ -55,7 +55,7 @@ func TestSchemaResolver(t *testing.T) {
       item := repository.Item{}
       item.Name = repository.Nullable("Item 1")
       item.Price = 5000
-      item.ReceiptID = repository.BigInt(receipt.ID)
+      item.ReceiptID = receipt.ID
       app.Repositories.ItemRepository.Create(&item)
 
       itemID := strconv.Itoa(int(item.ID))
@@ -93,7 +93,7 @@ func TestSchemaResolver(t *testing.T) {
       item := repository.Item{}
       item.Name = repository.Nullable("Item 1")
       item.Price = 5000
-      item.ReceiptID = repository.BigInt(receipt.ID)
+      item.ReceiptID = receipt.ID
       err = app.Repositories.ItemRepository.Create(&item)
       if err != nil {
         t.Fatal(err)

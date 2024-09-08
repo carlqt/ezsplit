@@ -150,7 +150,7 @@ func (r *ReceiptRepository) Update(receipt *Receipt) error {
 	stmt := Receipts.UPDATE(
 		Receipts.AllColumns,
 	).MODEL(receipt).WHERE(
-		Receipts.ID.EQ(Int32(receipt.ID)),
+		Receipts.ID.EQ(Int64(receipt.ID)),
 	).RETURNING(Receipts.AllColumns)
 
 	err := stmt.Query(r.DB, &receipt)

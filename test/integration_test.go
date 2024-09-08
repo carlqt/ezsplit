@@ -395,7 +395,7 @@ func TestResolvers(t *testing.T) {
 		item := repository.Item{} //{model.Items{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}
 		item.Name = &itemName
 		item.Price = itemPrice
-		item.ReceiptID = repository.BigInt(receipt.ID)
+		item.ReceiptID = receipt.ID
 
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
@@ -475,7 +475,7 @@ func TestResolvers(t *testing.T) {
 		// Leaving this here for documentation on how to initialize a struct with embedded properties
 		item := repository.Item{
 			Items: g.Items{
-				Name: repository.Nullable("Dumplings"), Price: int32(10001), ReceiptID: repository.BigInt(receipt.ID),
+				Name: repository.Nullable("Dumplings"), Price: int32(10001), ReceiptID: receipt.ID,
 			},
 		}
 
@@ -487,7 +487,7 @@ func TestResolvers(t *testing.T) {
 
 		item2 := repository.Item{}
 		item2.Name = repository.Nullable("Chicken")
-		item2.ReceiptID = repository.BigInt(receipt.ID)
+		item2.ReceiptID = receipt.ID
 		item2.Price = int32(2788)
 
 		err = app.Repositories.ItemRepository.Create(&item2)
@@ -548,7 +548,7 @@ func TestResolvers(t *testing.T) {
 		item := repository.Item{} //{Items: model.Item{Name: "Dumplings", Price: 10000, ReceiptID: itemReceiptID}}
 		item.Name = repository.Nullable("Dumplings")
 		item.Price = int32(10000)
-		item.ReceiptID = repository.BigInt(receipt.ID)
+		item.ReceiptID = receipt.ID
 
 		err = app.Repositories.ItemRepository.Create(&item)
 		if err != nil {
