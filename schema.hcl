@@ -1,8 +1,10 @@
 table "accounts" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "username" {
     null    = false
@@ -25,8 +27,10 @@ table "accounts" {
 table "users" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "name" {
     null    = false
@@ -64,8 +68,10 @@ table "users" {
 table "receipts" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "user_id" {
     type = bigint
@@ -105,8 +111,10 @@ table "receipts" {
 table "items" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "receipt_id" {
     type = bigint
@@ -142,8 +150,10 @@ table "items" {
 table "user_orders" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "user_id" {
     null = true

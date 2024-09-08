@@ -12,7 +12,7 @@ import (
 )
 
 type Items struct {
-	ID        int32 `sql:"primary_key"`
+	ID        int64 `sql:"primary_key"`
 	ReceiptID int64
 	Price     int32
 	Name      *string

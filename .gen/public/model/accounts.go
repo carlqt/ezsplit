@@ -12,7 +12,7 @@ import (
 )
 
 type Accounts struct {
-	ID        int32 `sql:"primary_key"`
+	ID        int64 `sql:"primary_key"`
 	Username  string
 	Password  string
 	CreatedAt time.Time

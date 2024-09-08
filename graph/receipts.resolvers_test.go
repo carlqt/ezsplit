@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -106,7 +107,6 @@ func TestReceiptsResolver(t *testing.T) {
 
 			userID := strconv.Itoa(int(user.ID))
 			receipt1, _ := repository.NewReceipt(9900, "receipt 1", userID)
-			receipt1.ID = 999 // To avoid ID conflict
 			receipt1.URLSlug = "abcd"
 			app.Repositories.ReceiptRepository.UnsafeCreate(&receipt1)
 
@@ -133,7 +133,7 @@ func TestReceiptsResolver(t *testing.T) {
 					assert.Equal(t, "receipt 1", r.Description)
 					assert.Equal(t, "99.00", r.Total)
 					assert.Equal(t, "abcd", r.Slug)
-					assert.Equal(t, "999", r.ID)
+					assert.Equal(t, fmt.Sprintf("%d", receipt1.ID), r.ID)
 					assert.Equal(t, expectedID, r.ID)
 					assert.Equal(t, expectedUserID, r.UserID)
 				}

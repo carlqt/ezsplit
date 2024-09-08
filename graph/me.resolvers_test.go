@@ -104,7 +104,7 @@ func TestMeResolver(t *testing.T) {
 
       // create receipt 
       receipt := repository.Receipt{}
-      receipt.UserID = repository.BigInt(user.ID)
+      receipt.UserID = user.ID
       receipt.Description = "sample receipt"
 
       err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
@@ -116,7 +116,7 @@ func TestMeResolver(t *testing.T) {
       item := repository.Item{}
       item.Name = repository.Nullable("Item 1")
       item.Price = 5000
-      item.ReceiptID = repository.BigInt(receipt.ID)
+      item.ReceiptID = receipt.ID
       err = app.Repositories.ItemRepository.Create(&item)
       if err != nil {
         t.Fatal(err)
@@ -155,7 +155,7 @@ func TestMeResolver(t *testing.T) {
 
       // create receipt 
       receipt := repository.Receipt{}
-      receipt.UserID = repository.BigInt(user.ID)
+      receipt.UserID = user.ID
       receipt.Description = "sample receipt"
 
       err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
@@ -167,7 +167,7 @@ func TestMeResolver(t *testing.T) {
       item := repository.Item{}
       item.Name = repository.Nullable("Item 1")
       item.Price = 5000
-      item.ReceiptID = repository.BigInt(receipt.ID)
+      item.ReceiptID = receipt.ID
       err = app.Repositories.ItemRepository.Create(&item)
       if err != nil {
         t.Fatal(err)

@@ -29,7 +29,7 @@ func TestValidateJWT(t *testing.T) {
 
 	t.Run("when bearerToken is valid", func(t *testing.T) {
 		claim := NewUserClaim(
-			int32(5),
+			int64(5),
 			"username",
 			true,
 		)
@@ -46,7 +46,7 @@ func TestValidateJWT(t *testing.T) {
 
 	t.Run("when bearerToken was signed with a different secret key", func(t *testing.T) {
 		claim := NewUserClaim(
-			int32(5),
+			int64(5),
 			"username",
 			false,
 		)
