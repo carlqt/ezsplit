@@ -130,7 +130,6 @@ func TestResolvers(t *testing.T) {
 			createUser(input: {username: "mutation_user160", password: "password", confirmPassword: "password" }) {
 				username
 				id
-				accessToken
 			}
 		}`
 
@@ -138,7 +137,6 @@ func TestResolvers(t *testing.T) {
 			CreateUser struct {
 				Username    string
 				Id          string
-				AccessToken string
 			}
 		}
 

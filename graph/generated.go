@@ -65,6 +65,7 @@ type ComplexityRoot struct {
 
 	Me struct {
 		ID            func(childComplexity int) int
+		Orders        func(childComplexity int, filterInput *model.OrderFilterInput) int
 		Receipts      func(childComplexity int) int
 		State         func(childComplexity int) int
 		TotalPayables func(childComplexity int) int
@@ -129,6 +130,8 @@ type ItemResolver interface {
 type MeResolver interface {
 	TotalPayables(ctx context.Context, obj *model.Me) (string, error)
 	Receipts(ctx context.Context, obj *model.Me) ([]*model.Receipt, error)
+
+	Orders(ctx context.Context, obj *model.Me, filterInput *model.OrderFilterInput) ([]*model.Item, error)
 }
 type MutationResolver interface {
 	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
@@ -136,9 +139,9 @@ type MutationResolver interface {
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.UserOrderRef, error)
-	CreateUser(ctx context.Context, input *model.UserInput) (*model.UserWithJwt, error)
+	CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error)
 	CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error)
-	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.UserWithJwt, error)
+	LoginUser(ctx context.Context, input *model.LoginUserInput) (*model.Me, error)
 	LogoutUser(ctx context.Context) (string, error)
 	GeneratePublicURL(ctx context.Context, id string) (*model.Receipt, error)
 	RemovePublicURL(ctx context.Context, id string) (*model.Receipt, error)
@@ -225,6 +228,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Me.ID(childComplexity), true
+
+	case "Me.orders":
+		if e.complexity.Me.Orders == nil {
+			break
+		}
+
+		args, err := ec.field_Me_orders_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Me.Orders(childComplexity, args["filterInput"].(*model.OrderFilterInput)), true
 
 	case "Me.receipts":
 		if e.complexity.Me.Receipts == nil {
@@ -569,6 +584,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateGuestUserInput,
 		ec.unmarshalInputDeleteMyReceiptInput,
 		ec.unmarshalInputLoginUserInput,
+		ec.unmarshalInputOrderFilterInput,
 		ec.unmarshalInputReceiptInput,
 		ec.unmarshalInputUserInput,
 	)
@@ -688,6 +704,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Me_orders_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.OrderFilterInput
+	if tmp, ok := rawArgs["filterInput"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filterInput"))
+		arg0, err = ec.unmarshalOOrderFilterInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐOrderFilterInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filterInput"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addItemToReceipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1460,6 +1491,71 @@ func (ec *executionContext) fieldContext_Me_state(_ context.Context, field graph
 	return fc, nil
 }
 
+func (ec *executionContext) _Me_orders(ctx context.Context, field graphql.CollectedField, obj *model.Me) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Me_orders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Me().Orders(rctx, obj, fc.Args["filterInput"].(*model.OrderFilterInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Item)
+	fc.Result = res
+	return ec.marshalNItem2ᚕᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐItemᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Me_orders(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Me",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Item_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Item_name(ctx, field)
+			case "price":
+				return ec.fieldContext_Item_price(ctx, field)
+			case "sharedBy":
+				return ec.fieldContext_Item_sharedBy(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Me_orders_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_addItemToReceipt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_addItemToReceipt(ctx, field)
 	if err != nil {
@@ -1883,9 +1979,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.UserWithJwt)
+	res := resTmp.(*model.Me)
 	fc.Result = res
-	return ec.marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1897,13 +1993,19 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_UserWithJwt_id(ctx, field)
+				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
-				return ec.fieldContext_UserWithJwt_username(ctx, field)
-			case "accessToken":
-				return ec.fieldContext_UserWithJwt_accessToken(ctx, field)
+				return ec.fieldContext_Me_username(ctx, field)
+			case "totalPayables":
+				return ec.fieldContext_Me_totalPayables(ctx, field)
+			case "receipts":
+				return ec.fieldContext_Me_receipts(ctx, field)
+			case "state":
+				return ec.fieldContext_Me_state(ctx, field)
+			case "orders":
+				return ec.fieldContext_Me_orders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type UserWithJwt", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
 	}
 	defer func() {
@@ -2009,9 +2111,9 @@ func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.UserWithJwt)
+	res := resTmp.(*model.Me)
 	fc.Result = res
-	return ec.marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx, field.Selections, res)
+	return ec.marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2023,13 +2125,19 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_UserWithJwt_id(ctx, field)
+				return ec.fieldContext_Me_id(ctx, field)
 			case "username":
-				return ec.fieldContext_UserWithJwt_username(ctx, field)
-			case "accessToken":
-				return ec.fieldContext_UserWithJwt_accessToken(ctx, field)
+				return ec.fieldContext_Me_username(ctx, field)
+			case "totalPayables":
+				return ec.fieldContext_Me_totalPayables(ctx, field)
+			case "receipts":
+				return ec.fieldContext_Me_receipts(ctx, field)
+			case "state":
+				return ec.fieldContext_Me_state(ctx, field)
+			case "orders":
+				return ec.fieldContext_Me_orders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type UserWithJwt", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
 	}
 	defer func() {
@@ -2556,6 +2664,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_Me_receipts(ctx, field)
 			case "state":
 				return ec.fieldContext_Me_state(ctx, field)
+			case "orders":
+				return ec.fieldContext_Me_orders(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Me", field.Name)
 		},
@@ -5552,6 +5662,33 @@ func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputOrderFilterInput(ctx context.Context, obj interface{}) (model.OrderFilterInput, error) {
+	var it model.OrderFilterInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"receiptId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "receiptId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("receiptId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReceiptID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputReceiptInput(ctx context.Context, obj interface{}) (model.ReceiptInput, error) {
 	var it model.ReceiptInput
 	asMap := map[string]interface{}{}
@@ -5862,6 +5999,42 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "orders":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Me_orders(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6873,6 +7046,20 @@ func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgr
 	return ec._Item(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMe2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v model.Me) graphql.Marshaler {
+	return ec._Me(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐMe(ctx context.Context, sel ast.SelectionSet, v *model.Me) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Me(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNReceipt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceipt(ctx context.Context, sel ast.SelectionSet, v model.Receipt) graphql.Marshaler {
 	return ec._Receipt(ctx, sel, &v)
 }
@@ -7064,20 +7251,6 @@ func (ec *executionContext) unmarshalNUserState2githubᚗcomᚋcarlqtᚋezsplit�
 
 func (ec *executionContext) marshalNUserState2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserState(ctx context.Context, sel ast.SelectionSet, v model.UserState) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNUserWithJwt2githubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v model.UserWithJwt) graphql.Marshaler {
-	return ec._UserWithJwt(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUserWithJwt2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐUserWithJwt(ctx context.Context, sel ast.SelectionSet, v *model.UserWithJwt) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._UserWithJwt(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -7428,6 +7601,14 @@ func (ec *executionContext) marshalOMe2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgrap
 		return graphql.Null
 	}
 	return ec._Me(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOOrderFilterInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐOrderFilterInput(ctx context.Context, v interface{}) (*model.OrderFilterInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputOrderFilterInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOReceiptInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐReceiptInput(ctx context.Context, v interface{}) (*model.ReceiptInput, error) {

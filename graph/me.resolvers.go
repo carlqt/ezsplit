@@ -47,6 +47,32 @@ func (r *meResolver) Receipts(ctx context.Context, obj *model.Me) ([]*model.Rece
 	return modelReceipts, nil
 }
 
+// Orders is the resolver for the orders field.
+func (r *meResolver) Orders(ctx context.Context, obj *model.Me, filterInput *model.OrderFilterInput) ([]*model.Item, error) {
+	var filterReceiptID string
+
+	if filterInput != nil && filterInput.ReceiptID != "" {
+		filterReceiptID = filterInput.ReceiptID
+	}
+	// if filterInput is nil return all
+
+	// Get all the items that his user has ordered/selected
+	// ItemRepository.GetMyOrders(userId, receiptId)
+	items, err := r.Repositories.ItemRepository.GetMyOrders(obj.ID, filterReceiptID)
+	if err != nil {
+		slog.Error(err.Error())
+		return nil, errors.New("failed to fetch my orders")
+	}
+
+	var modelItems []*model.Item
+	for _, item := range items {
+		modelItem := newModelItem(item)
+		modelItems = append(modelItems, modelItem)
+	}
+
+	return modelItems, nil
+}
+
 // Me is the resolver for the Me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.Me, error) {
 	// Reminder for me. We can trust the claims in the context.

@@ -107,3 +107,5 @@ models:
         resolver: true
       receipts:
         resolver: true
+      orders:
+        resolver: true
