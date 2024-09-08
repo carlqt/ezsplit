@@ -68,8 +68,10 @@ table "users" {
 table "receipts" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "user_id" {
     type = bigint
