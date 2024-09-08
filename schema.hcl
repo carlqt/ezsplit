@@ -148,8 +148,10 @@ table "items" {
 table "user_orders" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "user_id" {
     null = true
