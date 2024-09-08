@@ -1,8 +1,10 @@
 table "accounts" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "username" {
     null    = false
@@ -25,8 +27,10 @@ table "accounts" {
 table "users" {
   schema = schema.public
   column "id" {
-    null = false
-    type = serial
+    type = bigint
+    identity {
+      generated = ALWAYS
+    }
   }
   column "name" {
     null    = false
