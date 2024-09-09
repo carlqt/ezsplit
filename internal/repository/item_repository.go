@@ -42,7 +42,7 @@ func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]Item, error) {
 
 func (i *ItemRepository) FindByID(id string) (Item, error) {
 	item := Item{}
-	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id)))
+	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id))).LIMIT(1)
 
 	err := stmt.Query(i.DB, &item)
 	if err != nil {

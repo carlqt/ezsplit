@@ -122,7 +122,7 @@ func (r *UserOrdersRepository) FindByUserIDAndItemID(userID string, itemID strin
     UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
   ).WHERE(
     UserOrders.UserID.EQ(RawInt(userID)).AND(UserOrders.ItemID.EQ(RawInt(itemID))),
-  )
+  ).LIMIT(1)
 
   err := stmt.Query(r.DB, &userOrder)
   if err != nil {

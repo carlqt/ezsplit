@@ -102,7 +102,7 @@ func (r *UserRepository) FindByID(id string) (User, error) {
 func (r *UserRepository) FindByName(name string) (User, error) {
 	var user User
 
-	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID).WHERE(Users.Name.EQ(String(name)))
+	stmt := Users.SELECT(Users.ID, Users.Name, Users.AccountID).WHERE(Users.Name.EQ(String(name))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &user)
 	if err != nil {
