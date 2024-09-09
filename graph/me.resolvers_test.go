@@ -85,106 +85,103 @@ func TestMeResolver(t *testing.T) {
 		})
 	})
 
-  t.Run("Orders", func(t *testing.T) {
-    t.Run("when filtering by receipt", func(t *testing.T) {
-      var me model.Me
-      var filter model.OrderFilterInput
+	t.Run("Orders", func(t *testing.T) {
+		t.Run("when filtering by receipt", func(t *testing.T) {
+			var me model.Me
+			var filter model.OrderFilterInput
 
-      // create user
-      user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith", "password")
-      if err != nil {
-        t.Fatal(err)
-      }
+			// create user
+			user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith", "password")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
-      
+			userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 
-      ctx := context.Background()
-      ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
 
-      // create receipt 
-      receipt := repository.Receipt{}
-      receipt.UserID = user.ID
-      receipt.Description = "sample receipt"
+			// create receipt
+			receipt := repository.Receipt{}
+			receipt.UserID = user.ID
+			receipt.Description = "sample receipt"
 
-      err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
-      if err != nil {
-        t.Fatal(err)
-      }
+			err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      // create Item for receipt
-      item := repository.Item{}
-      item.Name = repository.Nullable("Item 1")
-      item.Price = 5000
-      item.ReceiptID = receipt.ID
-      err = app.Repositories.ItemRepository.Create(&item)
-      if err != nil {
-        t.Fatal(err)
-      }
+			// create Item for receipt
+			item := repository.Item{}
+			item.Name = repository.Nullable("Item 1")
+			item.Price = 5000
+			item.ReceiptID = receipt.ID
+			err = app.Repositories.ItemRepository.Create(&item)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      itemID := strconv.Itoa(int(item.ID))
-      // assign user to item
-      app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+			itemID := strconv.Itoa(int(item.ID))
+			// assign user to item
+			app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 
+			receiptID := strconv.Itoa(int(receipt.ID))
+			filter.ReceiptID = receiptID
+			resp, err := testMeResolver.Orders(ctx, &me, &filter)
 
-      receiptID := strconv.Itoa(int(receipt.ID))
-      filter.ReceiptID = receiptID
-      resp, err := testMeResolver.Orders(ctx, &me, &filter)
+			if assert.Nil(t, err) {
+				respItem := resp[0]
 
-      if assert.Nil(t, err) {
-        respItem := resp[0]
+				assert.Equal(t, itemID, respItem.ID)
+			}
+		})
 
-        assert.Equal(t, itemID, respItem.ID)
-      }
-    })
+		t.Run("when filter input is not nil", func(t *testing.T) {
+			var me model.Me
 
-    t.Run("when filter input is not nil", func(t *testing.T) {
-      var me model.Me
+			// create user
+			user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith1", "password")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      // create user
-      user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith1", "password")
-      if err != nil {
-        t.Fatal(err)
-      }
+			userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 
-      userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
-      
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
 
-      ctx := context.Background()
-      ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+			// create receipt
+			receipt := repository.Receipt{}
+			receipt.UserID = user.ID
+			receipt.Description = "sample receipt"
 
-      // create receipt 
-      receipt := repository.Receipt{}
-      receipt.UserID = user.ID
-      receipt.Description = "sample receipt"
+			err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
-      if err != nil {
-        t.Fatal(err)
-      }
+			// create Item for receipt
+			item := repository.Item{}
+			item.Name = repository.Nullable("Item 1")
+			item.Price = 5000
+			item.ReceiptID = receipt.ID
+			err = app.Repositories.ItemRepository.Create(&item)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-      // create Item for receipt
-      item := repository.Item{}
-      item.Name = repository.Nullable("Item 1")
-      item.Price = 5000
-      item.ReceiptID = receipt.ID
-      err = app.Repositories.ItemRepository.Create(&item)
-      if err != nil {
-        t.Fatal(err)
-      }
+			itemID := strconv.Itoa(int(item.ID))
 
-      itemID := strconv.Itoa(int(item.ID))
+			// assign user to item
+			app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 
-      // assign user to item
-      app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+			resp, err := testMeResolver.Orders(ctx, &me, nil)
 
-      resp, err := testMeResolver.Orders(ctx, &me, nil)
+			if assert.Nil(t, err) {
+				respItem := resp[len(resp)-1]
 
-      if assert.Nil(t, err) {
-        respItem := resp[len(resp) - 1]
-
-        assert.Equal(t, itemID, respItem.ID)
-      }
-    })
-  })
+				assert.Equal(t, itemID, respItem.ID)
+			}
+		})
+	})
 }

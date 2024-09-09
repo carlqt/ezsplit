@@ -177,7 +177,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 
 	user, err := r.Repositories.UserRepository.CreateGuest(input.Username)
 	if err != nil {
-    slog.Error("failed to create guest user", "error", err.Error())
+		slog.Error("failed to create guest user", "error", err.Error())
 		return nil, errors.New("failed to create user")
 	}
 

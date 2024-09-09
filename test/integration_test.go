@@ -135,8 +135,8 @@ func TestResolvers(t *testing.T) {
 
 		var resp struct {
 			CreateUser struct {
-				Username    string
-				Id          string
+				Username string
+				Id       string
 			}
 		}
 

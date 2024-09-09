@@ -67,19 +67,22 @@ func createReceipt(repo *repository.ReceiptRepository, userID string) (string, e
 }
 
 func createItems(repo *repository.ItemRepository, receiptID string) error {
-	price := int32(4000)
-	name := "Chickenjoy"
-	items := make([]repository.Item, 0)
+	itemsData := []struct {
+		price int32
+		name  string
+	}{
+		{4000, "Chickenjoy"},
+		{2000, "Spaghetti"},
+		{1000, "Burger Steak"},
+	}
 
-	items = append(items,
-		repository.Item{
+	for _, i := range itemsData {
+		item := repository.Item{
 			Items: model.Items{
-				Name: &name, Price: price, ReceiptID: repository.BigInt(receiptID),
+				Name: &i.name, Price: i.price, ReceiptID: repository.BigInt(receiptID),
 			},
-		},
-	)
+		}
 
-	for _, item := range items {
 		err := repo.Create(&item)
 		if err != nil {
 			slog.Error(err.Error())

@@ -12,10 +12,10 @@ import (
 )
 
 func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
-  return &model.UserOrderRef{
-    ItemID: itemID,
-    UserID: userID,
-  }
+	return &model.UserOrderRef{
+		ItemID: itemID,
+		UserID: userID,
+	}
 }
 
 func newModelUser(userID int64, username string, isVerified bool) *model.User {
