@@ -152,13 +152,14 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
-		log.Println(err)
-		return nil, errors.New("error signing token")
+		slog.Error("failed to create and sign token", "error", err.Error(), "userID", user.ID)
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		return nil, errors.New("error setting cookie")
+		slog.Error("type assertion of ContextKeySetCookie failed")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn(&http.Cookie{
@@ -186,19 +187,21 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 
 	user, err := r.Repositories.UserRepository.CreateGuest(input.Username)
 	if err != nil {
-		return nil, err
+    slog.Error("failed to create guest user", "error", err.Error())
+		return nil, errors.New("failed to create user")
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 	signedToken, err := auth.CreateAndSignToken(userClaim, r.Config.JWTSecret)
 	if err != nil {
-		log.Println(err)
-		return nil, errors.New("error signing token")
+		slog.Error("failed to create and sign token", "error", err.Error(), "userID", user.ID)
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		return nil, errors.New("error setting cookie")
+		slog.Error("type assertion of ContextKeySetCookie failed")
+		return nil, errors.New("something went wrong")
 	}
 
 	setCookieFn(&http.Cookie{
@@ -269,7 +272,8 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 	setCookieFn, ok := ctx.Value(internal.ContextKeySetCookie).(func(*http.Cookie))
 	if !ok {
-		return "", errors.New("error setting cookie")
+		slog.Error("cookie type assertion failed")
+		return "", errors.New("something went wrong")
 	}
 
 	setCookieFn(&http.Cookie{
