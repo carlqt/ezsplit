@@ -2,9 +2,12 @@ package graph
 
 import (
 	"math/big"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
@@ -67,6 +70,21 @@ func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
 		Description: receipt.Description,
 		Slug:        receipt.URLSlug,
 		UserID:      userID,
+	}
+}
+
+// newAuthCookie creates a generic cookie that expects a signedToken as the value
+// use an emtpy string ("") to clear the cookie
+func newAuthCookie(val string) *http.Cookie {
+	return &http.Cookie{
+		Name:     string(internal.JWTCookie),
+		Value:    val,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   0,
+		Expires:  time.Unix(0, 0),
 	}
 }
 

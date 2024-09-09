@@ -8,10 +8,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
@@ -162,15 +160,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(&http.Cookie{
-		Name:     string(internal.JWTCookie),
-		Value:    signedToken,
-		Path:     "/",
-		MaxAge:   3600,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	setCookieFn(newAuthCookie(signedToken))
 
 	return newModelMe(
 		user.ID,
@@ -204,15 +194,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(&http.Cookie{
-		Name:     string(internal.JWTCookie),
-		Value:    signedToken,
-		Path:     "/",
-		MaxAge:   3600,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	setCookieFn(newAuthCookie(signedToken))
 
 	return newModelUser(
 		user.ID,
@@ -251,15 +233,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(&http.Cookie{
-		Name:     string(internal.JWTCookie),
-		Value:    signedToken,
-		Path:     "/",
-		MaxAge:   3600,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	setCookieFn(newAuthCookie(signedToken))
 
 	return newModelMe(
 		user.ID,
@@ -276,16 +250,7 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 		return "", errors.New("something went wrong")
 	}
 
-	setCookieFn(&http.Cookie{
-		Name:     string(internal.JWTCookie),
-		Value:    "",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   0,
-		Expires:  time.Unix(0, 0),
-	})
+	setCookieFn(newAuthCookie(""))
 
 	return "ok", nil
 }
