@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/carlqt/ezsplit/graph/model"
 	"github.com/carlqt/ezsplit/internal"
@@ -74,8 +73,9 @@ func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
 }
 
 // newAuthCookie creates a generic cookie that expects a signedToken as the value
-// use an emtpy string ("") to clear the cookie
-func newAuthCookie(val string) *http.Cookie {
+//
+// Setting the maxAge to 0 immediately expires the cookie
+func newAuthCookie(val string, maxAge int) *http.Cookie {
 	return &http.Cookie{
 		Name:     string(internal.JWTCookie),
 		Value:    val,
@@ -83,8 +83,7 @@ func newAuthCookie(val string) *http.Cookie {
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   0,
-		Expires:  time.Unix(0, 0),
+		MaxAge:   maxAge,
 	}
 }
 

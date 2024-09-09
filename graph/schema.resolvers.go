@@ -160,7 +160,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(newAuthCookie(signedToken))
+	setCookieFn(newAuthCookie(signedToken, 3600))
 
 	return newModelMe(
 		user.ID,
@@ -194,7 +194,7 @@ func (r *mutationResolver) CreateGuestUser(ctx context.Context, input *model.Cre
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(newAuthCookie(signedToken))
+	setCookieFn(newAuthCookie(signedToken, 3600))
 
 	return newModelUser(
 		user.ID,
@@ -233,7 +233,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("something went wrong")
 	}
 
-	setCookieFn(newAuthCookie(signedToken))
+	setCookieFn(newAuthCookie(signedToken, 3600))
 
 	return newModelMe(
 		user.ID,
@@ -250,7 +250,7 @@ func (r *mutationResolver) LogoutUser(ctx context.Context) (string, error) {
 		return "", errors.New("something went wrong")
 	}
 
-	setCookieFn(newAuthCookie(""))
+	setCookieFn(newAuthCookie("", 0))
 
 	return "ok", nil
 }
