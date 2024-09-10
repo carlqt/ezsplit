@@ -66,7 +66,7 @@ func (i *ItemRepository) GetMyOrders(userId, receiptID string) ([]Item, error) {
 		Items.ID, Items.Name, Items.Price, Items.ReceiptID,
 	).FROM(
 		UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
-	).WHERE(condition)
+	).WHERE(condition.AND(UserOrders.UserID.EQ(RawInt(userId))))
 
 	err := stmt.Query(i.DB, &items)
 	if err != nil {

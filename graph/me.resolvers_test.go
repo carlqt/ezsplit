@@ -127,9 +127,13 @@ func TestMeResolver(t *testing.T) {
 
 			receiptID := strconv.Itoa(int(receipt.ID))
 			filter.ReceiptID = receiptID
+
+			me.ID = strconv.Itoa(int(user.ID))
+			me.Username = user.Name
+
 			resp, err := testMeResolver.Orders(ctx, &me, &filter)
 
-			if assert.Nil(t, err) {
+			if assert.Nil(t, err, me) {
 				respItem := resp[0]
 
 				assert.Equal(t, itemID, respItem.ID)
@@ -175,6 +179,8 @@ func TestMeResolver(t *testing.T) {
 			// assign user to item
 			app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 
+			me.ID = userClaim.ID
+			me.Username = user.Name
 			resp, err := testMeResolver.Orders(ctx, &me, nil)
 
 			if assert.Nil(t, err) {
