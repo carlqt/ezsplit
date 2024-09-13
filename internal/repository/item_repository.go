@@ -42,7 +42,7 @@ func (i *ItemRepository) SelectAllForReceipt(receiptID string) ([]Item, error) {
 
 func (i *ItemRepository) FindByID(id string) (Item, error) {
 	item := Item{}
-	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id)))
+	stmt := Items.SELECT(Items.ID, Items.Name, Items.Price, Items.ReceiptID, Items.CreatedAt).WHERE(Items.ID.EQ(RawInt(id))).LIMIT(1)
 
 	err := stmt.Query(i.DB, &item)
 	if err != nil {
@@ -53,25 +53,25 @@ func (i *ItemRepository) FindByID(id string) (Item, error) {
 }
 
 func (i *ItemRepository) GetMyOrders(userId, receiptID string) ([]Item, error) {
-  var items []Item
+	var items []Item
 
-  condition := Bool(true)
+	condition := Bool(true)
 
-  // If receiptID is given, filter the query to the receipt
-  if receiptID != "" {
-    condition = condition.AND(Items.ReceiptID.EQ(RawInt(receiptID)))
-  }
+	// If receiptID is given, filter the query to the receipt
+	if receiptID != "" {
+		condition = condition.AND(Items.ReceiptID.EQ(RawInt(receiptID)))
+	}
 
 	stmt := SELECT(
-    Items.ID, Items.Name, Items.Price, Items.ReceiptID,
-  ).FROM(
-    UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
-  ).WHERE(condition)
+		Items.ID, Items.Name, Items.Price, Items.ReceiptID,
+	).FROM(
+		UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
+	).WHERE(condition.AND(UserOrders.UserID.EQ(RawInt(userId))))
 
-  err := stmt.Query(i.DB, &items)
-  if err != nil {
-    return items, fmt.Errorf("failed to get the orders: %w", err)
-  }
+	err := stmt.Query(i.DB, &items)
+	if err != nil {
+		return items, fmt.Errorf("failed to get the orders: %w", err)
+	}
 
-  return items, nil
+	return items, nil
 }

@@ -87,7 +87,7 @@ func (r *ReceiptRepository) FindByID(id string) (Receipt, error) {
 
 	stmt := SELECT(
 		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.URLSlug,
-	).FROM(Receipts.Table).WHERE(Receipts.ID.EQ(RawInt(id)))
+	).FROM(Receipts.Table).WHERE(Receipts.ID.EQ(RawInt(id))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &receipt)
 	if err != nil {
@@ -167,7 +167,7 @@ func (r *ReceiptRepository) FindBySlug(slug string) (Receipt, error) {
 
 	stmt := SELECT(
 		Receipts.ID, Receipts.Total, Receipts.Description, Receipts.CreatedAt, Receipts.URLSlug,
-	).FROM(Receipts.Table).WHERE(Receipts.URLSlug.EQ(String(slug)))
+	).FROM(Receipts.Table).WHERE(Receipts.URLSlug.EQ(String(slug))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &receipt)
 	if err != nil {

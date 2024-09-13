@@ -114,20 +114,20 @@ func (r *UserOrdersRepository) GetTotalPayables(userID string) (int, error) {
 }
 
 func (r *UserOrdersRepository) FindByUserIDAndItemID(userID string, itemID string) (UserOrder, error) {
-  var userOrder UserOrder
+	var userOrder UserOrder
 
-  stmt := UserOrders.SELECT(
-    UserOrders.AllColumns,
-  ).FROM(
-    UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
-  ).WHERE(
-    UserOrders.UserID.EQ(RawInt(userID)).AND(UserOrders.ItemID.EQ(RawInt(itemID))),
-  )
+	stmt := UserOrders.SELECT(
+		UserOrders.AllColumns,
+	).FROM(
+		UserOrders.INNER_JOIN(Items, UserOrders.ItemID.EQ(Items.ID)).INNER_JOIN(Users, UserOrders.UserID.EQ(Users.ID)),
+	).WHERE(
+		UserOrders.UserID.EQ(RawInt(userID)).AND(UserOrders.ItemID.EQ(RawInt(itemID))),
+	).LIMIT(1)
 
-  err := stmt.Query(r.DB, &userOrder)
-  if err != nil {
-    return userOrder, fmt.Errorf("failed to find user_order with user_id=%s and item_id=%s: %w", userID, itemID, err)
-  }
+	err := stmt.Query(r.DB, &userOrder)
+	if err != nil {
+		return userOrder, fmt.Errorf("failed to find user_order with user_id=%s and item_id=%s: %w", userID, itemID, err)
+	}
 
-  return userOrder, nil
+	return userOrder, nil
 }

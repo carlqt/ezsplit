@@ -2,17 +2,19 @@ package graph
 
 import (
 	"math/big"
+	"net/http"
 	"strconv"
 
 	"github.com/carlqt/ezsplit/graph/model"
+	"github.com/carlqt/ezsplit/internal"
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
 func newUserOrderRef(userID, itemID string) *model.UserOrderRef {
-  return &model.UserOrderRef{
-    ItemID: itemID,
-    UserID: userID,
-  }
+	return &model.UserOrderRef{
+		ItemID: itemID,
+		UserID: userID,
+	}
 }
 
 func newModelUser(userID int64, username string, isVerified bool) *model.User {
@@ -67,6 +69,21 @@ func newModelReceipt(receipt *repository.Receipt) *model.Receipt {
 		Description: receipt.Description,
 		Slug:        receipt.URLSlug,
 		UserID:      userID,
+	}
+}
+
+// newAuthCookie creates a generic cookie that expects a signedToken as the value
+//
+// Setting the maxAge to 0 immediately expires the cookie
+func newAuthCookie(val string, maxAge int) *http.Cookie {
+	return &http.Cookie{
+		Name:     string(internal.JWTCookie),
+		Value:    val,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   maxAge,
 	}
 }
 
