@@ -38,3 +38,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  test-cli:
+    <<: *app
+    command: bash
+    volumes:
+      - .:/app
+    profiles:
+      - test-cli
+    environment:
+      GO_ENV: "test"
+      # use github-actions format when debugging
+      GOTESTSUM_FORMAT: "dots-v2"
+    depends_on:
+      db:
+        condition: service_healthy
