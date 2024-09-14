@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.23.0-alpine3.20 as base
+FROM golang:1.23.1-alpine3.20 as base
 
 LABEL maintainer="carltablante"
 
