@@ -5,6 +5,9 @@ dotenv: [.env]
 env:
   ENV: local
 
+vars:
+  TEST_COMPOSE_FILE: docker-compose.test.yml
+
 tasks:
   db:schema:apply:
     desc: Applies schema to the database which will take care of creating the tables
@@ -41,7 +44,8 @@ tasks:
   test:rebuild:
     desc: Rebuilds test images
     cmds:
-      - docker compose -f docker-compose.test.yml -p ezsplit_test build
+      - docker compose -f {{ .TEST_COMPOSE_FILE }} -p ezsplit_test build
+      - docker compose -f {{ .TEST_COMPOSE_FILE }} -p test-cli build
 
   compose:
     desc: Acts as a proxy for `docker compose` command
@@ -73,6 +77,11 @@ tasks:
   dev-cli:
     cmds:
       - docker compose run --rm dev-cli sh
+
+  test:cli:
+    desc: Access the test container
+    cmds:
+      - docker compose -f {{ .TEST_COMPOSE_FILE }} run --rm test-cli sh
 
   lint:
     desc: Runs linter
