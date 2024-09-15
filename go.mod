@@ -3,7 +3,7 @@ module github.com/carlqt/ezsplit
 go 1.23.0
 
 require (
-	github.com/99designs/gqlgen v0.17.50
+	github.com/99designs/gqlgen v0.17.51
 	github.com/joho/godotenv v1.5.1
 	github.com/vektah/gqlparser/v2 v2.5.16
 )
