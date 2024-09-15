@@ -87,8 +87,8 @@ tasks:
     desc: Runs linter
     cmds:
       - task: models:generate
-      - docker compose run --rm dev-cli go vet ./...
-      - docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.61.0 golangci-lint run -v
+      - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go vet ./...'
+      - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0 run -v ./...'
 
   db:setup:
     cmds:
