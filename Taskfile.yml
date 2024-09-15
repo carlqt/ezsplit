@@ -35,13 +35,13 @@ tasks:
     cmds:
       - docker compose logs -f
 
-  rebuild:
+  build:
     desc: Rebuilds images
     cmds:
       - docker compose build
       - docker compose build dev-cli
 
-  test:rebuild:
+  test:build:
     desc: Rebuilds test images
     cmds:
       - docker compose -f {{ .TEST_COMPOSE_FILE }} -p ezsplit_test build
@@ -70,11 +70,11 @@ tasks:
   test:
     dotenv: [.env.test]
     cmds:
-      - cmd: docker compose -f docker-compose.test.yml -p ezsplit_test run --rm app
+      - cmd: docker compose -f {{ .TEST_COMPOSE_FILE }} -p ezsplit_test run --rm app
         ignore_error: true
-      - defer: docker compose -f docker-compose.test.yml -p ezsplit_test down
+      - defer: docker compose -f {{ .TEST_COMPOSE_FILE }} -p ezsplit_test down
 
-  dev-cli:
+  dev:cli:
     cmds:
       - docker compose run --rm dev-cli sh
 
@@ -86,6 +86,7 @@ tasks:
   lint:
     desc: Runs linter
     cmds:
+      - defer: { task: down }
       - task: models:generate
       - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go vet ./...'
       - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0 run -v ./...'
