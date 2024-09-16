@@ -80,7 +80,7 @@ type ComplexityRoot struct {
 		CreateGuestUser          func(childComplexity int, input *model.CreateGuestUserInput) int
 		CreateMyReceipt          func(childComplexity int, input *model.ReceiptInput) int
 		CreateUser               func(childComplexity int, input *model.UserInput) int
-		DeleteItemFromReceipt    func(childComplexity int, receiptID string, itemID string) int
+		DeleteItemFromReceipt    func(childComplexity int, itemID string) int
 		DeleteMyReceipt          func(childComplexity int, input *model.DeleteMyReceiptInput) int
 		GeneratePublicURL        func(childComplexity int, id string) int
 		LoginUser                func(childComplexity int, input *model.LoginUserInput) int
@@ -139,7 +139,7 @@ type MutationResolver interface {
 	AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error)
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
-	DeleteItemFromReceipt(ctx context.Context, receiptID string, itemID string) (*model.DeleteItemPayload, error)
+	DeleteItemFromReceipt(ctx context.Context, itemID string) (*model.DeleteItemPayload, error)
 	AssignOrRemoveMeFromItem(ctx context.Context, itemID string) (*model.UserOrderRef, error)
 	CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error)
 	CreateGuestUser(ctx context.Context, input *model.CreateGuestUserInput) (*model.User, error)
@@ -365,7 +365,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteItemFromReceipt(childComplexity, args["receiptId"].(string), args["itemId"].(string)), true
+		return e.complexity.Mutation.DeleteItemFromReceipt(childComplexity, args["itemId"].(string)), true
 
 	case "Mutation.deleteMyReceipt":
 		if e.complexity.Mutation.DeleteMyReceipt == nil {
@@ -978,40 +978,13 @@ func (ec *executionContext) field_Mutation_createUser_argsInput(
 func (ec *executionContext) field_Mutation_deleteItemFromReceipt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_deleteItemFromReceipt_argsReceiptID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_deleteItemFromReceipt_argsItemID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["receiptId"] = arg0
-	arg1, err := ec.field_Mutation_deleteItemFromReceipt_argsItemID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["itemId"] = arg1
+	args["itemId"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_deleteItemFromReceipt_argsReceiptID(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (string, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["receiptId"]
-	if !ok {
-		var zeroVal string
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("receiptId"))
-	if tmp, ok := rawArgs["receiptId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Mutation_deleteItemFromReceipt_argsItemID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
@@ -2294,7 +2267,7 @@ func (ec *executionContext) _Mutation_deleteItemFromReceipt(ctx context.Context,
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeleteItemFromReceipt(rctx, fc.Args["receiptId"].(string), fc.Args["itemId"].(string))
+			return ec.resolvers.Mutation().DeleteItemFromReceipt(rctx, fc.Args["itemId"].(string))
 		}
 
 		directive1 := func(ctx context.Context) (interface{}, error) {

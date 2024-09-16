@@ -97,7 +97,7 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 }
 
 // DeleteItemFromReceipt is the resolver for the deleteItemFromReceipt field.
-func (r *mutationResolver) DeleteItemFromReceipt(ctx context.Context, receiptID string, itemID string) (*model.DeleteItemPayload, error) {
+func (r *mutationResolver) DeleteItemFromReceipt(ctx context.Context, itemID string) (*model.DeleteItemPayload, error) {
 	panic(fmt.Errorf("not implemented: DeleteItemFromReceipt - deleteItemFromReceipt"))
 }
 

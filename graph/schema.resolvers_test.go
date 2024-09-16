@@ -112,4 +112,51 @@ func TestSchemaResolver(t *testing.T) {
 			}
 		})
 	})
+
+  t.Run("DeleteFromReceipt", func(t *testing.T) {
+    t.Run("when item is deleted successfully", func(t *testing.T) {
+			// create user
+			user, err := app.Repositories.UserRepository.CreateWithAccount("jane_smith", "password")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+
+			ctx := context.Background()
+			ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+
+			// create receipt
+			receipt := repository.Receipt{}
+			receipt.UserID = user.ID
+			receipt.Description = "sample receipt"
+
+			err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// create Item for receipt
+			item := repository.Item{}
+			item.Name = repository.Nullable("Item 1")
+			item.Price = 5000
+			item.ReceiptID = receipt.ID
+			err = app.Repositories.ItemRepository.Create(&item)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			itemID := strconv.Itoa(int(item.ID))
+
+			// assign user to item
+			app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
+
+			resp, err := testMutationResolver.DeleteItemFromReceipt(ctx, itemID)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, itemID, resp.ItemID)
+				assert.Equal(t, userClaim.ID, resp.UserID)
+			}
+    })
+  })
 }
