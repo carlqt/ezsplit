@@ -185,7 +185,7 @@ table "user_orders" {
     columns     = [column.item_id]
     ref_columns = [table.items.column.id]
     on_update   = NO_ACTION
-    on_delete   = NO_ACTION
+    on_delete   = CASCADE
   }
 }
 

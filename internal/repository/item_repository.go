@@ -91,7 +91,7 @@ func (i *ItemRepository) DeleteFromReceipt(userID, itemID string) (Item, error) 
 
   err := stmt.Query(i.DB, &item)
   if err != nil {
-    return item, fmt.Errorf("failed to delete item: %w", err)
+    return item, fmt.Errorf("failed to delete item in database: %w", err)
   }
 
   return item, nil
