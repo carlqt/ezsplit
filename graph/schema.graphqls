@@ -71,6 +71,7 @@ type Mutation {
   assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
+  deleteItemFromReceipt(receiptId: ID!, itemId: ID!): DeleteItemPayload! @authenticated
 
   assignOrRemoveMeFromItem(itemId: ID!): UserOrderRef!
 
