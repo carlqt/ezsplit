@@ -47,6 +47,11 @@ input LoginUserInput {
   password: String!
 }
 
+input UpdateItemToReceiptInput {
+  name: String!
+  price: Float
+}
+
 input AddItemToReceiptInput {
   receiptId: ID!
   name: String!
@@ -74,6 +79,9 @@ type Mutation {
 
   # Deletes an item from a receipt that's scoped to the user
   deleteItemFromReceipt(itemId: ID!): DeleteItemPayload! @authenticated
+
+  # Updates an item from a receipt that's scoped to the user
+  updateItemFromReceipt(input: UpdateItemToReceiptInput): Item! @authenticated
 
   assignOrRemoveMeFromItem(itemId: ID!): UserOrderRef!
 
