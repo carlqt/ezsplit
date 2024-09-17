@@ -74,7 +74,6 @@ input CreateGuestUserInput {
 
 type Mutation {
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
-  assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 

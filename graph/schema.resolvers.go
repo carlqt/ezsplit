@@ -51,11 +51,6 @@ func (r *mutationResolver) AddItemToReceipt(ctx context.Context, input *model.Ad
 	return newModelItem(item), nil
 }
 
-// AssignUserToItem is the resolver for the assignUserToItem field.
-func (r *mutationResolver) AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented: AssignUserToItem - assignUserToItem"))
-}
-
 // AssignMeToItem is the resolver for the assignMeToItem field.
 func (r *mutationResolver) AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error) {
 	// TODO: Need to refactor since it's really huge

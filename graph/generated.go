@@ -76,7 +76,6 @@ type ComplexityRoot struct {
 		AddItemToReceipt         func(childComplexity int, input *model.AddItemToReceiptInput) int
 		AssignMeToItem           func(childComplexity int, input *model.AssignOrDeleteMeToItemInput) int
 		AssignOrRemoveMeFromItem func(childComplexity int, itemID string) int
-		AssignUserToItem         func(childComplexity int, input *model.AssignUserToItemInput) int
 		CreateGuestUser          func(childComplexity int, input *model.CreateGuestUserInput) int
 		CreateMyReceipt          func(childComplexity int, input *model.ReceiptInput) int
 		CreateUser               func(childComplexity int, input *model.UserInput) int
@@ -137,7 +136,6 @@ type MeResolver interface {
 }
 type MutationResolver interface {
 	AddItemToReceipt(ctx context.Context, input *model.AddItemToReceiptInput) (*model.Item, error)
-	AssignUserToItem(ctx context.Context, input *model.AssignUserToItemInput) (*model.Item, error)
 	AssignMeToItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.Item, error)
 	RemoveMeFromItem(ctx context.Context, input *model.AssignOrDeleteMeToItemInput) (*model.DeleteItemPayload, error)
 	DeleteItemFromReceipt(ctx context.Context, itemID string) (*model.DeleteItemPayload, error)
@@ -308,18 +306,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AssignOrRemoveMeFromItem(childComplexity, args["itemId"].(string)), true
-
-	case "Mutation.assignUserToItem":
-		if e.complexity.Mutation.AssignUserToItem == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_assignUserToItem_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.AssignUserToItem(childComplexity, args["input"].(*model.AssignUserToItemInput)), true
 
 	case "Mutation.createGuestUser":
 		if e.complexity.Mutation.CreateGuestUser == nil {
@@ -859,38 +845,6 @@ func (ec *executionContext) field_Mutation_assignOrRemoveMeFromItem_argsItemID(
 	}
 
 	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_assignUserToItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_assignUserToItem_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_assignUserToItem_argsInput(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (*model.AssignUserToItemInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
-		var zeroVal *model.AssignUserToItemInput
-		return zeroVal, nil
-	}
-
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalOAssignUserToItemInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAssignUserToItemInput(ctx, tmp)
-	}
-
-	var zeroVal *model.AssignUserToItemInput
 	return zeroVal, nil
 }
 
@@ -2036,93 +1990,6 @@ func (ec *executionContext) fieldContext_Mutation_addItemToReceipt(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addItemToReceipt_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_assignUserToItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_assignUserToItem(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().AssignUserToItem(rctx, fc.Args["input"].(*model.AssignUserToItemInput))
-		}
-
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				var zeroVal *model.Item
-				return zeroVal, errors.New("directive authenticated is not implemented")
-			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.Item); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/carlqt/ezsplit/graph/model.Item`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Item)
-	fc.Result = res
-	return ec.marshalNItem2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐItem(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_assignUserToItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Item_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Item_name(ctx, field)
-			case "price":
-				return ec.fieldContext_Item_price(ctx, field)
-			case "sharedBy":
-				return ec.fieldContext_Item_sharedBy(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Item", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_assignUserToItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6832,15 +6699,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "assignUserToItem":
-			field := field
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_assignUserToItem(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "assignMeToItem":
 			field := field
 
@@ -9186,14 +9044,6 @@ func (ec *executionContext) unmarshalOAssignOrDeleteMeToItemInput2ᚖgithubᚗco
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputAssignOrDeleteMeToItemInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOAssignUserToItemInput2ᚖgithubᚗcomᚋcarlqtᚋezsplitᚋgraphᚋmodelᚐAssignUserToItemInput(ctx context.Context, v interface{}) (*model.AssignUserToItemInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputAssignUserToItemInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
