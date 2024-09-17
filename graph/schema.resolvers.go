@@ -100,16 +100,16 @@ func (r *mutationResolver) RemoveMeFromItem(ctx context.Context, input *model.As
 func (r *mutationResolver) DeleteItemFromReceipt(ctx context.Context, itemID string) (*model.DeleteItemPayload, error) {
 	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
 
-  _, err := r.Repositories.ItemRepository.DeleteFromReceipt(userClaim.ID, itemID)
-  if err != nil {
-    slog.Error("failed to delete item", "error", err.Error(), "itemID", itemID, "userID", userClaim.ID)
-    return nil, errors.New("failed to delete item")
-  }
+	_, err := r.Repositories.ItemRepository.DeleteFromReceipt(userClaim.ID, itemID)
+	if err != nil {
+		slog.Error("failed to delete item", "error", err.Error(), "itemID", itemID, "userID", userClaim.ID)
+		return nil, errors.New("failed to delete item")
+	}
 
-  return &model.DeleteItemPayload{
-    ID:  itemID,
-    Msg: "Item removed",
-  }, nil
+	return &model.DeleteItemPayload{
+		ID:  itemID,
+		Msg: "Item removed",
+	}, nil
 }
 
 // AssignOrRemoveMeFromItem is the resolver for the assignOrRemoveMeFromItem field.

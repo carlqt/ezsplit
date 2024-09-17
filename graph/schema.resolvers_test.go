@@ -113,30 +113,30 @@ func TestSchemaResolver(t *testing.T) {
 		})
 	})
 
-  t.Run("DeleteFromReceipt", func(t *testing.T) {
-    defer truncateTables()
-    // create user
-    user, err := app.Repositories.UserRepository.CreateWithAccount("honey_badger", "password")
-    if err != nil {
-      t.Fatal(err)
-    }
+	t.Run("DeleteFromReceipt", func(t *testing.T) {
+		defer truncateTables()
+		// create user
+		user, err := app.Repositories.UserRepository.CreateWithAccount("honey_badger", "password")
+		if err != nil {
+			t.Fatal(err)
+		}
 
-    userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+		userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
 
-    ctx := context.Background()
-    ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
 
-    // create receipt
-    receipt := repository.Receipt{}
-    receipt.UserID = user.ID
-    receipt.Description = "sample receipt"
+		// create receipt
+		receipt := repository.Receipt{}
+		receipt.UserID = user.ID
+		receipt.Description = "sample receipt"
 
-    err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
-    if err != nil {
-      t.Fatal(err)
-    }
+		err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-    t.Run("when item is deleted successfully", func(t *testing.T) {
+		t.Run("when item is deleted successfully", func(t *testing.T) {
 			// create Item for receipt
 			item := repository.Item{}
 			item.Name = repository.Nullable("Item 1")
@@ -153,11 +153,11 @@ func TestSchemaResolver(t *testing.T) {
 
 			if assert.Nil(t, err) {
 				assert.Equal(t, itemID, resp.ID)
-        assert.Equal(t, "Item removed", resp.Msg)
+				assert.Equal(t, "Item removed", resp.Msg)
 			}
-    })
+		})
 
-    t.Run("when itemID given does not exist", func(t *testing.T) {
+		t.Run("when itemID given does not exist", func(t *testing.T) {
 			// create Item for receipt
 			item := repository.Item{}
 			item.Name = repository.Nullable("Item 1")
@@ -168,13 +168,13 @@ func TestSchemaResolver(t *testing.T) {
 				t.Fatal(err)
 			}
 
-      resp, err := testMutationResolver.DeleteItemFromReceipt(ctx, "999")
+			resp, err := testMutationResolver.DeleteItemFromReceipt(ctx, "999")
 
 			assert.ErrorContains(t, err, "failed to delete item")
-      assert.Nil(t, resp)
-    })
+			assert.Nil(t, resp)
+		})
 
-    t.Run("when item is associated to a UserOrder", func(t *testing.T) {
+		t.Run("when item is associated to a UserOrder", func(t *testing.T) {
 			// create Item for receipt
 			item := repository.Item{}
 			item.Name = repository.Nullable("Item 1")
@@ -188,12 +188,12 @@ func TestSchemaResolver(t *testing.T) {
 			itemID := strconv.Itoa(int(item.ID))
 			app.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 
-      resp, err := testMutationResolver.DeleteItemFromReceipt(ctx, itemID)
+			resp, err := testMutationResolver.DeleteItemFromReceipt(ctx, itemID)
 
 			if assert.Nil(t, err) {
 				assert.Equal(t, itemID, resp.ID)
-        assert.Equal(t, "Item removed", resp.Msg)
+				assert.Equal(t, "Item removed", resp.Msg)
 			}
-    })
-  })
+		})
+	})
 }

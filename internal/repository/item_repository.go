@@ -79,20 +79,20 @@ func (i *ItemRepository) GetMyOrders(userId, receiptID string) ([]Item, error) {
 func (i *ItemRepository) DeleteFromReceipt(userID, itemID string) (Item, error) {
 	var item Item
 
-  stmt := Items.DELETE().USING(Receipts).WHERE(
-    Items.ID.EQ(
-      RawInt(itemID),
-    ).AND(
-      Items.ReceiptID.EQ(Receipts.ID),
-    ).AND(
-      Receipts.UserID.EQ(RawInt(userID)),
-    ),
-  ).RETURNING(Items.AllColumns)
+	stmt := Items.DELETE().USING(Receipts).WHERE(
+		Items.ID.EQ(
+			RawInt(itemID),
+		).AND(
+			Items.ReceiptID.EQ(Receipts.ID),
+		).AND(
+			Receipts.UserID.EQ(RawInt(userID)),
+		),
+	).RETURNING(Items.AllColumns)
 
-  err := stmt.Query(i.DB, &item)
-  if err != nil {
-    return item, fmt.Errorf("failed to delete item in database: %w", err)
-  }
+	err := stmt.Query(i.DB, &item)
+	if err != nil {
+		return item, fmt.Errorf("failed to delete item in database: %w", err)
+	}
 
-  return item, nil
+	return item, nil
 }
