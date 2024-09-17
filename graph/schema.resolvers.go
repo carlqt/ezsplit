@@ -125,7 +125,7 @@ func (r *mutationResolver) UpdateItemFromReceipt(ctx context.Context, input *mod
 	)
 	if err != nil {
 		slog.Error("failed to update item", "error", err.Error(), "itemID", input.ItemID, "userID", userClaim.ID)
-		return nil, errors.New("failed to add the item")
+		return nil, errors.New("failed to update the item")
 	}
 
 	return newModelItem(item), nil

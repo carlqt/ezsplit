@@ -196,4 +196,80 @@ func TestSchemaResolver(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("UpdateItemFromReceipt", func(t *testing.T) {
+		defer truncateTables()
+		// create user
+		user, err := app.Repositories.UserRepository.CreateWithAccount("honey_badger", "password")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, auth.UserClaimKey, userClaim)
+
+		// create receipt
+		receipt := repository.Receipt{}
+		receipt.UserID = user.ID
+		receipt.Description = "sample receipt"
+
+		err = app.Repositories.ReceiptRepository.CreateForUser(&receipt)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Run("when item is updated successfully", func(t *testing.T) {
+			// create Item for receipt
+			item := repository.Item{}
+			item.Name = repository.Nullable("Item 1")
+			item.Price = 5000
+			item.ReceiptID = receipt.ID
+			err = app.Repositories.ItemRepository.Create(&item)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			itemID := strconv.Itoa(int(item.ID))
+
+			input := model.UpdateItemToReceiptInput{
+				ItemID: itemID,
+				Name:   "Best Item",
+				Price:  repository.Nullable(255.25),
+			}
+
+			resp, err := testMutationResolver.UpdateItemFromReceipt(ctx, &input)
+
+			if assert.Nil(t, err) {
+				assert.Equal(t, itemID, resp.ID)
+				assert.Equal(t, "Best Item", resp.Name)
+				assert.Equal(t, "255.25", resp.Price)
+			}
+		})
+
+		t.Run("when item ID doesn't match any item", func(t *testing.T) {
+			// create Item for receipt
+			item := repository.Item{}
+			item.Name = repository.Nullable("Item 1")
+			item.Price = 5000
+			item.ReceiptID = receipt.ID
+			err = app.Repositories.ItemRepository.Create(&item)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			itemID := "9999"
+			input := model.UpdateItemToReceiptInput{
+				ItemID: itemID,
+				Name:   "Best Item",
+				Price:  repository.Nullable(255.25),
+			}
+
+			resp, err := testMutationResolver.UpdateItemFromReceipt(ctx, &input)
+
+			assert.ErrorContains(t, err, "failed to update the item")
+			assert.Nil(t, resp)
+		})
+	})
 }
