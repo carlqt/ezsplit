@@ -96,3 +96,24 @@ func (i *ItemRepository) DeleteFromReceipt(userID, itemID string) (Item, error) 
 
 	return item, nil
 }
+
+func (i *ItemRepository) UpdateItem(itemID, userID, name string, price int32) (Item, error) {
+	item := Item{}
+	item.ID = BigInt(itemID)
+	item.Name = Nullable(name)
+	item.Price = price
+
+	stmt := Items.UPDATE(
+		Items.Name,
+		Items.Price,
+	).MODEL(item).FROM(Receipts).WHERE(
+		Items.ID.EQ(RawInt(itemID)).AND(Items.ReceiptID.EQ(Receipts.ID)).AND(Receipts.UserID.EQ(RawInt(userID))),
+	).RETURNING(Items.AllColumns)
+
+	err := stmt.Query(i.DB, &item)
+	if err != nil {
+		return item, fmt.Errorf("failed to update item in database: %w", err)
+	}
+
+	return item, nil
+}

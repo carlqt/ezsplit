@@ -114,7 +114,21 @@ func (r *mutationResolver) DeleteItemFromReceipt(ctx context.Context, itemID str
 
 // UpdateItemFromReceipt is the resolver for the updateItemFromReceipt field.
 func (r *mutationResolver) UpdateItemFromReceipt(ctx context.Context, input *model.UpdateItemToReceiptInput) (*model.Item, error) {
-	panic(fmt.Errorf("not implemented: UpdateItemFromReceipt - updateItemFromReceipt"))
+	userClaim := ctx.Value(auth.UserClaimKey).(auth.UserClaim)
+	price := toPriceCents(*input.Price)
+
+	item, err := r.Repositories.ItemRepository.UpdateItem(
+		input.ItemID,
+		userClaim.ID,
+		input.Name,
+		price,
+	)
+	if err != nil {
+		slog.Error("failed to update item", "error", err.Error(), "itemID", input.ItemID, "userID", userClaim.ID)
+		return nil, errors.New("failed to add the item")
+	}
+
+	return newModelItem(item), nil
 }
 
 // AssignOrRemoveMeFromItem is the resolver for the assignOrRemoveMeFromItem field.

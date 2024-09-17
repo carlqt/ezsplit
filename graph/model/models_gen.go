@@ -83,8 +83,9 @@ type ReceiptInput struct {
 }
 
 type UpdateItemToReceiptInput struct {
-	Name  string   `json:"name"`
-	Price *float64 `json:"price,omitempty"`
+	ItemID string   `json:"itemId"`
+	Name   string   `json:"name"`
+	Price  *float64 `json:"price,omitempty"`
 }
 
 type User struct {

@@ -6319,13 +6319,20 @@ func (ec *executionContext) unmarshalInputUpdateItemToReceiptInput(ctx context.C
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "price"}
+	fieldsInOrder := [...]string{"itemId", "name", "price"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "itemId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("itemId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ItemID = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
