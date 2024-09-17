@@ -82,6 +82,12 @@ type ReceiptInput struct {
 	Total       *float64 `json:"total,omitempty"`
 }
 
+type UpdateItemToReceiptInput struct {
+	ItemID string   `json:"itemId"`
+	Name   string   `json:"name"`
+	Price  *float64 `json:"price,omitempty"`
+}
+
 type User struct {
 	ID       string    `json:"id"`
 	Username string    `json:"username"`

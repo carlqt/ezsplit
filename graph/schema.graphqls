@@ -47,6 +47,12 @@ input LoginUserInput {
   password: String!
 }
 
+input UpdateItemToReceiptInput {
+  itemId: ID!
+  name: String!
+  price: Float
+}
+
 input AddItemToReceiptInput {
   receiptId: ID!
   name: String!
@@ -68,12 +74,14 @@ input CreateGuestUserInput {
 
 type Mutation {
   addItemToReceipt(input: AddItemToReceiptInput): Item! @authenticated
-  assignUserToItem(input: AssignUserToItemInput): Item! @authenticated
   assignMeToItem(input: AssignOrDeleteMeToItemInput): Item! @authenticated
   removeMeFromItem(input: AssignOrDeleteMeToItemInput): DeleteItemPayload! @authenticated
 
   # Deletes an item from a receipt that's scoped to the user
   deleteItemFromReceipt(itemId: ID!): DeleteItemPayload! @authenticated
+
+  # Updates an item from a receipt that's scoped to the user
+  updateItemFromReceipt(input: UpdateItemToReceiptInput): Item! @authenticated
 
   assignOrRemoveMeFromItem(itemId: ID!): UserOrderRef!
 
