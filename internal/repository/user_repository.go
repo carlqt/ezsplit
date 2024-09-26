@@ -5,14 +5,19 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"log/slog"
 
 	_ "github.com/lib/pq"
 
 	"github.com/carlqt/ezsplit/.gen/public/model"
 	. "github.com/carlqt/ezsplit/.gen/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
+	"github.com/go-jet/jet/v2/qrm"
 )
+
+var WrongCredentialsErr = errors.New("incorrect username or password")
 
 type User struct {
 	model.Users
@@ -41,7 +46,10 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 	defer tx.Rollback()
 
 	account.Username = username
-	account.Password = password
+	account.Password, err = hashPassword(password)
+	if err != nil {
+		slog.Error("failed to create user with account", "error", err.Error())
+	}
 
 	accountStmt := Accounts.INSERT(
 		Accounts.Username, Accounts.Password,
@@ -113,7 +121,7 @@ func (r *UserRepository) FindByName(name string) (User, error) {
 }
 
 // FindVerifiedByUsername finds users with an account associated with them
-func (r *UserRepository) FindVerifiedByUsername(username string) (User, error) {
+func (r *UserRepository) FindVerifiedByUsername(username, password string) (User, error) {
 	var user User
 
 	stmt := SELECT(
@@ -123,8 +131,13 @@ func (r *UserRepository) FindVerifiedByUsername(username string) (User, error) {
 	).WHERE(Accounts.Username.EQ(String(username))).LIMIT(1)
 
 	err := stmt.Query(r.DB, &user)
-	if err != nil {
-		return user, fmt.Errorf("failed to find user: %w", err)
+
+	if err != nil && !errors.Is(err, qrm.ErrNoRows) {
+		return user, fmt.Errorf("database error: %w", err)
+	}
+
+	if errors.Is(err, qrm.ErrNoRows) || !validatePasswords(user.Account.Password, password) {
+		return user, WrongCredentialsErr
 	}
 
 	return user, nil

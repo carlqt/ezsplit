@@ -240,14 +240,14 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username)
+	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username, input.Password)
 	if err != nil {
-		slog.Warn(err.Error())
-	}
-
-	ok := auth.ComparePassword(user.Account.Password, input.Password)
-	if !ok {
-		return nil, errors.New("incorrect username or password")
+		if errors.Is(err, repository.WrongCredentialsErr) {
+			return nil, errors.New("incorrect username or password")
+		} else {
+			slog.Error(err.Error())
+			return nil, errors.New("something went wrong")
+		}
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
