@@ -145,7 +145,6 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 		return newUserOrderRef(userClaim.ID, itemID), nil
 	}
 
-	// If error return is ErrNoRows, create/assign a user order
 	if errors.Is(err, qrm.ErrNoRows) {
 		e := r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 		if e != nil {
@@ -166,12 +165,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 		return nil, errors.New("password doesn't match confirm password")
 	}
 
-	password, err := auth.HashPassword(input.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, password)
+	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, input.Password)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, errors.New("user already exists")
