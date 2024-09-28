@@ -16,6 +16,7 @@ import (
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/go-jet/jet/v2/qrm"
+	"github.com/lib/pq"
 )
 
 // SharedBy is the resolver for the sharedBy field.
@@ -161,6 +162,8 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error) {
+	var pgError *pq.Error
+
 	if input.ConfirmPassword != input.Password {
 		return nil, errors.New("password doesn't match confirm password")
 	}
@@ -168,7 +171,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInpu
 	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, input.Password)
 	if err != nil {
 		slog.Error(err.Error())
-		return nil, errors.New("user already exists")
+
+		if errors.As(err, &pgError) && pgError.Constraint == "idx_accounts_on_username" {
+			return nil, errors.New("user already exists")
+		}
+
+		return nil, errors.New("something went wrong")
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
