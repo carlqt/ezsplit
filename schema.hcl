@@ -19,8 +19,15 @@ table "accounts" {
     type    = timestamp
     default = sql("now()")
   }
+  check "non_empty_username" {
+    expr = "username != ''"
+  }
   primary_key {
     columns = [column.id]
+  }
+  index "idx_accounts_on_username" {
+    columns = [column.username]
+    unique = true
   }
 }
 
