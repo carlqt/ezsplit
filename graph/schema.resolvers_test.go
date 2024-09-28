@@ -273,3 +273,29 @@ func TestSchemaResolver(t *testing.T) {
 		})
 	})
 }
+
+func TestCreateUser(t *testing.T) {
+	app := internal.NewApp()
+	resolvers := Resolver{Repositories: app.Repositories, Config: app.Config}
+	testMutationResolver := mutationResolver{&resolvers}
+
+	truncateTables := func() {
+		integration_test.TruncateAllTables(app.DB)
+	}
+
+	t.Run("when username already exists", func(t *testing.T) {
+		var input model.UserInput
+
+		defer truncateTables()
+
+		app.Repositories.UserRepository.CreateWithAccount("john_doe", "password")
+
+		input.Username = "john_doe"
+		input.Password = "password"
+		input.ConfirmPassword = "password"
+
+		_, err := testMutationResolver.CreateUser(context.TODO(), &input)
+
+		assert.ErrorContains(t, err, "user already exists")
+	})
+}
