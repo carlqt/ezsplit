@@ -2,7 +2,10 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 type Repository struct {
@@ -13,7 +16,9 @@ type Repository struct {
 	AccountRepository    *AccountRepository
 }
 
-func NewRepository(db *sql.DB) *Repository {
+func NewRepository(host, port, user, dbname, password, sslmode string) *Repository {
+	db := NewDB(host, port, user, dbname, password, sslmode)
+
 	return &Repository{
 		UserRepository:       &UserRepository{DB: db},
 		ReceiptRepository:    &ReceiptRepository{DB: db},
@@ -41,4 +46,21 @@ func BigInt[T string | int32](input T) int64 {
 // the pointer fields is because the column in the DB allows for NULL values
 func Nullable[T any](input T) *T {
 	return &input
+}
+
+func NewDB(host, port, user, dbname, password, sslmode string) *sql.DB {
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		host, port, user, dbname, password)
+
+	db, err := sql.Open("postgres", connectionString)
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
