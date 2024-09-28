@@ -1,7 +1,7 @@
 package graph
 
 import (
-	"github.com/carlqt/ezsplit/internal"
+	"github.com/carlqt/ezsplit/config"
 	"github.com/carlqt/ezsplit/internal/repository"
 )
 
@@ -10,6 +10,6 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	Config       *internal.EnvConfig
+	Config       *config.EnvConfig
 	Repositories *repository.Repository
 }

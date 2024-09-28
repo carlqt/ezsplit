@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/carlqt/ezsplit/config"
 	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -16,7 +17,7 @@ import (
 
 type App struct {
 	Repositories *repository.Repository
-	Config       *EnvConfig
+	Config       *config.EnvConfig
 	DB           *sql.DB
 }
 
@@ -64,7 +65,7 @@ func NewApp() *App {
 	InitializeLogger()
 	InitializeEnvVariables()
 
-	config := NewConfig()
+	config := config.NewConfig()
 
 	repositories := repository.NewRepository(
 		config.DBHost, config.DBPort, config.DBUser, config.DBName, config.DBPassword, "disable",
