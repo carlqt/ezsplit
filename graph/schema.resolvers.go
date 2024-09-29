@@ -16,6 +16,7 @@ import (
 	"github.com/carlqt/ezsplit/internal/auth"
 	"github.com/carlqt/ezsplit/internal/repository"
 	"github.com/go-jet/jet/v2/qrm"
+	"github.com/lib/pq"
 )
 
 // SharedBy is the resolver for the sharedBy field.
@@ -145,7 +146,6 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 		return newUserOrderRef(userClaim.ID, itemID), nil
 	}
 
-	// If error return is ErrNoRows, create/assign a user order
 	if errors.Is(err, qrm.ErrNoRows) {
 		e := r.Repositories.UserOrdersRepository.Create(userClaim.ID, itemID)
 		if e != nil {
@@ -162,19 +162,21 @@ func (r *mutationResolver) AssignOrRemoveMeFromItem(ctx context.Context, itemID 
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserInput) (*model.Me, error) {
+	var pgError *pq.Error
+
 	if input.ConfirmPassword != input.Password {
 		return nil, errors.New("password doesn't match confirm password")
 	}
 
-	password, err := auth.HashPassword(input.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, password)
+	user, err := r.Repositories.UserRepository.CreateWithAccount(input.Username, input.Password)
 	if err != nil {
 		slog.Error(err.Error())
-		return nil, errors.New("user already exists")
+
+		if errors.As(err, &pgError) && pgError.Constraint == "idx_accounts_on_username" {
+			return nil, errors.New("user already exists")
+		}
+
+		return nil, errors.New("something went wrong")
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
@@ -240,14 +242,14 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 		return nil, errors.New("incorrect username or password")
 	}
 
-	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username)
+	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username, input.Password)
 	if err != nil {
-		slog.Warn(err.Error())
-	}
-
-	ok := auth.ComparePassword(user.Account.Password, input.Password)
-	if !ok {
-		return nil, errors.New("incorrect username or password")
+		if errors.Is(err, repository.WrongCredentialsErr) {
+			return nil, errors.New("incorrect username or password")
+		} else {
+			slog.Error(err.Error())
+			return nil, errors.New("something went wrong")
+		}
 	}
 
 	userClaim := auth.NewUserClaim(user.ID, user.Name, user.IsVerified())
