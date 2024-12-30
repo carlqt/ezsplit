@@ -21,6 +21,8 @@ github.com/dgryski/trifles v0.0.0-20230903005119-f50d829f2e54 h1:SG7nF6SRlWhcT7c
 github.com/dgryski/trifles v0.0.0-20230903005119-f50d829f2e54/go.mod h1:if7Fbed8SFyPtHLHbg49SI7NAdJiC5WIA09pe59rfAA=
 github.com/go-jet/jet/v2 v2.11.1 h1:SEbh2lRUIiQweJpV0boWsQ4bV13x9p4h+RfajnL6vgM=
 github.com/go-jet/jet/v2 v2.11.1/go.mod h1:+DTofDkGp1c0vpooXWEZyNhyi0k0mL7N2W9tdP4YqfA=
+github.com/go-jet/jet/v2 v2.12.0 h1:z2JfvBAZgsfxlQz6NXBYdZTXc7ep3jhbszTLtETv1JE=
+github.com/go-jet/jet/v2 v2.12.0/go.mod h1:ufQVRQeI1mbcO5R8uCEVcVf3Foej9kReBdwDx7YMWUM=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=
 github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG1KdI/P7A=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
@@ -77,6 +79,8 @@ github.com/jackc/pgtype v1.8.1-0.20210724151600-32e20a603178/go.mod h1:C516IlIV9
 github.com/jackc/pgtype v1.14.0/go.mod h1:LUMuVrfsFfdKGLw+AFFVv6KtHOFMwRgDDzBt76IqCA4=
 github.com/jackc/pgtype v1.14.3 h1:h6W9cPuHsRWQFTWUZMAKMgG5jSwQI0Zurzdvlx3Plus=
 github.com/jackc/pgtype v1.14.3/go.mod h1:aKeozOde08iifGosdJpz9MBZonJOUJxqNpPBcMJTlVA=
+github.com/jackc/pgtype v1.14.4 h1:fKuNiCumbKTAIxQwXfB/nsrnkEI6bPJrrSiMKgbJ2j8=
+github.com/jackc/pgtype v1.14.4/go.mod h1:aKeozOde08iifGosdJpz9MBZonJOUJxqNpPBcMJTlVA=
 github.com/jackc/pgx/v4 v4.0.0-20190420224344-cc3461e65d96/go.mod h1:mdxmSJJuR08CZQyj1PVQBHy9XOp5p8/SHH6a0psbY9Y=
 github.com/jackc/pgx/v4 v4.0.0-20190421002000-1b8f0016e912/go.mod h1:no/Y67Jkk/9WuGR0JG/JseM9irFbnEPbuWV2EELPNuM=
 github.com/jackc/pgx/v4 v4.0.0-pre1.0.20190824185557-6972a5742186/go.mod h1:X+GQnOEnf1dqHGpw7JmHqHc1NxDoalibchSk9/RWuDc=
