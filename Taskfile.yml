@@ -89,7 +89,7 @@ tasks:
       - defer: { task: down }
       - task: models:generate
       - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go vet ./...'
-      - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0 run -v ./...'
+      - '{{if eq .CLI_ARGS "docker"}}docker compose run --rm dev-cli{{end}} go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.2 run -v ./...'
 
   db:setup:
     cmds:

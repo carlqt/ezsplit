@@ -1,8 +1,26 @@
+version: "2"
 run:
   tests: false
-
-issues:
-  exclude-rules:
-    - path: 'test\/.+\.go'
-      linters:
-        - errcheck
+linters:
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+        path: test\/.+\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
