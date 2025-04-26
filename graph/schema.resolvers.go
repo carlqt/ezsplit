@@ -244,7 +244,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input *model.LoginUser
 
 	user, err := r.Repositories.UserRepository.FindVerifiedByUsername(input.Username, input.Password)
 	if err != nil {
-		if errors.Is(err, repository.WrongCredentialsErr) {
+		if errors.Is(err, repository.ErrWrongCredentials) {
 			return nil, errors.New("incorrect username or password")
 		} else {
 			slog.Error(err.Error())

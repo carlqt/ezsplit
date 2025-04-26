@@ -2,6 +2,7 @@ version: "2"
 run:
   tests: false
 linters:
+  default: standard
   exclusions:
     generated: lax
     presets:
@@ -11,8 +12,12 @@ linters:
       - std-error-handling
     rules:
       - linters:
+          - staticcheck
+        text: "ST1001" # go-jet makes use of dot notion imports
+
+      - path: test\/.+\.go
+        linters:
           - errcheck
-        path: test\/.+\.go
     paths:
       - third_party$
       - builtin$
