@@ -35,7 +35,7 @@ func main() {
 
 	// Cleanup
 	dbNameDir := path.Join(genDir, config.DBName)
-	os.RemoveAll(dbNameDir)
+	os.RemoveAll(dbNameDir) //nolint:errcheck
 	fmt.Printf("Generated models in %s\n", expectedPath)
 }
 
