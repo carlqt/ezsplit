@@ -35,7 +35,7 @@ func main() {
 
 	// Cleanup
 	dbNameDir := path.Join(genDir, config.DBName)
-	os.RemoveAll(dbNameDir)
+	os.RemoveAll(dbNameDir) //nolint:errcheck
 	fmt.Printf("Generated models in %s\n", expectedPath)
 }
 
@@ -76,7 +76,7 @@ func moveDir(src string, dest string) error {
 
 	err = os.Rename(src, dest)
 	if err != nil {
-		return fmt.Errorf("failed to move %s to %s: %w\n", src, dest, err)
+		return fmt.Errorf("failed to move %s to %s: %w", src, dest, err)
 	}
 
 	return nil

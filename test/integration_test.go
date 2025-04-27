@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	g "github.com/carlqt/ezsplit/.gen/public/model"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
@@ -25,7 +26,9 @@ func TestResolvers(t *testing.T) {
 	resolvers := &graph.Resolver{Repositories: app.Repositories, Config: app.Config}
 	config := graph.Config{Resolvers: resolvers}
 	config.Directives.Authenticated = directive.AuthDirective(app.Config.JWTSecret)
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(config))
+	srv := handler.New(graph.NewExecutableSchema(config))
+	srv.AddTransport(transport.POST{})
+
 	c := client.New(internal.JwtMiddleware(internal.InjectSetCookieMiddleware(srv), app.Config.JWTSecret))
 
 	toString := func(i int64) string {
@@ -597,7 +600,7 @@ func TestResolvers(t *testing.T) {
 		)
 		accessToken, _ := auth.CreateAndSignToken(userClaim, app.Config.JWTSecret)
 
-		query := fmt.Sprintf(`query MyReceipts {
+		query := `query MyReceipts {
 			myReceipts {
         description
         id
@@ -605,7 +608,7 @@ func TestResolvers(t *testing.T) {
         total
         slug
       }
-		}`)
+		}`
 
 		var resp struct {
 			MyReceipts []*model.Receipt
@@ -637,8 +640,8 @@ func TestResolvers(t *testing.T) {
 		// Creat User and their receipt
 		user, _ := app.Repositories.UserRepository.CreateWithAccount("john_doe", "testing")
 		userID := strconv.Itoa(int(user.ID))
-		receipt, err := repository.NewReceipt(35000, "test receipt", userID)
-		err = app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
+		receipt, _ := repository.NewReceipt(35000, "test receipt", userID)
+		err := app.Repositories.ReceiptRepository.UnsafeCreate(&receipt)
 		if err != nil {
 			t.Fatal(err)
 		}

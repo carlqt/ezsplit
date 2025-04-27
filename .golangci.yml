@@ -1,8 +1,15 @@
-run:
-  tests: false
+version: "2"
+linters:
+  default: standard
+  exclusions:
+    rules:
+      - linters:
+          - staticcheck
+        text: "ST1001" # go-jet makes use of dot notion imports
 
-issues:
-  exclude-rules:
-    - path: 'test\/.+\.go'
-      linters:
-        - errcheck
+      - path: test\/.+\.go
+        linters:
+          - errcheck
+      - path: .+_test\.go
+        linters:
+          - errcheck

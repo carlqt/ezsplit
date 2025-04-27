@@ -17,7 +17,7 @@ import (
 	"github.com/go-jet/jet/v2/qrm"
 )
 
-var WrongCredentialsErr = errors.New("incorrect username or password")
+var ErrWrongCredentials = errors.New("incorrect username or password")
 
 type User struct {
 	model.Users
@@ -39,7 +39,7 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 
 	tx, err := r.DB.Begin()
 	if err != nil {
-		return user, fmt.Errorf("Failed to start the transaction: %w", err)
+		return user, fmt.Errorf("failed to start the transaction: %w", err)
 	}
 
 	//nolint:errcheck
@@ -57,7 +57,7 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 
 	err = accountStmt.Query(tx, &account)
 	if err != nil {
-		return user, fmt.Errorf("Failed to create the account: %w", err)
+		return user, fmt.Errorf("failed to create the account: %w", err)
 	}
 
 	user.Name = username
@@ -69,11 +69,11 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 	err = userStmt.Query(tx, &user)
 
 	if err != nil {
-		return user, fmt.Errorf("Failed to create the user: %w", err)
+		return user, fmt.Errorf("failed to create the user: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return user, fmt.Errorf("Failed to commit the transaction: %w", err)
+		return user, fmt.Errorf("failed to commit the transaction: %w", err)
 	}
 
 	user.Account = account
@@ -137,7 +137,7 @@ func (r *UserRepository) FindVerifiedByUsername(username, password string) (User
 	}
 
 	if errors.Is(err, qrm.ErrNoRows) || !validatePasswords(user.Account.Password, password) {
-		return user, WrongCredentialsErr
+		return user, ErrWrongCredentials
 	}
 
 	return user, nil
