@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/carlqt/ezsplit/graph"
 	"github.com/carlqt/ezsplit/graph/directive"
@@ -35,6 +36,9 @@ func main() {
 
 	srv := handler.New(graph.NewExecutableSchema(c))
 	srv.AddTransport(transport.POST{})
+
+	// TODO: Disable introspection in production.
+	srv.Use(extension.Introspection{})
 
 	// srv.AroundOperations(func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 	// 	oc := graphql.GetOperationContext(ctx)
