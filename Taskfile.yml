@@ -6,7 +6,7 @@ env:
   ENV: local
 
 vars:
-  TEST_COMPOSE_FILE: docker-compose.test.yml
+  TEST_COMPOSE_FILE: compose.test.yaml
 
 tasks:
   default:

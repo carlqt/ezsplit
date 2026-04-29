@@ -7,4 +7,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run tests
-        run: docker compose -f docker-compose.test.yml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
+        run: docker compose -f compose.test.yaml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
