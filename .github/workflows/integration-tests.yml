@@ -5,6 +5,6 @@ jobs:
   Run-Integration-Tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Run tests
         run: docker compose -f compose.test.yaml -p ezsplit_test up --abort-on-container-exit --exit-code-from app
