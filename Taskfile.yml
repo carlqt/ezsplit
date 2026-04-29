@@ -28,7 +28,7 @@ tasks:
   up:
     desc: Runs the application in development mode in docker
     cmds:
-      - docker compose watch
+      - docker compose up --watch
   
   graphql:schema:generate:
     desc: Generate graphql schema
