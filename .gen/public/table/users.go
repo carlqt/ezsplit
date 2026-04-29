@@ -24,6 +24,7 @@ type usersTable struct {
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
+	DefaultColumns postgres.ColumnList
 }
 
 type UsersTable struct {
@@ -67,6 +68,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		AccountIDColumn = postgres.IntegerColumn("account_id")
 		allColumns      = postgres.ColumnList{IDColumn, NameColumn, CreatedAtColumn, AccountIDColumn}
 		mutableColumns  = postgres.ColumnList{NameColumn, CreatedAtColumn, AccountIDColumn}
+		defaultColumns  = postgres.ColumnList{NameColumn, CreatedAtColumn}
 	)
 
 	return usersTable{
@@ -80,5 +82,6 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
+		DefaultColumns: defaultColumns,
 	}
 }

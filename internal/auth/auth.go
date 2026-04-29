@@ -49,7 +49,7 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 }
 
 func ValidateJWT(bearerToken string, secret []byte) (UserClaim, error) {
-	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (any, error) {
 		return secret, nil
 	})
 

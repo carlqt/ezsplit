@@ -26,6 +26,7 @@ type receiptsTable struct {
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
+	DefaultColumns postgres.ColumnList
 }
 
 type ReceiptsTable struct {
@@ -71,6 +72,7 @@ func newReceiptsTableImpl(schemaName, tableName, alias string) receiptsTable {
 		CreatedAtColumn   = postgres.TimestampColumn("created_at")
 		allColumns        = postgres.ColumnList{IDColumn, UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
 		mutableColumns    = postgres.ColumnList{UserIDColumn, DescriptionColumn, URLSlugColumn, TotalColumn, CreatedAtColumn}
+		defaultColumns    = postgres.ColumnList{DescriptionColumn, URLSlugColumn, CreatedAtColumn}
 	)
 
 	return receiptsTable{
@@ -86,5 +88,6 @@ func newReceiptsTableImpl(schemaName, tableName, alias string) receiptsTable {
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
+		DefaultColumns: defaultColumns,
 	}
 }

@@ -15,7 +15,7 @@ type User struct {
 }
 
 type DbWriter interface {
-	QueryRow(query string, args ...interface{}) *sql.Row
+	QueryRow(query string, args ...any) *sql.Row
 }
 
 func TruncateAllTables(db *sql.DB) {
