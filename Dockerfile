@@ -1,12 +1,10 @@
-# syntax=docker/dockerfile:1
-
-FROM golang:1.26.1-trixie AS base
+FROM golang:1.26.1-bookworm AS base
 
 LABEL maintainer="carltablante"
 
 WORKDIR /app
 
-RUN apt-get install -y curl
+RUN apt-get update && apt-get install -y curl
 
 RUN curl -sSf https://atlasgo.sh | sh
 
