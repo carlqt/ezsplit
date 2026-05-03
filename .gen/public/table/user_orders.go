@@ -25,6 +25,7 @@ type userOrdersTable struct {
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
+	DefaultColumns postgres.ColumnList
 }
 
 type UserOrdersTable struct {
@@ -69,6 +70,7 @@ func newUserOrdersTableImpl(schemaName, tableName, alias string) userOrdersTable
 		CreatedAtColumn = postgres.TimestampColumn("created_at")
 		allColumns      = postgres.ColumnList{IDColumn, UserIDColumn, ItemIDColumn, StatusColumn, CreatedAtColumn}
 		mutableColumns  = postgres.ColumnList{UserIDColumn, ItemIDColumn, StatusColumn, CreatedAtColumn}
+		defaultColumns  = postgres.ColumnList{CreatedAtColumn}
 	)
 
 	return userOrdersTable{
@@ -83,5 +85,6 @@ func newUserOrdersTableImpl(schemaName, tableName, alias string) userOrdersTable
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
+		DefaultColumns: defaultColumns,
 	}
 }

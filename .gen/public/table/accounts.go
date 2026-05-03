@@ -24,6 +24,7 @@ type accountsTable struct {
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
+	DefaultColumns postgres.ColumnList
 }
 
 type AccountsTable struct {
@@ -67,6 +68,7 @@ func newAccountsTableImpl(schemaName, tableName, alias string) accountsTable {
 		CreatedAtColumn = postgres.TimestampColumn("created_at")
 		allColumns      = postgres.ColumnList{IDColumn, UsernameColumn, PasswordColumn, CreatedAtColumn}
 		mutableColumns  = postgres.ColumnList{UsernameColumn, PasswordColumn, CreatedAtColumn}
+		defaultColumns  = postgres.ColumnList{CreatedAtColumn}
 	)
 
 	return accountsTable{
@@ -80,5 +82,6 @@ func newAccountsTableImpl(schemaName, tableName, alias string) accountsTable {
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
+		DefaultColumns: defaultColumns,
 	}
 }

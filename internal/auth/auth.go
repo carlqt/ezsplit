@@ -23,7 +23,7 @@ type UserClaim struct {
 }
 
 func NewUserClaim(id int64, username string, isVerified bool) UserClaim {
-	userID := strconv.Itoa(int(id))
+	userID := strconv.FormatInt(id, 10)
 	state := model.UserStateGuest
 
 	if isVerified {
@@ -49,7 +49,7 @@ func CreateAndSignToken(userClaim UserClaim, secret []byte) (string, error) {
 }
 
 func ValidateJWT(bearerToken string, secret []byte) (UserClaim, error) {
-	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(bearerToken, &UserClaim{}, func(token *jwt.Token) (any, error) {
 		return secret, nil
 	})
 
@@ -67,14 +67,14 @@ func ValidateJWT(bearerToken string, secret []byte) (UserClaim, error) {
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("cannot generate hash from string")
+		return "", fmt.Errorf("cannot generate hash from string: %w", err)
 	}
 
 	return string(hash), nil
 }
 
 func ComparePassword(password string, hashedPassword string) bool {
-	if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(hashedPassword)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
 		return false
 	}
 

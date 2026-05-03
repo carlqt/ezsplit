@@ -63,7 +63,7 @@ func TestResolvers(t *testing.T) {
 			err = c.Post(query, &resp)
 
 			if assert.NotNil(t, err) {
-				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
+				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"],"locations":[{"line":2,"column":5}]}]`)
 			}
 		})
 
@@ -121,7 +121,7 @@ func TestResolvers(t *testing.T) {
 			err = c.Post(query, &resp)
 
 			if assert.NotNil(t, err) {
-				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"]}]`)
+				assert.EqualError(t, err, `[{"message":"incorrect username or password","path":["loginUser"],"locations":[{"line":2,"column":5}]}]`)
 			}
 		})
 	})

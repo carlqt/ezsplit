@@ -13,6 +13,7 @@ import (
 
 	"github.com/carlqt/ezsplit/.gen/public/model"
 	. "github.com/carlqt/ezsplit/.gen/public/table"
+	"github.com/carlqt/ezsplit/internal/auth"
 	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
 )
@@ -46,7 +47,7 @@ func (r *UserRepository) CreateWithAccount(username, password string) (User, err
 	defer tx.Rollback()
 
 	account.Username = username
-	account.Password, err = hashPassword(password)
+	account.Password, err = auth.HashPassword(password)
 	if err != nil {
 		slog.Error("failed to create user with account", "error", err.Error())
 	}
@@ -136,7 +137,7 @@ func (r *UserRepository) FindVerifiedByUsername(username, password string) (User
 		return user, fmt.Errorf("database error: %w", err)
 	}
 
-	if errors.Is(err, qrm.ErrNoRows) || !validatePasswords(user.Account.Password, password) {
+	if errors.Is(err, qrm.ErrNoRows) || !auth.ComparePassword(password, user.Account.Password) {
 		return user, ErrWrongCredentials
 	}
 

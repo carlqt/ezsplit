@@ -6,7 +6,7 @@ env:
   ENV: local
 
 vars:
-  TEST_COMPOSE_FILE: docker-compose.test.yml
+  TEST_COMPOSE_FILE: compose.test.yaml
 
 tasks:
   default:
@@ -28,7 +28,7 @@ tasks:
   up:
     desc: Runs the application in development mode in docker
     cmds:
-      - docker compose watch
+      - docker compose up --watch
   
   graphql:schema:generate:
     desc: Generate graphql schema

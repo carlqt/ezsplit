@@ -25,6 +25,7 @@ type itemsTable struct {
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
+	DefaultColumns postgres.ColumnList
 }
 
 type ItemsTable struct {
@@ -69,6 +70,7 @@ func newItemsTableImpl(schemaName, tableName, alias string) itemsTable {
 		CreatedAtColumn = postgres.TimestampColumn("created_at")
 		allColumns      = postgres.ColumnList{IDColumn, ReceiptIDColumn, PriceColumn, NameColumn, CreatedAtColumn}
 		mutableColumns  = postgres.ColumnList{ReceiptIDColumn, PriceColumn, NameColumn, CreatedAtColumn}
+		defaultColumns  = postgres.ColumnList{PriceColumn, CreatedAtColumn}
 	)
 
 	return itemsTable{
@@ -83,5 +85,6 @@ func newItemsTableImpl(schemaName, tableName, alias string) itemsTable {
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,
+		DefaultColumns: defaultColumns,
 	}
 }
